@@ -21,7 +21,7 @@ class WelcomePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              "Manage your finances with Econance",
+              "Manage your finances with us",
               style: TextStyle(fontSize: 18, color: Colors.white70),
               textAlign: TextAlign.center,
             ),
