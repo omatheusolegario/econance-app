@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "157887385638",
+    "project_id": "econance-e81ec",
+    "storage_bucket": "econance-e81ec.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157887385638:android:bd9b75f14e3a19444296e7",
+        "android_client_info": {
+          "package_name": "com.example.econance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMI81U4s7ckfOr9Dp3H4tgYymikyvZXhE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
