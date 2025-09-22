@@ -78,7 +78,8 @@ class WelcomePage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () {
-                      // TODO: Navigate to login
+                      Navigator.pushNamed(context, '/login');
+
                     },
                     child: const Text(
                       "Login",
@@ -91,6 +92,7 @@ class WelcomePage extends StatelessWidget {
                 // Create account
                 TextButton(
                   onPressed: () {
+
                     // TODO: Navigate to register
                   },
                   child: const Text(
