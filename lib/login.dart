@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'theme_manager.dart';
+import 'package:provider/provider.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final themeManager = Provider.of<ThemeManager>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E), // dark background
       body: SafeArea(
@@ -14,6 +17,10 @@ class Login extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              IconButton(
+                icon: Icon(themeManager.isDark ? Icons.dark_mode : Icons.light_mode),
+                onPressed: () => themeManager.toggleTheme(),
+              ),
               Text(
                 "Login",
                 style: TextStyle(
@@ -91,7 +98,10 @@ class Login extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
+
+
+          ],
+
           ),
         ),
       ),

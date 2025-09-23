@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'l10n/app_localizations.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -6,7 +7,9 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E), // dark background
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // dark background
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -24,31 +27,27 @@ class WelcomePage extends StatelessWidget {
                 // Title
                 RichText(
                   textAlign: TextAlign.center,
-                  text: const TextSpan(
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  text: TextSpan(
+                    style: Theme.of(context).textTheme.bodyLarge,
                     children: [
-                      TextSpan(text: "Welcome to "),
                       TextSpan(
-                        text: "€conance",
-                        style: TextStyle(color: Color(0xFF4ADE80)), // green accent
+                        text: AppLocalizations.of(context)!.welcomeMessage,
+                      ),
+                      TextSpan(
+                        text: " €conance",
+                        style: TextStyle(
+                          color: Color(0xFF4ADE80),
+                        ), // green accent
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 10),
 
-                // Subtitle
-                const Text(
-                  "The ultimate and most comprehensive financial management app.",
+                Text(
+                  AppLocalizations.of(context)!.carousel1,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 30),
 
@@ -79,11 +78,10 @@ class WelcomePage extends StatelessWidget {
                     ),
                     onPressed: () {
                       Navigator.pushNamed(context, '/login');
-
                     },
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    child: Text(
+                      AppLocalizations.of(context)!.login,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                 ),
@@ -92,12 +90,11 @@ class WelcomePage extends StatelessWidget {
                 // Create account
                 TextButton(
                   onPressed: () {
-
                     // TODO: Navigate to register
                   },
-                  child: const Text(
-                    "Create an account",
-                    style: TextStyle(color: Colors.white70),
+                  child: Text(
+                    AppLocalizations.of(context)!.createAccount,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
               ],
