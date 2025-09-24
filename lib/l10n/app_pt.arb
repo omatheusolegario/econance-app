@@ -1,9 +1,16 @@
 {
-  "Tela -> welcome_page": "",
+  "screenwelcomepage": "",
   "welcomeMessage": "Bem-vindo ao",
   "login": "Entrar",
   "createAccount": "Criar uma conta",
   "carousel1": "O melhor e mais compreensivo aplicativo de gerenciamento de finanças.",
   "carousel2": "Acesse insights poderosos sobre seu dinheiro e tome decisões mais inteligentes todos os dias.",
-  "carousel3": "Tenha o controle total das suas finanças na palma da mão, onde quer que você esteja."
+  "carousel3": "Tenha o controle total das suas finanças na palma da mão, onde quer que você esteja.",
+  "screenlogin": "",
+  "welcomeBack": "Bem-vindo de volta à Econance",
+  "phonenumber": "Número de telefone",
+  "emailaddress": "Endereço de email",
+  "emailinput": "Digite seu email",
+  "phoneinput": "Digite seu número de telefone",
+  "templateemail": "exemplo@gmail.com"
 }
