@@ -19,4 +19,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get carousel1 => 'The ultimate and most comprehensive financial management app.';
+
+  @override
+  String get carousel2 => 'Access powerful insights about your money and make smarter decisions every day.';
+
+  @override
+  String get carousel3 => 'Take full control of your finances in the palm of your hand, wherever you are.';
 }

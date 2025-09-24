@@ -19,4 +19,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get carousel1 => 'O melhor e mais compreensivo aplicativo de gerenciamento de finanças.';
+
+  @override
+  String get carousel2 => 'Acesse insights poderosos sobre seu dinheiro e tome decisões mais inteligentes todos os dias.';
+
+  @override
+  String get carousel3 => 'Tenha o controle total das suas finanças na palma da mão, onde quer que você esteja.';
 }

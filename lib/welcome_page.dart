@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 import 'l10n/app_localizations.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
 
   @override
+  State<WelcomePage> createState() => _CarrouselPageState();
+}
+
+class _CarrouselPageState extends State<WelcomePage> {
+  final List<String> images = [
+    'assets/images/onboarding1.png',
+    'assets/images/onboarding2.png',
+    'assets/images/onboarding3.png',
+  ];
+
+
+  int currentIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final List<String> subtitles = [
+      AppLocalizations.of(context)!.carousel1,
+      AppLocalizations.of(context)!.carousel2,
+      AppLocalizations.of(context)!.carousel3,
+    ];
     return Scaffold(
       backgroundColor: Theme.of(
         context,
@@ -17,11 +37,29 @@ class WelcomePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Illustration
-                Image.asset(
-                  "./assets/images/onboarding.png", // put your illustration here
-                  height: 220,
+                // Carousel
+                CarouselSlider(
+                  options: CarouselOptions(
+                    height: 220,
+                    enlargeCenterPage: true,
+                    autoPlay: true,
+                    autoPlayInterval: const Duration(seconds: 6),
+                    onPageChanged: (index, reason) {
+                      setState(() => currentIndex = index);
+                    },
+                  ),
+                  items: images.map((path) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(
+                        path,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                      ),
+                    );
+                  }).toList(),
                 ),
+
                 const SizedBox(height: 40),
 
                 // Title
@@ -33,35 +71,46 @@ class WelcomePage extends StatelessWidget {
                       TextSpan(
                         text: AppLocalizations.of(context)!.welcomeMessage,
                       ),
+                      WidgetSpan(child: SizedBox(width: 5)),
                       TextSpan(
-                        text: " €conance",
+                        text: "€",
                         style: TextStyle(
-                          color: Color(0xFF4ADE80),
-                        ), // green accent
+                          color: const Color(0xFF67D191), // green accent
+                          fontFamily: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .fontFamily,
+                            fontSize: 20,
+                        ),
                       ),
+                      const TextSpan(text: "conance"),
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 10),
 
+                // Subtitle
                 Text(
-                  AppLocalizations.of(context)!.carousel1,
+                  subtitles[currentIndex],
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
+
                 const SizedBox(height: 30),
 
                 // Page indicator (3 dots)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildDot(isActive: false),
+                    _buildDot(isActive: currentIndex == 0),
                     const SizedBox(width: 6),
-                    _buildDot(isActive: true),
+                    _buildDot(isActive: currentIndex == 1),
                     const SizedBox(width: 6),
-                    _buildDot(isActive: false),
+                    _buildDot(isActive: currentIndex == 2),
                   ],
                 ),
+
                 const SizedBox(height: 40),
 
                 // Login button
@@ -69,7 +118,7 @@ class WelcomePage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4ADE80),
+                      backgroundColor: const Color(0xFF67D191),
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
@@ -85,6 +134,7 @@ class WelcomePage extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 20),
 
                 // Create account
@@ -110,7 +160,7 @@ class WelcomePage extends StatelessWidget {
       width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? Colors.white : Colors.grey[600],
+        color: isActive ? const Color(0xFF87D4B1) : const Color(0xFFD9D9D9),
         shape: BoxShape.circle,
       ),
     );

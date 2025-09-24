@@ -118,6 +118,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The ultimate and most comprehensive financial management app.'**
   String get carousel1;
+
+  /// No description provided for @carousel2.
+  ///
+  /// In en, this message translates to:
+  /// **'Access powerful insights about your money and make smarter decisions every day.'**
+  String get carousel2;
+
+  /// No description provided for @carousel3.
+  ///
+  /// In en, this message translates to:
+  /// **'Take full control of your finances in the palm of your hand, wherever you are.'**
+  String get carousel3;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

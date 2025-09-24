@@ -1,6 +1,9 @@
 {
+  "Tela -> welcome_page": "",
   "welcomeMessage": "Bem-vindo ao",
   "login": "Entrar",
   "createAccount": "Criar uma conta",
-  "carousel1": "O melhor e mais compreensivo aplicativo de gerenciamento de finanças."
+  "carousel1": "O melhor e mais compreensivo aplicativo de gerenciamento de finanças.",
+  "carousel2": "Acesse insights poderosos sobre seu dinheiro e tome decisões mais inteligentes todos os dias.",
+  "carousel3": "Tenha o controle total das suas finanças na palma da mão, onde quer que você esteja."
 }
