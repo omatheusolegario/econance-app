@@ -140,7 +140,7 @@ class _CarrouselPageState extends State<WelcomePage> {
                 // Create account
                 TextButton(
                   onPressed: () {
-                    // TODO: Navigate to register
+                    Navigator.pushNamed(context, "/register");
                   },
                   child: Text(
                     AppLocalizations.of(context)!.createAccount,

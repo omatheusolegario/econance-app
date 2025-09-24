@@ -1,4 +1,5 @@
 import 'package:econance/l10n/app_localizations.dart';
+import 'package:econance/registration.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -51,7 +52,8 @@ class EconanceApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
         "/": (context) => const WelcomePage(),
-        "/login": (context) => const Login(), // replace later
+        "/login": (context) => const Login(),
+        "/register": (context) => const RegistrationPage(),
       },
 
 
