@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'theme_manager.dart';
 import 'package:provider/provider.dart';
+import 'theme_manager.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
+
   @override
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E), // dark background
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(55),
@@ -18,21 +19,24 @@ class Login extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
-                icon: Icon(themeManager.isDark ? Icons.dark_mode : Icons.light_mode),
+                icon: Icon(
+                  themeManager.isDark ? Icons.dark_mode : Icons.light_mode,
+                ),
                 onPressed: () => themeManager.toggleTheme(),
               ),
               Text(
                 "Login",
-                style: TextStyle(
-                  fontSize: 32,
-                  color: Colors.white,
+                style: theme.textTheme.headlineLarge?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 7),
               Text(
                 "Welcome back to Econance",
-                style: TextStyle(fontSize: 14, color: Colors.white),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color,
+                ),
               ),
               const SizedBox(height: 35),
               Row(
@@ -40,7 +44,7 @@ class Login extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: () {},
-                    child: const Text(
+                    child: Text(
                       "Email",
                       style: TextStyle(
                         fontSize: 15,
@@ -54,11 +58,10 @@ class Login extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {},
-                    child: const Text(
+                    child: Text(
                       "Phone Number",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.white70,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.textTheme.bodyMedium?.color,
                         decorationThickness: 2,
                       ),
                     ),
@@ -68,40 +71,38 @@ class Login extends StatelessWidget {
               const SizedBox(height: 35),
               Text(
                 "Email address",
-                style: TextStyle(color: Colors.white, fontSize: 13),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color,
+                ),
               ),
               const SizedBox(height: 5),
               TextField(
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black, // text color
+                style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Enter your name',
-                  hintStyle: TextStyle(color: Colors.grey), // hint text style
+                  hintText: 'Enter your email',
+                  hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
                   labelText: 'someone@gmail.com',
-                  labelStyle: TextStyle(color: Colors.grey),
-
-                  // background color
+                  labelStyle: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), // rounded corners
-                    borderSide: BorderSide(color: Colors.grey, width: 5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey, width: 3),
+                    borderSide: BorderSide(color: Colors.grey, width: 2),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.green, width: 5),
+                    borderSide: BorderSide(color: theme.primaryColor, width: 3),
                   ),
                 ),
               ),
-
-
-          ],
-
+            ],
           ),
         ),
       ),
