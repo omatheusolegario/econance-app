@@ -33,7 +33,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get screenlogin => '';
 
   @override
-  String get welcomeBack => 'Bem-vindo de volta à Econance';
+  String get welcomeBack => 'Bem-vindo de volta ao Econance';
 
   @override
   String get phonenumber => 'Número de telefone';
@@ -49,4 +49,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get templateemail => 'exemplo@gmail.com';
+
+  @override
+  String get password => 'Senha';
+
+  @override
+  String get passwordinput => '•••••••••';
 }

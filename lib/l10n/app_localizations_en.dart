@@ -49,4 +49,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get templateemail => 'example@gmail.com';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get passwordinput => '•••••••••';
 }

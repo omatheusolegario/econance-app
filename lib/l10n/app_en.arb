@@ -12,5 +12,7 @@
   "emailaddress": "Email address",
   "emailinput": "Enter your email",
   "phoneinput": "Enter your phone number",
-  "templateemail": "example@gmail.com"
+  "templateemail": "example@gmail.com",
+  "password": "Password",
+  "passwordinput": "•••••••••"
 }
