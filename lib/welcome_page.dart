@@ -16,7 +16,6 @@ class _CarrouselPageState extends State<WelcomePage> {
     'assets/images/onboarding3.png',
   ];
 
-
   int currentIndex = 0;
 
   @override
@@ -75,12 +74,11 @@ class _CarrouselPageState extends State<WelcomePage> {
                       TextSpan(
                         text: "€",
                         style: TextStyle(
-                          color: const Color(0xFF67D191), // green accent
-                          fontFamily: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .fontFamily,
-                            fontSize: 20,
+                          color: Theme.of(context).primaryColor, // green accent
+                          fontFamily: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium!.fontFamily,
+                          fontSize: 20,
                         ),
                       ),
                       const TextSpan(text: "conance"),
@@ -118,8 +116,11 @@ class _CarrouselPageState extends State<WelcomePage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF67D191),
-                      foregroundColor: Colors.black,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -130,7 +131,9 @@ class _CarrouselPageState extends State<WelcomePage> {
                     },
                     child: Text(
                       AppLocalizations.of(context)!.login,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: null,
+                      ),
                     ),
                   ),
                 ),
