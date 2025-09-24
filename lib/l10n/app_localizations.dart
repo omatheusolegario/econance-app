@@ -178,6 +178,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'example@gmail.com'**
   String get templateemail;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @passwordinput.
+  ///
+  /// In en, this message translates to:
+  /// **'•••••••••'**
+  String get passwordinput;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

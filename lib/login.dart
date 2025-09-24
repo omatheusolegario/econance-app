@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'theme_manager.dart';
 import 'l10n/app_localizations.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'register_verification.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -13,8 +15,9 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   bool isEmailSelected = true;
-
+  bool _obscurePassword = true;
   final fieldText = TextEditingController();
+  final passwordController = TextEditingController();
 
   final phoneFormatter = MaskTextInputFormatter(
     mask: '+## ## #####-####',
@@ -22,14 +25,42 @@ class _LoginState extends State<Login> {
     type: MaskAutoCompletionType.eager,
   );
 
+  void clearText() {
+    fieldText.clear();
+  }
+
+
+  Future<void> signInWithEmail() async {
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: fieldText.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      final user = userCredential.user!;
+      if (!user.emailVerified) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => VerificationPage(user: user)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login realizado com sucesso!')),
+        );
+
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Erro ao logar')),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
     final theme = Theme.of(context);
 
-    void clearText() {
-      fieldText.clear();
-    }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -154,6 +185,81 @@ class _LoginState extends State<Login> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.green, width: 5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+                Text(
+                  AppLocalizations.of(context)!.password,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 5),
+
+                TextField(
+                  controller: passwordController,
+                  obscureText: _obscurePassword,
+                  style:  theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.passwordinput,
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey,
+                    ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey, width: 5),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey, width: 3),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.green, width: 5),
+                      ),
+                      suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                      ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () {
+                    if (isEmailSelected) {
+                      signInWithEmail();
+                    } else {
+                      //signInWithPhone();
+                    }
+                  },
+                  child: Text(AppLocalizations.of(context)!.login,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: null,
+                    ),
                   ),
                 ),
               ),
