@@ -95,6 +95,12 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @screenwelcomepage.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get screenwelcomepage;
+
   /// No description provided for @welcomeMessage.
   ///
   /// In en, this message translates to:
@@ -130,6 +136,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Take full control of your finances in the palm of your hand, wherever you are.'**
   String get carousel3;
+
+  /// No description provided for @screenlogin.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get screenlogin;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back to Econance'**
+  String get welcomeBack;
+
+  /// No description provided for @phonenumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phonenumber;
+
+  /// No description provided for @emailaddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get emailaddress;
+
+  /// No description provided for @emailinput.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get emailinput;
+
+  /// No description provided for @phoneinput.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your phone number'**
+  String get phoneinput;
+
+  /// No description provided for @templateemail.
+  ///
+  /// In en, this message translates to:
+  /// **'example@gmail.com'**
+  String get templateemail;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

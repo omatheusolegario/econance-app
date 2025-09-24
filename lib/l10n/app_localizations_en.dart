@@ -9,6 +9,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get screenwelcomepage => '';
+
+  @override
   String get welcomeMessage => 'Welcome to';
 
   @override
@@ -25,4 +28,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get carousel3 => 'Take full control of your finances in the palm of your hand, wherever you are.';
+
+  @override
+  String get screenlogin => '';
+
+  @override
+  String get welcomeBack => 'Welcome back to Econance';
+
+  @override
+  String get phonenumber => 'Phone Number';
+
+  @override
+  String get emailaddress => 'Email address';
+
+  @override
+  String get emailinput => 'Enter your email';
+
+  @override
+  String get phoneinput => 'Enter your phone number';
+
+  @override
+  String get templateemail => 'example@gmail.com';
 }

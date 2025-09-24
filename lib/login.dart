@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'theme_manager.dart';
+import 'l10n/app_localizations.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 class Login extends StatefulWidget {
@@ -18,16 +18,14 @@ class _LoginState extends State<Login> {
 
   final phoneFormatter = MaskTextInputFormatter(
     mask: '+## ## #####-####',
-    filter: { "#": RegExp(r'[0-9]') },
+    filter: {"#": RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.eager,
-
   );
 
   @override
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
     final theme = Theme.of(context);
-
 
     void clearText() {
       fieldText.clear();
@@ -48,7 +46,7 @@ class _LoginState extends State<Login> {
                 onPressed: () => themeManager.toggleTheme(),
               ),
               Text(
-                "Login",
+                AppLocalizations.of(context)!.login,
                 style: theme.textTheme.headlineLarge?.copyWith(
                   color: theme.textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.bold,
@@ -56,7 +54,7 @@ class _LoginState extends State<Login> {
               ),
               const SizedBox(height: 7),
               Text(
-                "Welcome back to Econance",
+                AppLocalizations.of(context)!.welcomeBack,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.textTheme.bodyMedium?.color,
                 ),
@@ -94,7 +92,7 @@ class _LoginState extends State<Login> {
                       setState(() => isEmailSelected = false);
                     },
                     child: Text(
-                      "Phone Number",
+                      AppLocalizations.of(context)!.phonenumber,
                       style: TextStyle(
                         fontSize: 15,
                         color: !isEmailSelected
@@ -114,7 +112,9 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 35),
 
               Text(
-                isEmailSelected ? "Email address" : "Phone number",
+                isEmailSelected
+                    ? AppLocalizations.of(context)!.emailaddress
+                    : AppLocalizations.of(context)!.phonenumber,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.textTheme.bodyMedium?.color,
                 ),
@@ -126,21 +126,19 @@ class _LoginState extends State<Login> {
                 keyboardType: isEmailSelected
                     ? TextInputType.emailAddress
                     : TextInputType.phone,
-                inputFormatters: isEmailSelected
-                    ? []
-                    : [phoneFormatter],
+                inputFormatters: isEmailSelected ? [] : [phoneFormatter],
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: InputDecoration(
                   hintText: isEmailSelected
-                      ? 'Enter your email'
-                      : 'Enter your phone number',
+                      ? AppLocalizations.of(context)!.emailinput
+                      : AppLocalizations.of(context)!.phoneinput,
                   hintStyle: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey,
                   ),
                   labelText: isEmailSelected
-                      ? 'someone@gmail.com'
+                      ? AppLocalizations.of(context)!.templateemail
                       : '+55 11 99999-9999',
                   labelStyle: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.grey,
