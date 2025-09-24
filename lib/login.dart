@@ -77,7 +77,7 @@ class Login extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               TextField(
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: InputDecoration(
@@ -91,14 +91,15 @@ class Login extends StatelessWidget {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey, width: 5),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey, width: 2),
+                    borderSide: BorderSide(color: Colors.grey, width: 3),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: theme.primaryColor, width: 3),
+                    borderSide: BorderSide(color: Colors.green, width: 5),
                   ),
                 ),
               ),
