@@ -15,6 +15,9 @@
   "templateemail": "example@gmail.com",
   "password": "Password",
   "passwordinput": "•••••••••",
+  "forgotpassword": "Forgot password?",
+  "snackloginSuccess": "Login was successful!",
+  "snackloginError": "Login failed",
 
   "emailverification": "A verification email has been sent. Please check your email",
   "iverified": "I have verified",

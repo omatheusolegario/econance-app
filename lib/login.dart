@@ -45,7 +45,11 @@ class _LoginState extends State<Login> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login realizado com sucesso!')),
+          SnackBar(
+              content: Text(
+                  AppLocalizations.of(context)!.snackloginSuccess,
+              )
+                )
         );
 
         Navigator.pushReplacementNamed(context, '/');
@@ -53,7 +57,11 @@ class _LoginState extends State<Login> {
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? 'Erro ao logar')));
+      ).showSnackBar(SnackBar(content: Text(e.message ??  AppLocalizations.of(context)!.snackloginError,
+      ),
+      ),
+
+      );
     }
   }
 
@@ -64,8 +72,9 @@ class _LoginState extends State<Login> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(50),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,23 +175,7 @@ class _LoginState extends State<Login> {
                   ),
 
                   const SizedBox(width: 40),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      alignment: AlignmentDirectional.bottomEnd,
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/forgot-password");
-                    },
-                    child: Text(
-                      "Forgot password?",
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.primaryColor,
-                      ),
-                    ),
-                  ),
+
                 ],
               ),
               const SizedBox(height: 5),
@@ -201,12 +194,37 @@ class _LoginState extends State<Login> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
-                AppLocalizations.of(context)!.password,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodyMedium?.color,
-                ),
+
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.password,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/forgot-password");
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.forgotpassword,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.green,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 5),
 
               TextField(

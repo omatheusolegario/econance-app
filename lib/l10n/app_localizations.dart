@@ -191,6 +191,24 @@ abstract class AppLocalizations {
   /// **'•••••••••'**
   String get passwordinput;
 
+  /// No description provided for @forgotpassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotpassword;
+
+  /// No description provided for @snackloginSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Login was successful!'**
+  String get snackloginSuccess;
+
+  /// No description provided for @snackloginError.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get snackloginError;
+
   /// No description provided for @emailverification.
   ///
   /// In en, this message translates to:
