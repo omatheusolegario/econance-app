@@ -13,7 +13,33 @@ final ThemeData lightTheme = ThemeData(
     const TextTheme(
       bodyLarge: TextStyle(color: Colors.black, fontSize: 24),
       bodyMedium: TextStyle(color: Colors.black87, fontSize: 14),
+      labelSmall: TextStyle(color: Colors.black87, fontSize: 12),
       labelMedium: TextStyle(color: Colors.white70, fontSize: 14),
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+    labelStyle: TextStyle(color: Color(0xFF9E9E9E)),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.grey, width: 5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.grey, width: 3),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.green, width: 5),
+    ),
+  ),
+
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF67D191),
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      padding: const EdgeInsets.symmetric(vertical: 14),
     ),
   ),
 );
@@ -31,6 +57,30 @@ final ThemeData darkTheme = ThemeData(
       bodyLarge: TextStyle(color: Colors.white, fontSize: 24),
       bodyMedium: TextStyle(color: Colors.white70, fontSize: 14),
       labelMedium: TextStyle(color: Colors.black87, fontSize: 14),
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    hintStyle: TextStyle(color: Color(0xFF9E9E9E), fontSize: 15),
+    labelStyle: TextStyle(color: Color(0xFF9E9E9E),),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.grey, width: 5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.grey, width: 3),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: Colors.green, width: 5),
+    ),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF67D191),
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      padding: const EdgeInsets.symmetric(vertical: 14),
     ),
   ),
 );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'register_verification.dart';
+import 'theme_manager.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -48,17 +50,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   @override Widget build(BuildContext context){
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Register')),
-      body: Padding(padding: const EdgeInsets.all(16.0),
+      body: Padding(padding: const EdgeInsets.all(55),
         child: Column(
           children:[
-            TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'),),
-            TextField(controller: _passwordController, decoration: const InputDecoration(labelText: 'Password'), obscureText: true,),
+
+            TextField(controller: _emailController, decoration: InputDecoration(hintText: "someone@gmail.com"),),
+            const SizedBox(height: 10),
+            TextField(controller: _passwordController),
             const SizedBox(height: 20),
             _isLoading
                 ? const CircularProgressIndicator()
-                : ElevatedButton(onPressed: register, child: const Text('Register'),),
+                : SizedBox(width: double.infinity, child: ElevatedButton(onPressed: register,child: const Text('Register'),),),
           ],
         )
       )
