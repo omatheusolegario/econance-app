@@ -10,6 +10,7 @@ import 'theme.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'forgot_password.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +55,7 @@ class EconanceApp extends StatelessWidget {
         "/": (context) => const WelcomePage(),
         "/login": (context) => const Login(),
         "/register": (context) => const RegistrationPage(),
+        "/forgot-password": (context) => const ForgotPasswordPage(),
       },
 
 
