@@ -48,7 +48,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Forgot Password")),
-      body: Padding(padding: EdgeInsets.all(50),
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(50),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,17 +63,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
             const SizedBox(height: 7),
             Text(
-             "Recover access to your account",
+              "Recover access to your account",
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.textTheme.bodyMedium?.color,
               ),
             ),
             const SizedBox(height: 150),
-            Text("Enter your email and we'll send you a link to reset your password",
-            style: theme.textTheme.bodyMedium),
+            Text(
+              "Enter your email and we'll send you a link to reset your password",
+              style: theme.textTheme.bodyMedium,
+            ),
             const SizedBox(height: 10),
             TextField(
-              style:  theme.textTheme.bodyMedium,
+              style: theme.textTheme.bodyMedium,
               controller: _emailController,
               decoration: const InputDecoration(hintText: "someone@gmail.com"),
               keyboardType: TextInputType.emailAddress,
@@ -79,8 +83,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             const SizedBox(height: 40),
             _isLoading
                 ? const CircularProgressIndicator()
-                : SizedBox(width: double.infinity, child: ElevatedButton(onPressed: _resetPassword, child: Text("Send reset link"))),
-
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _resetPassword,
+                      child: Text("Send reset link"),
+                    ),
+                  ),
           ],
         ),
       ),

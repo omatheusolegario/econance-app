@@ -57,6 +57,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordinput => '•••••••••';
 
   @override
+  String get forgotpassword => 'Forgot password?';
+
+  @override
+  String get snackloginSuccess => 'Login was successful!';
+
+  @override
+  String get snackloginError => 'Login failed';
+
+  @override
   String get emailverification => 'A verification email has been sent. Please check your email';
 
   @override

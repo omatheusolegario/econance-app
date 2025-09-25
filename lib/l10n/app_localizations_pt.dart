@@ -57,6 +57,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get passwordinput => '•••••••••';
 
   @override
+  String get forgotpassword => 'Esqueceu sua senha?';
+
+  @override
+  String get snackloginSuccess => 'O login foi realizado com sucesso!';
+
+  @override
+  String get snackloginError => 'O login falhou';
+
+  @override
   String get emailverification => 'Um email de verificação foi enviado. Por favor cheque seu email.';
 
   @override
