@@ -115,7 +115,7 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 50),
+                  const SizedBox(width: 20),
                   TextButton(
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -143,7 +143,7 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 30),
+                  const SizedBox(width: 5),
                   IconButton(
                     icon: Icon(
                       themeManager.isDark ? Icons.dark_mode : Icons.light_mode,
@@ -165,7 +165,7 @@ class _LoginState extends State<Login> {
                     ),
                   ),
 
-                  const SizedBox(width: 80),
+                  const SizedBox(width: 40),
                   TextButton(
                     style: TextButton.styleFrom(
                       alignment: AlignmentDirectional.bottomEnd,

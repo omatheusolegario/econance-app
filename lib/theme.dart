@@ -17,8 +17,10 @@ final ThemeData lightTheme = ThemeData(
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
+    isDense: true,
     hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
     labelStyle: TextStyle(color: Color(0xFF9E9E9E)),
+    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 12),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: Colors.grey, width: 5),
