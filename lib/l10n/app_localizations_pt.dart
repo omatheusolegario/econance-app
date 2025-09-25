@@ -55,4 +55,19 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get passwordinput => '•••••••••';
+
+  @override
+  String get emailverification => 'Um email de verificação foi enviado. Por favor cheque seu email.';
+
+  @override
+  String get iverified => 'Eu já verifiquei';
+
+  @override
+  String get resendverification => 'Reenviar email de verificação';
+
+  @override
+  String get notverified => 'O email não foi verificado ainda!';
+
+  @override
+  String get resendwarning => 'Email de verificação reenviado!';
 }

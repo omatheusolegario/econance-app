@@ -66,16 +66,10 @@ class _LoginState extends State<Login> {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(55),
+          padding: const EdgeInsets.all(50),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
-                icon: Icon(
-                  themeManager.isDark ? Icons.dark_mode : Icons.light_mode,
-                ),
-                onPressed: () => themeManager.toggleTheme(),
-              ),
               Text(
                 AppLocalizations.of(context)!.login,
                 style: theme.textTheme.headlineLarge?.copyWith(
@@ -90,11 +84,16 @@ class _LoginState extends State<Login> {
                   color: theme.textTheme.bodyMedium?.color,
                 ),
               ),
-              const SizedBox(height: 35),
+              const SizedBox(height: 50),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () {
                       clearText();
                       FocusScope.of(context).unfocus(); // Close keyboard
@@ -116,7 +115,13 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 20),
                   TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () {
                       clearText();
                       FocusScope.of(context).unfocus(); // Close keyboard
@@ -138,17 +143,47 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 5),
+                  IconButton(
+                    icon: Icon(
+                      themeManager.isDark ? Icons.dark_mode : Icons.light_mode,
+                    ),
+                    onPressed: () => themeManager.toggleTheme(),
+                  ),
                 ],
               ),
-              const SizedBox(height: 35),
+              const SizedBox(height: 40),
 
-              Text(
-                isEmailSelected
-                    ? AppLocalizations.of(context)!.emailaddress
-                    : AppLocalizations.of(context)!.phonenumber,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodyMedium?.color,
-                ),
+              Row(
+                children: [
+                  Text(
+                    isEmailSelected
+                        ? AppLocalizations.of(context)!.emailaddress
+                        : AppLocalizations.of(context)!.phonenumber,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                  ),
+
+                  const SizedBox(width: 40),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      alignment: AlignmentDirectional.bottomEnd,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/forgot-password");
+                    },
+                    child: Text(
+                      "Forgot password?",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 5),
 
@@ -163,7 +198,6 @@ class _LoginState extends State<Login> {
                   hintText: isEmailSelected
                       ? AppLocalizations.of(context)!.emailinput
                       : AppLocalizations.of(context)!.phoneinput,
-
                 ),
               ),
               const SizedBox(height: 20),
@@ -198,7 +232,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
 
               SizedBox(
                 width: double.infinity,
@@ -212,9 +246,7 @@ class _LoginState extends State<Login> {
                   },
                   child: Text(
                     AppLocalizations.of(context)!.login,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelMedium,
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
               ),

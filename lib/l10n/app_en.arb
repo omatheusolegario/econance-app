@@ -14,5 +14,11 @@
   "phoneinput": "Enter your phone number",
   "templateemail": "example@gmail.com",
   "password": "Password",
-  "passwordinput": "•••••••••"
+  "passwordinput": "•••••••••",
+
+  "emailverification": "A verification email has been sent. Please check your email",
+  "iverified": "I have verified",
+  "resendverification": "Resend verification email",
+  "notverified": "Email not verified yet!",
+  "resendwarning": "Verification email resent!"
 }
