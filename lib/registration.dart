@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
 import 'register_verification.dart';
 import 'theme_manager.dart';
 
@@ -17,6 +18,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   Future<void> register() async {
     setState(() {
@@ -31,7 +33,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
       await userCredential.user?.sendEmailVerification();
 
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => VerificationPage(user: userCredential.user!)));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VerificationPage(user: userCredential.user!),
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       String message = 'An error ocurred';
       if (e.code == 'weak-password') {
@@ -49,26 +56,73 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
   }
 
-  @override Widget build(BuildContext context){
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Register')),
-      body: Padding(padding: const EdgeInsets.all(55),
+      body: Padding(
+        padding: const EdgeInsets.all(55),
         child: Column(
-          children:[
-
-            TextField(controller: _emailController, decoration: InputDecoration(hintText: "someone@gmail.com"),),
-            const SizedBox(height: 10),
-            TextField(controller: _passwordController),
-            const SizedBox(height: 20),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.createAccount,
+              style: theme.textTheme.headlineLarge?.copyWith(
+                color: theme.textTheme.bodyLarge?.color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 50),
+            Text(
+              AppLocalizations.of(context)!.emailaddress,
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 7),
+            TextField(
+              style:  theme.textTheme.bodyMedium,
+              controller: _emailController,
+              decoration: InputDecoration(hintText: "someone@gmail.com"),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              AppLocalizations.of(context)!.password,
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 7),
+            TextField(
+              style:  theme.textTheme.bodyMedium,
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.passwordinput,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
             _isLoading
                 ? const CircularProgressIndicator()
-                : SizedBox(width: double.infinity, child: ElevatedButton(onPressed: register,child: const Text('Register'),),),
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: register,
+                      child: const Text('Register'),
+                    ),
+                  ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
-
 }

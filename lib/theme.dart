@@ -12,8 +12,7 @@ final ThemeData lightTheme = ThemeData(
   textTheme: GoogleFonts.interTextTheme(
     const TextTheme(
       bodyLarge: TextStyle(color: Colors.black, fontSize: 24),
-      bodyMedium: TextStyle(color: Colors.black87, fontSize: 14),
-      labelSmall: TextStyle(color: Colors.black87, fontSize: 12),
+      bodyMedium: TextStyle(color: Colors.black, fontSize: 14),
       labelMedium: TextStyle(color: Colors.white70, fontSize: 14),
     ),
   ),
@@ -55,13 +54,15 @@ final ThemeData darkTheme = ThemeData(
   textTheme: GoogleFonts.interTextTheme(
     const TextTheme(
       bodyLarge: TextStyle(color: Colors.white, fontSize: 24),
-      bodyMedium: TextStyle(color: Colors.white70, fontSize: 14),
+      bodyMedium: TextStyle(color: Colors.white, fontSize: 14),
       labelMedium: TextStyle(color: Colors.black87, fontSize: 14),
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
-    hintStyle: TextStyle(color: Color(0xFF9E9E9E), fontSize: 15),
-    labelStyle: TextStyle(color: Color(0xFF9E9E9E),),
+    isDense: true,
+    hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+    labelStyle: TextStyle(color: Color(0xFF9E9E9E)),
+    contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 12),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: Colors.grey, width: 5),

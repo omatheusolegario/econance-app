@@ -190,6 +190,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'•••••••••'**
   String get passwordinput;
+
+  /// No description provided for @emailverification.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification email has been sent. Please check your email'**
+  String get emailverification;
+
+  /// No description provided for @iverified.
+  ///
+  /// In en, this message translates to:
+  /// **'I have verified'**
+  String get iverified;
+
+  /// No description provided for @resendverification.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend verification email'**
+  String get resendverification;
+
+  /// No description provided for @notverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not verified yet!'**
+  String get notverified;
+
+  /// No description provided for @resendwarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email resent!'**
+  String get resendwarning;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

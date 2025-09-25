@@ -55,4 +55,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordinput => '•••••••••';
+
+  @override
+  String get emailverification => 'A verification email has been sent. Please check your email';
+
+  @override
+  String get iverified => 'I have verified';
+
+  @override
+  String get resendverification => 'Resend verification email';
+
+  @override
+  String get notverified => 'Email not verified yet!';
+
+  @override
+  String get resendwarning => 'Verification email resent!';
 }
