@@ -48,7 +48,7 @@ class _LoginState extends State<Login> {
           const SnackBar(content: Text('Login realizado com sucesso!')),
         );
 
-        Navigator.pushReplacementNamed(context, '/');
+        Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(

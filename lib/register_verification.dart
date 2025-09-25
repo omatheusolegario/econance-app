@@ -1,9 +1,6 @@
-import 'package:econance/login.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'l10n/app_localizations.dart';
-import 'theme_manager.dart';
-import 'package:provider/provider.dart';
 
 class VerificationPage extends StatefulWidget {
   final User user;
@@ -25,10 +22,8 @@ class _VerificationPageState extends State<VerificationPage> {
         _isVerified = true;
       });
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const Login()),
-      );
+      Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+
     } else {
       ScaffoldMessenger.of(
         context,
