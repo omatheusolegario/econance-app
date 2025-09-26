@@ -79,4 +79,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get resendwarning => 'Email de verificação reenviado!';
+
+  @override
+  String get fullname => 'Nome completo';
 }

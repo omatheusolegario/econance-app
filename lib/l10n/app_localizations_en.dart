@@ -79,4 +79,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resendwarning => 'Verification email resent!';
+
+  @override
+  String get fullname => 'Full name';
 }

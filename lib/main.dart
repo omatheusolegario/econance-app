@@ -1,3 +1,6 @@
+import 'package:econance/add_category.dart';
+import 'package:econance/add_expense.dart';
+import 'package:econance/add_revenue.dart';
 import 'package:econance/l10n/app_localizations.dart';
 import 'package:econance/registration.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'forgot_password.dart';
 import 'home.dart';
+import 'revenues_expenses..dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,9 +61,12 @@ class EconanceApp extends StatelessWidget {
         "/register": (context) => const RegistrationPage(),
         "/forgot-password": (context) => const ForgotPasswordPage(),
         "/home": (context) => const HomePage(),
+        "/revenues-expenses": (context) => const RevenuesExpensesPage(),
+        "/add-revenue": (context) => const AddRevenuePage(),
+        "/add-expense": (context) => const AddExpensePage(),
+        "/add-category": (context) => const AddCategoryPage(),
       },
       home: const AuthWrapper(),
-
     );
   }
 }

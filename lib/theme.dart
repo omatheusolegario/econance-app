@@ -7,7 +7,7 @@ final ThemeData lightTheme = ThemeData(
   scaffoldBackgroundColor: Colors.white,
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.white,
-    foregroundColor: Colors.white,
+    foregroundColor: Colors.black,
   ),
   textTheme: GoogleFonts.interTextTheme(
     const TextTheme(
@@ -51,7 +51,7 @@ final ThemeData darkTheme = ThemeData(
   scaffoldBackgroundColor: const Color(0xFF1E1E1E),
   appBarTheme: const AppBarTheme(
     backgroundColor: Color(0xFF1E1E1E),
-    foregroundColor: Color(0xFF1E1E1E),
+    foregroundColor: Colors.white,
   ),
   textTheme: GoogleFonts.interTextTheme(
     const TextTheme(
