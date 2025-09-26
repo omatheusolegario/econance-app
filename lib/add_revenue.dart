@@ -65,6 +65,7 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
               controller: _value,
               decoration: InputDecoration(hintText: "Ex: 409"),
             ),
+            const SizedBox(height: 15),
             Text(
               "Source",
               style: theme.textTheme.bodySmall,
