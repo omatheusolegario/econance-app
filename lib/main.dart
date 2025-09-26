@@ -1,3 +1,4 @@
+import 'package:econance/add_category.dart';
 import 'package:econance/add_expense.dart';
 import 'package:econance/add_revenue.dart';
 import 'package:econance/l10n/app_localizations.dart';
@@ -63,6 +64,7 @@ class EconanceApp extends StatelessWidget {
         "/revenues-expenses": (context) => const RevenuesExpensesPage(),
         "/add-revenue": (context) => const AddRevenuePage(),
         "/add-expense": (context) => const AddExpensePage(),
+        "/add-category": (context) => const AddCategoryPage(),
       },
       home: const AuthWrapper(),
     );

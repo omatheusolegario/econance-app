@@ -15,9 +15,9 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Revenues and Expenses")),
+      appBar: AppBar(),
       body: Padding(
-        padding: EdgeInsets.all(30.0),
+        padding: EdgeInsets.symmetric(vertical: 10,horizontal:30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

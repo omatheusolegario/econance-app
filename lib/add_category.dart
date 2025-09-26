@@ -1,37 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'l10n/app_localizations.dart';
 
-class AddRevenuePage extends StatefulWidget {
-  const AddRevenuePage({super.key});
+class AddCategoryPage extends StatefulWidget {
+  const AddCategoryPage({super.key});
 
   @override
-  State<AddRevenuePage> createState() => _AddRevenuePageState();
+  State<AddCategoryPage> createState() => _AddCategoryPageState();
 }
 
-class _AddRevenuePageState extends State<AddRevenuePage> {
-  final _value = TextEditingController();
-  final _source = TextEditingController();
-  final _categoryId = TextEditingController();
-  final _note = TextEditingController();
+class _AddCategoryPageState extends State<AddCategoryPage> {
+  final _nameController = TextEditingController();
 
-  Future<void> addRevenue() async{
+  Future<void> addCategory() async{
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     await FirebaseFirestore.instance.collection('users').doc(uid).collection('categories').add({
-      'type': 'revenue',
-      'value': _value.text.trim(),
-      'source': _source.text.trim(),
-      'categoryId': _categoryId.text.trim(),
-      'note': _note.text.trim(),
-      'date': DateTime.now(),
+      'name': _nameController.text.trim(),
       'createdAt': FieldValue.serverTimestamp()
     });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Revenue added")));
-    _value.clear();
-    _source.clear();
-    _categoryId.clear();
-    _note.clear();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Category added")));
+    _nameController.clear();
   }
 
   @override
@@ -48,7 +38,7 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Add new Revenue",
+              "Add new Category",
               style: theme.textTheme.headlineLarge?.copyWith(
                 color: theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.bold,
@@ -56,30 +46,20 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
             ),
             const SizedBox(height: 70),
             Text(
-              "Value",
+              "Category name",
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 7),
             TextField(
               style:  theme.textTheme.bodyMedium,
-              controller: _value,
-              decoration: InputDecoration(hintText: "Ex: 409"),
-            ),
-            Text(
-              "Source",
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 7),
-            TextField(
-              style:  theme.textTheme.bodyMedium,
-              controller: _source,
-              decoration: InputDecoration(hintText: "Ex: Salary"),
+              controller: _nameController,
+              decoration: InputDecoration(hintText: "Ex: Food"),
             ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: addRevenue,
+                onPressed: addCategory,
                 child: const Text('Add'),
               ),
             ),

@@ -80,77 +80,81 @@ class _RegistrationPageState extends State<RegistrationPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
-      body: Padding(
-        padding: const EdgeInsets.all(55),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context)!.createAccount,
-              style: theme.textTheme.headlineLarge?.copyWith(
-                color: theme.textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 50),
-            Text(
-              AppLocalizations.of(context)!.fullname,
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 7),
-            TextField(
-              style:  theme.textTheme.bodyMedium,
-              controller: _fullNameController,
-              decoration: InputDecoration(hintText: "Escreva seu nome completo"),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              AppLocalizations.of(context)!.emailaddress,
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 7),
-            TextField(
-              style:  theme.textTheme.bodyMedium,
-              controller: _emailController,
-              decoration: InputDecoration(hintText: "someone@gmail.com"),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              AppLocalizations.of(context)!.password,
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 7),
-            TextField(
-              style:  theme.textTheme.bodyMedium,
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.passwordinput,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
+      appBar: AppBar(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.createAccount,
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: theme.textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.bold,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
                 ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: register,
-                      child: const Text('Register'),
+                const SizedBox(height: 50),
+                Text(
+                  AppLocalizations.of(context)!.fullname,
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 7),
+                TextField(
+                  style:  theme.textTheme.bodyMedium,
+                  controller: _fullNameController,
+                  decoration: InputDecoration(hintText: "Escreva seu nome completo"),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  AppLocalizations.of(context)!.emailaddress,
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 7),
+                TextField(
+                  style:  theme.textTheme.bodyMedium,
+                  controller: _emailController,
+                  decoration: InputDecoration(hintText: "someone@gmail.com"),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  AppLocalizations.of(context)!.password,
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: 7),
+                TextField(
+                  style:  theme.textTheme.bodyMedium,
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.passwordinput,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
                   ),
-          ],
+                ),
+                const SizedBox(height: 40),
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: register,
+                          child: const Text('Register'),
+                        ),
+                      ),
+              ],
+            ),
+          ),
         ),
       ),
     );

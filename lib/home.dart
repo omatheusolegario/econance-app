@@ -36,12 +36,22 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 8),
           Text(label, style: theme.textTheme.bodyMedium),
         ],
+
       );
     }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () => logout(context),
+            icon: Icon(Icons.logout),
+          ),
 
+        ],
+        title: const Text("Home"),
+      ),
       body: Stack(
         children: [
           SafeArea(
@@ -52,7 +62,10 @@ class _HomePageState extends State<HomePage> {
                   const Text(
                     "Você está na home, não se assuste, se quiser sair tem que limpar o cache ou apertar o botao de voltar Kkkkk",
                   ),
+                  ElevatedButton(onPressed: () => Navigator.pushNamed(context, "/revenues-expenses"), child: Text("Revenues-expenses")),
+                  ElevatedButton(onPressed: () => Navigator.pushNamed(context, "/add-category"), child: Text("Category")),
                   const SizedBox(height: 120),
+
                 ],
               ),
             ),
@@ -85,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                           : Icons.keyboard_arrow_up,
                       color: theme.primaryColor,
                     ),
-                    onPressed: (){
+                    onPressed: () {
                       setState(() => isExpanded = !isExpanded);
                     },
                   ),
@@ -112,49 +125,57 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Icon(Icons.dashboard, color: theme.primaryColor),
                         Icon(Icons.qr_code, color: theme.primaryColor),
-                        Icon(Icons.add_circle, size: 36, color: theme.primaryColor),
+                        Icon(
+                          Icons.add_circle,
+                          size: 36,
+                          color: theme.primaryColor,
+                        ),
                         Icon(Icons.show_chart, color: theme.primaryColor),
                       ],
                     ),
                   if (isExpanded)
-                    Expanded(child: GridView.count(
-                      crossAxisCount: 2,
-                      padding: const EdgeInsets.all(16),
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
+                    Expanded(
+                      child: GridView.count(
+                        crossAxisCount: 2,
+                        padding: const EdgeInsets.all(16),
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        children: [
+                          _buildMenuItem(Icons.add, "Manage Revenue"),
+                          _buildMenuItem(Icons.dashboard, "Dashboard"),
+                          _buildMenuItem(Icons.qr_code, "Scan Bill"),
+                          _buildMenuItem(Icons.show_chart, "Investments"),
+                          _buildMenuItem(Icons.list, "Transactions"),
+                          _buildMenuItem(Icons.settings, "Settings"),
+                        ],
+                      ),
+                    )
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildMenuItem(Icons.add, "Manage Revenue"),
-                        _buildMenuItem(Icons.dashboard, "Dashboard"),
-                        _buildMenuItem(Icons.qr_code, "Scan Bill"),
-                        _buildMenuItem(Icons.show_chart, "Investments"),
-                        _buildMenuItem(Icons.list, "Transactions"),
-                        _buildMenuItem(Icons.settings, "Settings"),
+                        Icon(
+                          Icons.dashboard,
+                          color: theme.scaffoldBackgroundColor,
+                        ),
+                        Icon(
+                          Icons.qr_code,
+                          color: theme.scaffoldBackgroundColor,
+                        ),
+                        Icon(
+                          Icons.add_circle,
+                          size: 36,
+                          color: theme.scaffoldBackgroundColor,
+                        ),
+                        Icon(
+                          Icons.show_chart,
+                          color: theme.scaffoldBackgroundColor,
+                        ),
                       ],
                     ),
-                    )
-                    else
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Icon(Icons.dashboard, color: theme.scaffoldBackgroundColor),
-                          Icon(Icons.qr_code, color: theme.scaffoldBackgroundColor),
-                          Icon(Icons.add_circle, size: 36, color: theme.scaffoldBackgroundColor),
-                          Icon(Icons.show_chart, color: theme.scaffoldBackgroundColor),
-                        ],
-                      )
-
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-      appBar: AppBar(
-        title: const Text("Home"),
-        actions: [
-          IconButton(
-            onPressed: () => logout(context),
-            icon: Icon(Icons.logout),
           ),
         ],
       ),
