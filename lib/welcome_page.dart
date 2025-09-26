@@ -28,7 +28,7 @@ class _CarrouselPageState extends State<WelcomePage> {
     return Scaffold(
       backgroundColor: Theme.of(
         context,
-      ).scaffoldBackgroundColor, // dark background
+      ).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -36,7 +36,6 @@ class _CarrouselPageState extends State<WelcomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Carousel
                 CarouselSlider(
                   options: CarouselOptions(
                     height: 220,
@@ -61,7 +60,6 @@ class _CarrouselPageState extends State<WelcomePage> {
 
                 const SizedBox(height: 40),
 
-                // Title
                 RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
@@ -74,7 +72,7 @@ class _CarrouselPageState extends State<WelcomePage> {
                       TextSpan(
                         text: "€",
                         style: TextStyle(
-                          color: Theme.of(context).primaryColor, // green accent
+                          color: Theme.of(context).primaryColor,
                           fontFamily: Theme.of(
                             context,
                           ).textTheme.bodyMedium!.fontFamily,
@@ -88,7 +86,6 @@ class _CarrouselPageState extends State<WelcomePage> {
 
                 const SizedBox(height: 10),
 
-                // Subtitle
                 Text(
                   subtitles[currentIndex],
                   textAlign: TextAlign.center,
@@ -97,7 +94,6 @@ class _CarrouselPageState extends State<WelcomePage> {
 
                 const SizedBox(height: 30),
 
-                // Page indicator (3 dots)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -111,7 +107,6 @@ class _CarrouselPageState extends State<WelcomePage> {
 
                 const SizedBox(height: 40),
 
-                // Login button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -129,7 +124,6 @@ class _CarrouselPageState extends State<WelcomePage> {
 
                 const SizedBox(height: 20),
 
-                // Create account
                 TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, "/register");

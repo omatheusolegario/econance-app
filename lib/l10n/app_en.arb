@@ -23,5 +23,6 @@
   "iverified": "I have verified",
   "resendverification": "Resend verification email",
   "notverified": "Email not verified yet!",
-  "resendwarning": "Verification email resent!"
+  "resendwarning": "Verification email resent!",
+  "fullname": "Full name"
 }

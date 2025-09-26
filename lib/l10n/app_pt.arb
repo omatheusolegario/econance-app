@@ -23,5 +23,6 @@
   "iverified": "Eu já verifiquei",
   "resendverification": "Reenviar email de verificação",
   "notverified": "O email não foi verificado ainda!",
-  "resendwarning": "Email de verificação reenviado!"
+  "resendwarning": "Email de verificação reenviado!",
+  "fullname": "Nome completo"
 }

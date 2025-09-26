@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'l10n/app_localizations.dart';
 import 'register_verification.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -13,6 +14,7 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _fullNameController = TextEditingController();
   final _auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
@@ -28,6 +30,24 @@ class _RegistrationPageState extends State<RegistrationPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      String _uid = userCredential.user!.uid;
+      DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(_uid);
+      
+      await userDoc.set({
+          'personalInfo':{
+            'fullName': _fullNameController.text.trim(),
+            'createdAt': FieldValue.serverTimestamp(),
+          },
+      });
+      await userDoc.collection('expenses').doc('init').set({'init': true});
+      await userDoc.collection('receipts').doc('init').set({'init': true});
+      await userDoc.collection('categories').doc('init').set({'init': true});
+
+      await Future.wait([
+        userDoc.collection('expenses').doc('init').delete(),
+        userDoc.collection('receipts').doc('init').delete(),
+        userDoc.collection('categories').doc('init').delete()
+      ]);
 
       await userCredential.user?.sendEmailVerification();
 
@@ -37,6 +57,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           builder: (_) => VerificationPage(user: userCredential.user!),
         ),
       );
+
     } on FirebaseAuthException catch (e) {
       String message = 'An error ocurred';
       if (e.code == 'weak-password') {
@@ -73,6 +94,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
               ),
             ),
             const SizedBox(height: 50),
+            Text(
+              AppLocalizations.of(context)!.fullname,
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 7),
+            TextField(
+              style:  theme.textTheme.bodyMedium,
+              controller: _fullNameController,
+              decoration: InputDecoration(hintText: "Escreva seu nome completo"),
+            ),
+            const SizedBox(height: 18),
             Text(
               AppLocalizations.of(context)!.emailaddress,
               style: theme.textTheme.bodySmall,
