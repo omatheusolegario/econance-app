@@ -11,16 +11,25 @@ class AddCategoryPage extends StatefulWidget {
 }
 
 class _AddCategoryPageState extends State<AddCategoryPage> {
-  final _nameController = TextEditingController();
 
-  Future<void> addCategory() async{
+  final _nameController = TextEditingController();
+  String? type;
+
+  Future<void> addCategory() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance.collection('users').doc(uid).collection('categories').add({
-      'name': _nameController.text.trim(),
-      'createdAt': FieldValue.serverTimestamp()
-    });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Category added")));
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('categories')
+        .add({
+          'name': _nameController.text.trim(),
+          'type': type,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("Category added")));
     _nameController.clear();
   }
 
@@ -29,11 +38,9 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(foregroundColor: Colors.white),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical:0.0 ,horizontal:30.0),
+        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -45,15 +52,35 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
               ),
             ),
             const SizedBox(height: 70),
-            Text(
-              "Category name",
-              style: theme.textTheme.bodySmall,
-            ),
+            Text("Name", style: theme.textTheme.bodySmall),
             const SizedBox(height: 7),
             TextField(
-              style:  theme.textTheme.bodyMedium,
+              style: theme.textTheme.bodyMedium,
               controller: _nameController,
               decoration: InputDecoration(hintText: "Ex: Food"),
+            ),
+            const SizedBox(height: 15),
+            Text("Type", style: theme.textTheme.bodySmall),
+            const SizedBox(height: 7),
+            DropdownButtonFormField(
+              initialValue: type,
+              style: theme.textTheme.bodyMedium,
+              decoration: InputDecoration(hintText: "Select a category type"),
+              items: [
+                DropdownMenuItem(
+                  value: "expense",
+                  child: Text("Expense"),
+                ),
+                DropdownMenuItem(
+                  value: "revenue",
+                  child: Text("Revenue"),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  type = value;
+                });
+              },
             ),
             const SizedBox(height: 20),
             SizedBox(

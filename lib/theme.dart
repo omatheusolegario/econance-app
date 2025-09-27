@@ -11,7 +11,7 @@ final ThemeData lightTheme = ThemeData(
   ),
   textTheme: GoogleFonts.interTextTheme(
     const TextTheme(
-      bodyLarge: TextStyle(color: Colors.black, fontSize: 24),
+      bodyLarge: TextStyle(color: Colors.black, fontSize: 20),
       bodyMedium: TextStyle(color: Colors.black, fontSize: 14),
       labelMedium: TextStyle(color: Colors.white70, fontSize: 14),
     ),
@@ -55,7 +55,7 @@ final ThemeData darkTheme = ThemeData(
   ),
   textTheme: GoogleFonts.interTextTheme(
     const TextTheme(
-      bodyLarge: TextStyle(color: Colors.white, fontSize: 24),
+      bodyLarge: TextStyle(color: Colors.white, fontSize: 20),
       bodyMedium: TextStyle(color: Colors.white, fontSize: 14),
       labelMedium: TextStyle(color: Colors.black87, fontSize: 14),
     ),
