@@ -22,7 +22,7 @@ class _VerificationPageState extends State<VerificationPage> {
         _isVerified = true;
       });
 
-      Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
 
     } else {
       ScaffoldMessenger.of(

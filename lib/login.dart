@@ -52,7 +52,7 @@ class _LoginState extends State<Login> {
                 )
         );
 
-        Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(
