@@ -57,7 +57,7 @@ class DashboardCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.black45),
+            style: theme.textTheme.bodySmall?.copyWith(fontSize: 10,color: Colors.black45),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:econance/add_category.dart';
 import 'package:econance/add_expense.dart';
 import 'package:econance/add_revenue.dart';
 import 'package:econance/l10n/app_localizations.dart';
+import 'package:econance/main_screen.dart';
 import 'package:econance/registration.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -61,6 +62,7 @@ class EconanceApp extends StatelessWidget {
         "/register": (context) => const RegistrationPage(),
         "/forgot-password": (context) => const ForgotPasswordPage(),
         "/home": (context) => const HomePage(),
+        "/main": (context) => const MainScreen(),
         "/revenues-expenses": (context) => const RevenuesExpensesPage(),
         "/add-revenue": (context) => const AddRevenuePage(),
         "/add-expense": (context) => const AddExpensePage(),
@@ -80,7 +82,7 @@ class AuthWrapper extends StatelessWidget {
 
     if (user!=null){
       WidgetsBinding.instance.addPostFrameCallback((_){
-        Navigator.pushNamedAndRemoveUntil(context, '/home', (route)=>false);
+        Navigator.pushNamedAndRemoveUntil(context, '/main', (route)=>false);
       });
       return const Scaffold();
     }
