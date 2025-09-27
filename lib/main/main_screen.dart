@@ -1,4 +1,5 @@
 import 'package:econance/features/categories/add_category.dart';
+import 'package:econance/features/categories/categories.dart';
 import 'package:econance/features/transactions/revenues_expenses..dart';
 import 'package:flutter/material.dart';
 import '../features/home/home.dart';
@@ -18,6 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     const HomePage(),
     const RevenuesExpensesPage(),
     const AddCategoryPage(),
+    const CategoriesPage(),
   ];
 
   void _onTabTap(int index) {
@@ -113,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
                                   _buildMenuItem(
                                     Icons.sell,
                                     "Categories",
-                                    () => _onTabTap(2),
+                                    () => _onTabTap(3),
                                   ),
                                   _buildMenuItem(
                                     Icons.family_restroom,
