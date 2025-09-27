@@ -35,15 +35,26 @@ class _HomePageState extends State<HomePage> {
 
     final double bottomHeight = isExpanded ? 350 : 80;
 
-    Widget _buildMenuItem(IconData icon, String label) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        child: Row(
-          children: [
-            Icon(icon, color: theme.scaffoldBackgroundColor, size: 28),
-            const SizedBox(width: 18),
-            Text(label, style: theme.textTheme.bodyMedium),
-          ],
+    Widget _buildMenuItem(
+      IconData icon,
+      String label,
+      VoidCallback onTap,
+    ) {
+      return GestureDetector(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: theme.scaffoldBackgroundColor,
+                size: 28,
+              ),
+              const SizedBox(width: 18),
+              Text(label, style: theme.textTheme.bodyMedium),
+            ],
+          ),
         ),
       );
     }
@@ -107,25 +118,55 @@ class _HomePageState extends State<HomePage> {
                               constraints: BoxConstraints(
                                 minHeight: bottomHeight,
                               ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildMenuItem(
-                                  Icons.add,
-                                  "Manage Revenue / Expense",
-                                ),
-                                _buildMenuItem(Icons.dashboard, "Dashboard"),
-                                _buildMenuItem(
-                                  Icons.qr_code_scanner,
-                                  "Scan Bill",
-                                ),
-                                _buildMenuItem(Icons.sell, "Categories"),
-                                _buildMenuItem(Icons.family_restroom, "Family"),
-                                _buildMenuItem(Icons.settings, "Settings"),
-                              ],
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildMenuItem(
+                                    Icons.add,
+                                    "Manage Revenue / Expense",
+                                        () {
+                                      Navigator.pushNamed(context, "/revenues-expenses");
+                                    },
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.dashboard,
+                                    "Dashboard",
+                                        () {
+                                      Navigator.pushNamed(context, "/dashboard");
+                                    },
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.qr_code_scanner,
+                                    "Scan Bill",
+                                        () {
+                                      Navigator.pushNamed(context, "/scan-bill");
+                                    },
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.sell,
+                                    "Categories",
+                                        () {
+                                      Navigator.pushNamed(context, "/add-category");
+                                    },
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.family_restroom,
+                                    "Family",
+                                        () {
+                                      Navigator.pushNamed(context, "/family");
+                                    },
+                                  ),
+                                  _buildMenuItem(
+                                    Icons.settings,
+                                    "Settings",
+                                        () {
+                                      Navigator.pushNamed(context, "/config");
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           )
-                    )
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
