@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class WelcomePage extends StatefulWidget {

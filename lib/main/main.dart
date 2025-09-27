@@ -1,22 +1,22 @@
-import 'package:econance/add_category.dart';
-import 'package:econance/add_expense.dart';
-import 'package:econance/add_revenue.dart';
+import 'package:econance/features/categories/add_category.dart';
+import 'package:econance/features/transactions/add_expense.dart';
+import 'package:econance/features/transactions/add_revenue.dart';
 import 'package:econance/l10n/app_localizations.dart';
-import 'package:econance/main_screen.dart';
-import 'package:econance/registration.dart';
+import 'package:econance/main/main_screen.dart';
+import 'package:econance/auth/registration.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-import 'welcome_page.dart';
-import 'login.dart';
-import 'theme_manager.dart';
-import 'theme.dart';
+import '../onboarding/welcome_page.dart';
+import '../auth/login.dart';
+import '../theme/theme_manager.dart';
+import '../theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'forgot_password.dart';
-import 'home.dart';
-import 'revenues_expenses..dart';
+import '../auth/forgot_password.dart';
+import '../features/home/home.dart';
+import '../features/transactions/revenues_expenses..dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

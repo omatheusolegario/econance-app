@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'l10n/app_localizations.dart';
+import '../../l10n/app_localizations.dart';
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});

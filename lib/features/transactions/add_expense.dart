@@ -1,22 +1,24 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../categories/category_picker.dart';
 import 'package:intl/intl.dart';
-import 'category_picker.dart';
 
-class AddRevenuePage extends StatefulWidget {
-  const AddRevenuePage({super.key});
+class AddExpensePage extends StatefulWidget {
+  const AddExpensePage({super.key});
 
   @override
-  State<AddRevenuePage> createState() => _AddRevenuePageState();
+  State<AddExpensePage> createState() => _AddExpensePageState();
 }
 
-class _AddRevenuePageState extends State<AddRevenuePage> {
+class _AddExpensePageState extends State<AddExpensePage> {
   String? selectedCategoryId;
   String? selectedCategoryName;
 
   Future<void> _pickCategory(BuildContext context) async {
-    final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryPickerPage(type: "revenue")));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryPickerPage(type: "expense")));
 
     if (result != null){
       setState(() {
@@ -32,12 +34,11 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
   }
 
   final _value = TextEditingController();
-  final _source = TextEditingController();
   final _date = TextEditingController();
   final _note = TextEditingController();
   DateTime? _selectedDate;
 
-  Future<void> _pickDate() async {
+  Future<void> _pickDate() async{
     DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -53,29 +54,25 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
     }
   }
 
-  Future<void> addRevenue() async {
+  Future<void> addExpense() async{
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('revenues')
-        .add({
-          'type': 'revenue',
-          'value': double.tryParse(_value.text.trim()) ?? 0,
-          'source': selectedCategoryId,
-          'note': _note.text.trim(),
-          'date': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : null,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Revenue added")));
+    await FirebaseFirestore.instance.collection('users').doc(uid).collection('expenses').add({
+      'type': 'expense',
+      'value': double.tryParse(_value.text.trim()) ?? 0,
+      'categoryId': selectedCategoryId,
+      'note': _note.text.trim(),
+      'date': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : null,
+      'createdAt': FieldValue.serverTimestamp()
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Expense added")));
     _value.clear();
-    _source.clear();
-    _date.clear();
     _note.clear();
+    _date.clear();
+    selectedCategoryId = null;
+    selectedCategoryName = null;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -89,23 +86,37 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Add new Revenue",
+                "Add new Expense",
                 style: theme.textTheme.headlineLarge?.copyWith(
                   color: theme.textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 70),
-              Text("Value", style: theme.textTheme.bodySmall),
+              Text(
+                "Value",
+                style: theme.textTheme.bodySmall,
+              ),
               const SizedBox(height: 7),
               TextField(
-                style: theme.textTheme.bodyMedium,
+                style:  theme.textTheme.bodyMedium,
                 controller: _value,
                 decoration: InputDecoration(hintText: "Ex: 409"),
               ),
               const SizedBox(height: 15),
               Text(
-                "Source",
+                "Note",
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 7),
+              TextField(
+                style:  theme.textTheme.bodyMedium,
+                controller: _note,
+                decoration: InputDecoration(hintText: "Add any commentary you want"),
+              ),
+              const SizedBox(height: 15,),
+              Text(
+                "Category",
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 7,),
@@ -120,26 +131,19 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
                   borderRadius: (theme.inputDecorationTheme.enabledBorder as OutlineInputBorder?)?.borderRadius ?? BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  title: Text(selectedCategoryName ?? "Select Category", style: theme.textTheme.bodyMedium),
+                  title: Text(selectedCategoryName ?? "Select Category", style: theme.textTheme.bodyMedium,),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _pickCategory(context),
                 ),
               ),
-              const SizedBox(height: 15),
-              Text("Note", style: theme.textTheme.bodySmall),
-              const SizedBox(height: 7),
-              TextField(
-                style: theme.textTheme.bodyMedium,
-                controller: _note,
-                decoration: InputDecoration(
-                  hintText: "Add any commentary you want",
-                ),
+              const SizedBox(height: 15,),
+              Text(
+                "Date",
+                style: theme.textTheme.bodySmall,
               ),
-              const SizedBox(height: 15),
-              Text("Date", style: theme.textTheme.bodySmall),
               const SizedBox(height: 7),
               TextField(
-                style: theme.textTheme.bodyMedium,
+                style:  theme.textTheme.bodyMedium,
                 controller: _date,
                 readOnly: true,
                 onTap: _pickDate,
@@ -153,7 +157,7 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: addRevenue,
+                  onPressed: addExpense,
                   child: const Text('Add'),
                 ),
               ),

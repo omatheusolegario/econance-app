@@ -1,7 +1,7 @@
-import 'package:econance/add_category.dart';
-import 'package:econance/revenues_expenses..dart';
+import 'package:econance/features/categories/add_category.dart';
+import 'package:econance/features/transactions/revenues_expenses..dart';
 import 'package:flutter/material.dart';
-import 'home.dart';
+import '../features/home/home.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
