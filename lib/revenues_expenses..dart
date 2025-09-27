@@ -26,9 +26,6 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
         .collection('revenues')
         .get();
 
-    print("Expenses count: ${expensesSnap.docs.length}");
-    print("Revenues count: ${revenuesSnap.docs.length}");
-
     final expenses = expensesSnap.docs.map((doc) {
       final data = doc.data();
       data['id'] = doc.id;
@@ -49,7 +46,7 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
       final bd = (b['date'] as Timestamp).toDate();
       return bd.compareTo(ad);
     });
-    print("Merged count: ${all.length}");
+
     return all;
   }
 
