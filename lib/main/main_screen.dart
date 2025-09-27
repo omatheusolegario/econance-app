@@ -28,30 +28,90 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _openAddModal(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      context: context,
+      isScrollControlled: true,
+      clipBehavior: Clip.antiAlias,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.only(bottom: 30, left: 12, right: 12),
+        child: Container(
+        decoration: BoxDecoration(color: theme.primaryColor, borderRadius: BorderRadius.circular(25)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.black),
+                title: Text("Manage Revenue/Expense", style: theme.textTheme.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _onTabTap(1);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.dashboard, color: Colors.black),
+                title: Text("Dashboard", style: theme.textTheme.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _onTabTap(0);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.qr_code_scanner, color: Colors.black),
+                title: Text("Scan Bill", style: theme.textTheme.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _onTabTap(1);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.sell, color: Colors.black),
+                title: Text("Categories", style: theme.textTheme.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _onTabTap(3);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.family_restroom, color: Colors.black),
+                title: Text("Family", style: theme.textTheme.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _onTabTap(2);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings, color: Colors.black),
+                title: Text("Settings", style: theme.textTheme.bodyMedium),
+                onTap: () {
+                  Navigator.pop(context);
+                  _onTabTap(2);
+                },
+              ),
+            ],
+          ),
+      ),
+
+        ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final double bottomHeight = isExpanded ? 350 : 80;
-
-    Widget _buildMenuItem(
-      IconData icon,
-      String label,
-      GestureTapCallback onTap,
-    ) {
-      return InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: Row(
-            children: [
-              Icon(icon, color: theme.scaffoldBackgroundColor, size: 28),
-              const SizedBox(width: 18),
-              Text(label, style: theme.textTheme.bodyMedium),
-            ],
-          ),
-        ),
-      );
-    }
 
     Widget _buildNavButton(IconData icon, int index) {
       return InkWell(
@@ -60,107 +120,43 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    void _closeIfExpanded() {
-      if (isExpanded) {
-        setState(() => isExpanded = false);
-      }
-    }
+    return Scaffold(
+      body: _pages[_currentIndex],
 
-    return GestureDetector(
-      onTap: _closeIfExpanded,
-      behavior: HitTestBehavior.translucent,
-      child: Scaffold(
-        body: _pages[_currentIndex],
+      bottomNavigationBar: SafeArea(
+        child: GestureDetector(
+          onTap: () {},
+          behavior: HitTestBehavior.translucent,
+          child: AnimatedContainer(
+            margin: const EdgeInsets.only(bottom: 16, left: 12, right: 12),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            height: bottomHeight,
+            decoration: BoxDecoration(
+              color: theme.primaryColor,
+              borderRadius: BorderRadius.circular(31),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavButton(Icons.dashboard, 0),
+                _buildNavButton(Icons.qr_code_scanner, 1),
 
-        bottomNavigationBar: SafeArea(
-          child: GestureDetector(
-            onTap: () {},
-            behavior: HitTestBehavior.translucent,
-            child: AnimatedContainer(
-              margin: const EdgeInsets.only(bottom: 16, left: 12, right: 12),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              height: bottomHeight,
-              decoration: BoxDecoration(
-                color: theme.primaryColor,
-                borderRadius: BorderRadius.circular(31),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: isExpanded
-                        ? SingleChildScrollView(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: bottomHeight,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildMenuItem(
-                                    Icons.add,
-                                    "Manage Revenue / Expense",
-                                    () => _onTabTap(1),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.dashboard,
-                                    "Dashboard",
-                                    () => _onTabTap(0),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.qr_code_scanner,
-                                    "Scan Bill",
-                                    () => _onTabTap(1),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.sell,
-                                    "Categories",
-                                    () => _onTabTap(3),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.family_restroom,
-                                    "Family",
-                                    () => _onTabTap(1),
-                                  ),
-                                  _buildMenuItem(
-                                    Icons.settings,
-                                    "Settings",
-                                    () => _onTabTap(1),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildNavButton(Icons.dashboard, 0),
-                              _buildNavButton(Icons.qr_code_scanner, 1),
-
-                              GestureDetector(
-                                onTap: () =>
-                                    setState(() => isExpanded = !isExpanded),
-                                child: Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFF5CB37F),
-                                  ),
-                                  child: const Icon(
-                                    Icons.add,
-                                    color: Colors.white,
-                                    size: 30,
-                                  ),
-                                ),
-                              ),
-                              _buildNavButton(Icons.bar_chart_sharp, 1),
-                              _buildNavButton(Icons.pie_chart_sharp, 2),
-                            ],
-                          ),
+                GestureDetector(
+                  onTap: () => _openAddModal(context),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF5CB37F),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 30),
                   ),
-                ],
-              ),
+                ),
+                _buildNavButton(Icons.bar_chart_sharp, 1),
+                _buildNavButton(Icons.pie_chart_sharp, 2),
+              ],
             ),
           ),
         ),
