@@ -12,8 +12,9 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  bool _hideSensitive = false;
   int _currentIndex = 0;
-  bool isExpanded = false;
+
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -108,10 +109,16 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void _toggleHide(){
+    setState(() {
+      _hideSensitive = !_hideSensitive;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final double bottomHeight = isExpanded ? 350 : 80;
+    final double bottomHeight = 80;
 
     Widget _buildNavButton(IconData icon, int index) {
       return InkWell(
@@ -121,6 +128,19 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.primaryColor,
+        elevation: 0,
+        titleSpacing: 0,
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(onPressed: (){}, icon: const Icon(Icons.account_circle, size: 32, color: Colors.white)),
+            IconButton(onPressed: _toggleHide, icon: Icon(_hideSensitive ? Icons.visibility_off : Icons.visibility, color: Colors.white,))
+          ],
+        ),
+      ),
       body: _pages[_currentIndex],
 
       bottomNavigationBar: SafeArea(

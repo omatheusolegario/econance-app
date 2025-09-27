@@ -65,10 +65,9 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30.0),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

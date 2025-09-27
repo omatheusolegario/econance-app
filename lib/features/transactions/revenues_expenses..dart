@@ -81,9 +81,8 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30.0),
+        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

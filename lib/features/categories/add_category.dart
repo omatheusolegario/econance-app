@@ -38,9 +38,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(foregroundColor: Colors.white),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 30.0),
+        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -51,7 +50,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 70),
+            const SizedBox(height: 50),
             Text("Name", style: theme.textTheme.bodySmall),
             const SizedBox(height: 7),
             TextField(
@@ -82,7 +81,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 });
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
