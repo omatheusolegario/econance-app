@@ -16,6 +16,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   bool isEmailSelected = true;
   bool _obscurePassword = true;
+  bool _isLoading = false;
   final fieldText = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -28,14 +29,45 @@ class _LoginState extends State<Login> {
   void clearText() {
     fieldText.clear();
   }
+  Future<void> signInWithPhone() async {
+    setState(() => _isLoading = true);
 
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: fieldText.text.trim(),
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await FirebaseAuth.instance.signInWithCredential(credential);
+          Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.message ?? 'Falha na autenticação por telefone')),
+          );
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => VerificationPage(
+                phoneNumber: fieldText.text.trim(),
+                verificationId: verificationId,
+              ),
+            ),
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
   Future<void> signInWithEmail() async {
     try {
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
-            email: fieldText.text.trim(),
-            password: passwordController.text.trim(),
-          );
+        email: fieldText.text.trim(),
+        password: passwordController.text.trim(),
+      );
 
       final user = userCredential.user!;
       if (!user.emailVerified) {
@@ -45,11 +77,11 @@ class _LoginState extends State<Login> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
+            SnackBar(
+                content: Text(
                   AppLocalizations.of(context)!.snackloginSuccess,
-              )
                 )
+            )
         );
 
         Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
@@ -152,17 +184,10 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  IconButton(
-                    icon: Icon(
-                      themeManager.isDark ? Icons.dark_mode : Icons.light_mode,
-                    ),
-                    onPressed: () => themeManager.toggleTheme(),
-                  ),
+
                 ],
               ),
               const SizedBox(height: 40),
-
               Row(
                 children: [
                   Text(
@@ -182,9 +207,7 @@ class _LoginState extends State<Login> {
 
               TextField(
                 controller: fieldText,
-                keyboardType: isEmailSelected
-                    ? TextInputType.emailAddress
-                    : TextInputType.phone,
+                keyboardType: isEmailSelected ? TextInputType.emailAddress : TextInputType.phone,
                 inputFormatters: isEmailSelected ? [] : [phoneFormatter],
                 style: theme.textTheme.bodyMedium,
                 decoration: InputDecoration(
@@ -193,6 +216,7 @@ class _LoginState extends State<Login> {
                       : AppLocalizations.of(context)!.phoneinput,
                 ),
               ),
+
               const SizedBox(height: 20),
 
 
@@ -259,7 +283,7 @@ class _LoginState extends State<Login> {
                     if (isEmailSelected) {
                       signInWithEmail();
                     } else {
-                      //signInWithPhone();
+                      signInWithPhone();
                     }
                   },
                   child: Text(
