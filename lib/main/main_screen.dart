@@ -23,7 +23,6 @@ class _MainScreenState extends State<MainScreen> {
     const RevenuesExpensesPage(),
     const AddCategoryPage(),
     const CategoriesPage(),
-    const Config(),
   ];
 
   void _onTabTap(int index) {
