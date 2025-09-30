@@ -72,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
                 ListTile(
                   leading: const Icon(Icons.sell),
                   title: Text(
-                    "New Categorie",
+                    "New Category",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {
