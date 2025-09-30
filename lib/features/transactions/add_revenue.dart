@@ -81,10 +81,9 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30.0),
+          padding: EdgeInsets.symmetric(vertical: 25, horizontal: 30.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -95,13 +94,23 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 70),
+              const SizedBox(height: 30),
               Text("Value", style: theme.textTheme.bodySmall),
               const SizedBox(height: 7),
               TextField(
                 style: theme.textTheme.bodyMedium,
                 controller: _value,
                 decoration: InputDecoration(hintText: "Ex: 409"),
+              ),
+              const SizedBox(height: 15),
+              Text("Note", style: theme.textTheme.bodySmall),
+              const SizedBox(height: 7),
+              TextField(
+                style: theme.textTheme.bodyMedium,
+                controller: _note,
+                decoration: InputDecoration(
+                  hintText: "Add any commentary you want",
+                ),
               ),
               const SizedBox(height: 15),
               Text(
@@ -126,16 +135,6 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
                 ),
               ),
               const SizedBox(height: 15),
-              Text("Note", style: theme.textTheme.bodySmall),
-              const SizedBox(height: 7),
-              TextField(
-                style: theme.textTheme.bodyMedium,
-                controller: _note,
-                decoration: InputDecoration(
-                  hintText: "Add any commentary you want",
-                ),
-              ),
-              const SizedBox(height: 15),
               Text("Date", style: theme.textTheme.bodySmall),
               const SizedBox(height: 7),
               TextField(
@@ -149,7 +148,7 @@ class _AddRevenuePageState extends State<AddRevenuePage> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

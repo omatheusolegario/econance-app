@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../theme/theme_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../cards/home_card.dart';
+import '../graphs/widgets/revenue_line_chart.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -133,7 +132,7 @@ class _HomePageState extends State<HomePage> {
                                   title: "Investments",
                                   value: 'R\$${data['balance']}',
                                   subtitle: "+29% VS Last Month",
-                                  backgroundColor: Colors.green.shade100,
+                                  backgroundColor: Colors.green.shade500,
                                   icon: Icons.show_chart,
                                   iconColor: Colors.green.shade900,
                                 ),
@@ -145,6 +144,8 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
+                const SizedBox(height: 30,),
+                RevenueLineChart(),
               ],
             ),
           ),

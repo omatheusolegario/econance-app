@@ -25,10 +25,10 @@ class DashboardCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
+        color: backgroundColor ?? Colors.white10.withValues(alpha: .04),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -40,9 +40,7 @@ class DashboardCard extends StatelessWidget {
               if (icon != null) const SizedBox(width: 8),
               Text(
                 title,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: iconColor ?? Colors.black54,
-                ),
+                style: theme.textTheme.bodySmall
               ),
             ],
           ),
@@ -50,14 +48,13 @@ class DashboardCard extends StatelessWidget {
           Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
+               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(fontSize: 10,color: Colors.black45),
+            style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
           ),
         ],
       ),
