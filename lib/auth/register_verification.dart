@@ -55,10 +55,6 @@ class _VerificationPageState extends State<VerificationPage> {
         smsCode: otpController.text.trim(),
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
-
-      setState(() {
-        _isVerified = true;
-      });
       Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(
