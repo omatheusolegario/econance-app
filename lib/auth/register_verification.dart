@@ -11,17 +11,12 @@ class VerificationPage extends StatefulWidget {
 }
 
 class _VerificationPageState extends State<VerificationPage> {
-  bool _isVerified = false;
   bool _isLoading = false;
 
   Future<void> checkEmailVerified() async {
     await widget.user.reload();
     final user = FirebaseAuth.instance.currentUser!;
     if (user.emailVerified) {
-      setState(() {
-        _isVerified = true;
-      });
-
       Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
 
     } else {

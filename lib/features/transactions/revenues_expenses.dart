@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../l10n/app_localizations.dart';
+
 
 class RevenuesExpensesPage extends StatefulWidget {
   const RevenuesExpensesPage({super.key});
@@ -82,10 +82,28 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
+        padding: EdgeInsets.symmetric(vertical: 50, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              mainAxisAlignment:  MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2)
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ),
             Text(
               "Here, you will manage",
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -100,34 +118,7 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, "/add-revenue"),
-                    icon: const Icon(Icons.add),
-                    label: Text("Add Revenue"),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, "/add-expense"),
-                    icon: const Icon(Icons.add),
-                    label: Text("Add Expense"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFDD4B4B),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 20),
-
             Expanded(
               child: FutureBuilder<List<Map<String, dynamic>>>(
                 future: _fetchTransactions(),

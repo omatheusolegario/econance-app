@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../l10n/app_localizations.dart';
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});
@@ -39,7 +38,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30.0),
+        padding: EdgeInsets.symmetric(vertical: 25, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -50,7 +49,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 30),
             Text("Name", style: theme.textTheme.bodySmall),
             const SizedBox(height: 7),
             TextField(

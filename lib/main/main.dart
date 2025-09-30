@@ -17,7 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import '../auth/forgot_password.dart';
 import '../features/home/home.dart';
-import '../features/transactions/revenues_expenses..dart';
+import '../features/transactions/revenues_expenses.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

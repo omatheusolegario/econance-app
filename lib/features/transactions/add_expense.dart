@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -78,10 +76,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30.0),
+          padding: EdgeInsets.symmetric(vertical: 25, horizontal: 30.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -92,7 +89,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 70),
+              const SizedBox(height: 30),
               Text(
                 "Value",
                 style: theme.textTheme.bodySmall,
@@ -153,7 +150,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
