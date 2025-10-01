@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../theme/theme_manager.dart';
 import '../l10n/app_localizations.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -99,7 +97,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    final themeManager = Provider.of<ThemeManager>(context);
     final theme = Theme.of(context);
 
     return Scaffold(

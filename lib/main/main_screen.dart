@@ -5,8 +5,7 @@ import 'package:econance/features/categories/add_category.dart';
 import 'package:econance/features/categories/categories.dart';
 import 'package:econance/features/config/config.dart';
 import 'package:econance/features/ocr/pages/ocr_page.dart';
-import 'package:econance/features/transactions/add_expense.dart';
-import 'package:econance/features/transactions/add_revenue.dart';
+import 'package:econance/features/transactions/add_transaction.dart';
 import 'package:econance/features/transactions/revenues_expenses.dart';
 import 'package:flutter/material.dart';
 import '../features/home/home.dart';
@@ -29,8 +28,8 @@ class _MainScreenState extends State<MainScreen> {
     const AddCategoryPage(),
     const CategoriesPage(),
     const Config(),
-    const AddRevenuePage(),
-    const AddExpensePage(),
+    const AddTransactionPage(type: "revenue"),
+    const AddTransactionPage(type: "expense"),
     const GraphsPage(),
     const OcrPage(),
     const AiInsightsPage()
@@ -121,7 +120,7 @@ class _MainScreenState extends State<MainScreen> {
     final theme = Theme.of(context);
     const double bottomHeight = 80;
 
-    Widget _buildNavButton(IconData icon, int index) {
+    Widget buildNavButton(IconData icon, int index) {
       final bool isSelected = _currentIndex == index;
       return InkWell(
         onTap: () => _onTabTap(index),
@@ -163,9 +162,9 @@ class _MainScreenState extends State<MainScreen> {
                     backgroundColor: Colors.transparent,
                     isScrollControlled: true,
                     builder: (context) {
-                      return FractionallySizedBox(
+                      return const FractionallySizedBox(
                         heightFactor: 0.8,
-                        child: const AccountCard(),
+                        child: AccountCard(),
                       );
                     },
                   );
@@ -205,8 +204,8 @@ class _MainScreenState extends State<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavButton(Icons.dashboard, 0),
-                _buildNavButton(Icons.qr_code_scanner, 8),
+                buildNavButton(Icons.dashboard, 0),
+                buildNavButton(Icons.qr_code_scanner, 8),
                 GestureDetector(
                   onTap: () => _openAddModal(context),
                   child: Container(
@@ -219,8 +218,8 @@ class _MainScreenState extends State<MainScreen> {
                     child: const Icon(Icons.add, color: Colors.white, size: 30),
                   ),
                 ),
-                _buildNavButton(Icons.bar_chart_sharp, 7),
-                _buildNavButton(Icons.pie_chart_sharp, 9),
+                buildNavButton(Icons.bar_chart_sharp, 7),
+                buildNavButton(Icons.pie_chart_sharp, 9),
               ],
             ),
           ),

@@ -33,7 +33,7 @@ class CategoryBreakdownChart extends StatelessWidget {
           for (final doc in snapshot.docs) {
             final data = doc.data();
             final categoryId =
-                data[type == "expense" ? 'categoryId' : 'source'] as String?;
+                data['categoryId'] as String?;
             final value = (data['value'] as num).toDouble();
 
             if (categoryId != null && categories.containsKey(categoryId)) {

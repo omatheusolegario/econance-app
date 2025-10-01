@@ -1,7 +1,5 @@
 import 'package:econance/features/categories/add_category.dart';
 import 'package:econance/features/categories/categories.dart';
-import 'package:econance/features/transactions/add_expense.dart';
-import 'package:econance/features/transactions/add_revenue.dart';
 import 'package:econance/l10n/app_localizations.dart';
 import 'package:econance/main/main_screen.dart';
 import 'package:econance/auth/registration.dart';
@@ -65,8 +63,6 @@ class EconanceApp extends StatelessWidget {
         "/home": (context) => const HomePage(),
         "/main": (context) => const MainScreen(),
         "/revenues-expenses": (context) => const RevenuesExpensesPage(),
-        "/add-revenue": (context) => const AddRevenuePage(),
-        "/add-expense": (context) => const AddExpensePage(),
         "/add-category": (context) => const AddCategoryPage(),
         "/categories": (context) => const CategoriesPage(),
       },
