@@ -106,7 +106,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     - Recurrent Expenses
     - Suggestions
     Keep it clear, structured and actionable.
-    Format it nicely, and put really nice spaces between areas that need(its a flutter app).
+    Format it nicely, and put really nice spaces between areas that need(it's a flutter app).
     Currency is R\$ (BRL)
     """;
     final response = await model.generateContent([Content.text(prompt)]);
