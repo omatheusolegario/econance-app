@@ -7,8 +7,23 @@ import 'package:lottie/lottie.dart';
 
 class AddTransactionPage extends StatefulWidget {
   final String type;
+  final bool isInvoice;
+  final String? initialDate;
+  final String? initialValue;
+  final List<Map<String, dynamic>>? initialItems;
+  final String? initialCategoryId;
+  final String? initialNote;
 
-  const AddTransactionPage({super.key, required this.type});
+  const AddTransactionPage({
+    super.key,
+    required this.type,
+    this.isInvoice = false,
+    this.initialDate,
+    this.initialValue,
+    this.initialItems,
+    this.initialCategoryId,
+    this.initialNote
+  });
 
   @override
   State<AddTransactionPage> createState() => _AddTransactionPageState();
@@ -24,9 +39,45 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   String? selectedCategoryName;
   DateTime? _selectedDate;
   bool _isRecurrent = false;
+  List<Map<String, dynamic>> _items = [];
 
   int _currentStep = 0;
   final PageController _pageController = PageController();
+
+  @override
+  void initState(){
+    super.initState();
+    _value.text = widget.initialValue ?? '';
+    _note.text = widget.initialNote ?? '';
+    if (widget.initialDate != null && widget.initialDate!.isNotEmpty){
+      try{
+        _selectedDate = DateFormat('dd/MM/yyyy').parse(widget.initialDate!);
+        _date.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+      }catch(e){
+
+      }
+    }
+
+    selectedCategoryId = widget.initialCategoryId;
+    _items = widget.initialItems ?? [];
+    _isRecurrent = false;
+
+    if(selectedCategoryId != null){
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('categories')
+          .doc(selectedCategoryId)
+          .get()
+          .then((doc){
+            if (doc.exists){
+              setState(() {
+                selectedCategoryName = doc['name'];
+              });
+            }
+      });
+    }
+  }
 
   Future<void> _pickCategory(BuildContext context) async {
     final result = await Navigator.push(
@@ -67,21 +118,30 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   Future<void> _saveTransaction() async {
+    final data = {
+      'type': widget.type,
+      'value': double.tryParse(_value.text.trim()) ?? 0,
+      'note': _note.text.trim(),
+      'categoryId': selectedCategoryId,
+      'isRecurrent': _isRecurrent,
+      'date': _selectedDate != null
+          ? Timestamp.fromDate(_selectedDate!)
+          : null,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    if (widget.isInvoice){
+      data['items'] = _items.map((item)=>{
+        'name': item['name'],
+        'value': item['value']
+      });
+    }
+
     await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .collection(widget.type == "expense" ? "expenses" : "revenues")
-        .add({
-          'type': widget.type,
-          'value': double.tryParse(_value.text.trim()) ?? 0,
-          'note': _note.text.trim(),
-          'categoryId': selectedCategoryId,
-          'isRecurrent': _isRecurrent,
-          'date': _selectedDate != null
-              ? Timestamp.fromDate(_selectedDate!)
-              : null,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        .add(data);
 
     setState(() => _currentStep++);
     _pageController.animateToPage(
@@ -92,14 +152,14 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   void _nextStep() {
-    if (_currentStep == 0) {
+    if (_currentStep < 2) {
       setState(() => _currentStep++);
       _pageController.animateToPage(
         _currentStep,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else if (_currentStep == 1) {
+    } else{
       _saveTransaction();
     }
   }
@@ -111,159 +171,211 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: LinearProgressIndicator(
-                value: (_currentStep + 1) / 3,
-                backgroundColor: Colors.grey.shade300,
-                color: theme.primaryColor,
-                minHeight: 4,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 30),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: LinearProgressIndicator(
+                  value: (_currentStep + 1) / 4,
+                  backgroundColor: Colors.grey.shade300,
+                  color: theme.primaryColor,
+                  minHeight: 4,
+                ),
               ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 20,
-                      horizontal: 30,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Add ${capitalize(widget.type)}",
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "First insert the value of the transaction, then a short commentary if you want to",
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        TextField(
-                          controller: _value,
-                          keyboardType: TextInputType.number,
-                          style: theme.textTheme.bodyMedium,
-
-                          decoration: InputDecoration(
-                            hintText: "500,00",
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 14, top: 14, bottom: 14),
-                              child: Text(
-                                "R\$",
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Add ${capitalize(widget.type)}",
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0)
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: _note,
-                          style: theme.textTheme.bodyMedium,
-                          decoration: const InputDecoration(
-                            hintText: "Optional commentary",
+                          const SizedBox(height: 8),
+                          Text(
+                            "First insert the value of the transaction, then a short commentary if you want to",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 20,
-                      horizontal: 30,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Details",
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Choose category, date and recurrence",
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        ListTile(
-                          title: Text(
-                            selectedCategoryName ?? "Select Category",
+                          const SizedBox(height: 30),
+                          TextField(
+                            controller: _value,
+                            keyboardType: TextInputType.number,
                             style: theme.textTheme.bodyMedium,
-                          ),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () => _pickCategory(context),
-                        ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: _date,
-                          readOnly: true,
-                          onTap: _pickDate,
-                          style: theme.textTheme.bodyMedium,
-                          decoration: const InputDecoration(
-                            hintText: "Date",
-                            suffixIcon: Icon(Icons.calendar_today),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _isRecurrent,
-                              onChanged: (val) {
-                                setState(() => _isRecurrent = val ?? false);
-                              },
+
+                            decoration: InputDecoration(
+                              hintText: "500,00",
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.only(left: 14, top: 14, bottom: 14),
+                                child: Text(
+                                  "R\$",
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0)
                             ),
-                            Text(
-                              "Is this recurrent?",
+                          ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: _note,
+                            style: theme.textTheme.bodyMedium,
+                            decoration: const InputDecoration(
+                              hintText: "Optional commentary",
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Details",
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Choose category, date and recurrence",
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          ListTile(
+                            title: Text(
+                              selectedCategoryName ?? "Select Category",
                               style: theme.textTheme.bodyMedium,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Lottie.asset(
-                          "assets/animations/success.json",
-                          width: 150,
-                          repeat: false,
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          "${capitalize(widget.type)} added succesfully!",
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _pickCategory(context),
                           ),
-                        ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: _date,
+                            readOnly: true,
+                            onTap: _pickDate,
+                            style: theme.textTheme.bodyMedium,
+                            decoration: const InputDecoration(
+                              hintText: "Date",
+                              suffixIcon: Icon(Icons.calendar_today),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _isRecurrent,
+                                onChanged: (val) {
+                                  setState(() => _isRecurrent = val ?? false);
+                                },
+                              ),
+                              Text(
+                                "Is this recurrent?",
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                   if (widget.isInvoice) Padding(
+                      padding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 0,), child: Column(
+                      children: [
+                        if (widget.isInvoice) ...[
+                          const SizedBox(height: 20,),
+                          Text("Items", style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),),
+                          const SizedBox(height: 8,),
+                          ..._items.map((item) => ListTile(
+                            title: Text(item['name'] ?? ''),
+                            trailing: Text('R\$ ${item['value'] ?? ''}'),
+                          )),
+                          TextButton(
+                            onPressed: (){
+                              showDialog(context: context, builder: (context) {
+                                final nameCtrl = TextEditingController();
+                                final valueCtrl = TextEditingController();
+                                return AlertDialog(
+                                  title: const Text("Add Item"),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextField(controller: nameCtrl, decoration: const InputDecoration(hintText: "Name"),),
+                                      TextField(controller: valueCtrl, decoration: const InputDecoration(hintText: "Value"), keyboardType: TextInputType.number,)
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: (){
+                                        if (nameCtrl.text.isNotEmpty && valueCtrl.text.isNotEmpty){
+                                          setState(() {
+                                            _items.add({'name': nameCtrl.text.trim(), 'value': valueCtrl.text.trim()});
+                                          });
+                                            Navigator.pop(context);
+                                        }
+                                      },
+                                      child: const Text("Add"),
+                                    )
+                                  ],
+                                );
+                              });
+                            },
+                            child: const Text("Add New Item"),
+                          )
+                        ]
                       ],
                     ),
-                  ),
-                ],
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Lottie.asset(
+                            "assets/animations/success.json",
+                            width: 150,
+                            repeat: false,
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "${capitalize(widget.type)} added succesfully!",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      floatingActionButton: _currentStep < 2
+      floatingActionButton: _currentStep < 3
           ? FloatingActionButton(
               onPressed: _nextStep,
               backgroundColor: theme.primaryColor,

@@ -4,7 +4,7 @@ import 'package:econance/features/graphs/pages/graphs_page.dart';
 import 'package:econance/features/categories/add_category.dart';
 import 'package:econance/features/categories/categories.dart';
 import 'package:econance/features/config/config.dart';
-import 'package:econance/features/ocr/pages/ocr_page.dart';
+import 'package:econance/features/ocr/pages/invoice_capture.dart';
 import 'package:econance/features/transactions/add_transaction.dart';
 import 'package:econance/features/transactions/revenues_expenses.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
     const AddTransactionPage(type: "revenue"),
     const AddTransactionPage(type: "expense"),
     const GraphsPage(),
-    const OcrPage(),
+    const InvoiceCapturePage(),
     const AiInsightsPage()
   ];
 
