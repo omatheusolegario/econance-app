@@ -13,7 +13,7 @@ class Config extends StatefulWidget {
 class _ConfigState extends State<Config> {
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
 
   @override
