@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../l10n/app_localizations.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import '../theme/theme_manager.dart';
+import '../l10n/app_localizations.dart';
 import 'register_verification.dart';
 
 class Login extends StatefulWidget {
@@ -27,45 +30,15 @@ class _LoginState extends State<Login> {
   void clearText() {
     fieldText.clear();
   }
-  Future<void> signInWithPhone() async {
-    setState(() => _isLoading = true);
 
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: fieldText.text.trim(),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance.signInWithCredential(credential);
-          Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.message ?? 'Falha na autenticação por telefone')),
-          );
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => VerificationPage(
-                phoneNumber: fieldText.text.trim(),
-                verificationId: verificationId,
-              ),
-            ),
-          );
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
   Future<void> signInWithEmail() async {
+    setState(() => _isLoading = true);
     try {
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
-        email: fieldText.text.trim(),
-        password: passwordController.text.trim(),
-      );
+            email: fieldText.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       final user = userCredential.user!;
       if (!user.emailVerified) {
@@ -75,24 +48,80 @@ class _LoginState extends State<Login> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                  AppLocalizations.of(context)!.snackloginSuccess,
-                )
-            )
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.snackloginSuccess),
+          ),
         );
-
         Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ??  AppLocalizations.of(context)!.snackloginError,
-      ),
-      ),
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.message ?? AppLocalizations.of(context)!.snackloginError,
+          ),
+        ),
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> signInWithPhone() async {
+    setState(() => _isLoading = true);
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: fieldText.text.trim(),
+      timeout: const Duration(seconds: 60),
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'Erro ao verificar telefone')),
+        );
+        setState(() => _isLoading = false);
+      },
+      codeSent: (String verificationId, int? resendToken) async {
+        setState(() => _isLoading = false);
+
+        String smsCode = '';
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Digite o código SMS"),
+              content: TextField(
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  smsCode = value;
+                },
+              ),
+              actions: [
+                TextButton(
+                  child: const Text("Confirmar"),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (smsCode.isNotEmpty) {
+          PhoneAuthCredential credential = PhoneAuthProvider.credential(
+            verificationId: verificationId,
+            smsCode: smsCode,
+          );
+
+          await FirebaseAuth.instance.signInWithCredential(credential);
+          Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
+        }
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        setState(() => _isLoading = false);
+      },
+    );
   }
 
   @override
@@ -104,7 +133,7 @@ class _LoginState extends State<Login> {
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical:10, horizontal: 30),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -129,12 +158,12 @@ class _LoginState extends State<Login> {
                   TextButton(
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      minimumSize: Size(0, 0),
+                      minimumSize: const Size(0, 0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () {
                       clearText();
-                      FocusScope.of(context).unfocus(); // Close keyboard
+                      FocusScope.of(context).unfocus();
                       setState(() => isEmailSelected = true);
                     },
                     child: Text(
@@ -157,12 +186,12 @@ class _LoginState extends State<Login> {
                   TextButton(
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      minimumSize: Size(0, 0),
+                      minimumSize: const Size(0, 0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () {
                       clearText();
-                      FocusScope.of(context).unfocus(); // Close keyboard
+                      FocusScope.of(context).unfocus();
                       setState(() => isEmailSelected = false);
                     },
                     child: Text(
@@ -181,30 +210,23 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
-
                 ],
               ),
               const SizedBox(height: 40),
-              Row(
-                children: [
-                  Text(
-                    isEmailSelected
-                        ? AppLocalizations.of(context)!.emailaddress
-                        : AppLocalizations.of(context)!.phonenumber,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color,
-                    ),
-                  ),
-
-                  const SizedBox(width: 40),
-
-                ],
+              Text(
+                isEmailSelected
+                    ? AppLocalizations.of(context)!.emailaddress
+                    : AppLocalizations.of(context)!.phonenumber,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color,
+                ),
               ),
               const SizedBox(height: 5),
-
               TextField(
                 controller: fieldText,
-                keyboardType: isEmailSelected ? TextInputType.emailAddress : TextInputType.phone,
+                keyboardType: isEmailSelected
+                    ? TextInputType.emailAddress
+                    : TextInputType.phone,
                 inputFormatters: isEmailSelected ? [] : [phoneFormatter],
                 style: theme.textTheme.bodyMedium,
                 decoration: InputDecoration(
@@ -213,80 +235,79 @@ class _LoginState extends State<Login> {
                       : AppLocalizations.of(context)!.phoneinput,
                 ),
               ),
-
               const SizedBox(height: 20),
-
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.password,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color,
-                    ),
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/forgot-password");
-                    },
-                    child: Text(
-                      AppLocalizations.of(context)!.forgotpassword,
+              if (isEmailSelected) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.password,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.green,
+                        color: theme.textTheme.bodyMedium?.color,
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 5),
-
-              TextField(
-                controller: passwordController,
-                obscureText: _obscurePassword,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.passwordinput,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: Colors.grey,
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        Navigator.pushNamed(context, "/forgot-password");
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.forgotpassword,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.green,
+                        ),
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
+                  ],
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: passwordController,
+                  obscureText: _obscurePassword,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.passwordinput,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
-              ),
+              ],
               const SizedBox(height: 40),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (isEmailSelected) {
-                      signInWithEmail();
-                    } else {
-                      signInWithPhone();
-                    }
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.login,
-                    style: Theme.of(context).textTheme.labelMedium,
-                  ),
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          if (isEmailSelected) {
+                            signInWithEmail();
+                          } else {
+                            signInWithPhone();
+                          }
+                        },
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          AppLocalizations.of(context)!.login,
+                          style: theme.textTheme.labelMedium,
+                        ),
                 ),
               ),
             ],

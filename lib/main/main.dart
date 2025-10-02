@@ -1,8 +1,8 @@
+import 'package:econance/auth/registration.dart';
 import 'package:econance/features/categories/add_category.dart';
 import 'package:econance/features/categories/categories.dart';
 import 'package:econance/l10n/app_localizations.dart';
 import 'package:econance/main/main_screen.dart';
-import 'package:econance/auth/registration.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
