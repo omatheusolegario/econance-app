@@ -22,7 +22,7 @@ class AddTransactionPage extends StatefulWidget {
     this.initialValue,
     this.initialItems,
     this.initialCategoryId,
-    this.initialNote
+    this.initialNote,
   });
 
   @override
@@ -45,37 +45,35 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   final PageController _pageController = PageController();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _value.text = widget.initialValue ?? '';
     _note.text = widget.initialNote ?? '';
-    if (widget.initialDate != null && widget.initialDate!.isNotEmpty){
-      try{
+    if (widget.initialDate != null && widget.initialDate!.isNotEmpty) {
+      try {
         _selectedDate = DateFormat('dd/MM/yyyy').parse(widget.initialDate!);
         _date.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-      }catch(e){
-
-      }
+      } catch (e) {}
     }
 
     selectedCategoryId = widget.initialCategoryId;
     _items = widget.initialItems ?? [];
     _isRecurrent = false;
 
-    if(selectedCategoryId != null){
+    if (selectedCategoryId != null) {
       FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
           .collection('categories')
           .doc(selectedCategoryId)
           .get()
-          .then((doc){
-            if (doc.exists){
+          .then((doc) {
+            if (doc.exists) {
               setState(() {
                 selectedCategoryName = doc['name'];
               });
             }
-      });
+          });
     }
   }
 
@@ -124,17 +122,14 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       'note': _note.text.trim(),
       'categoryId': selectedCategoryId,
       'isRecurrent': _isRecurrent,
-      'date': _selectedDate != null
-          ? Timestamp.fromDate(_selectedDate!)
-          : null,
+      'date': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : null,
       'createdAt': FieldValue.serverTimestamp(),
     };
 
-    if (widget.isInvoice){
-      data['items'] = _items.map((item)=>{
-        'name': item['name'],
-        'value': item['value']
-      });
+    if (widget.isInvoice) {
+      data['items'] = _items.map(
+        (item) => {'name': item['name'], 'value': item['value']},
+      );
     }
 
     await FirebaseFirestore.instance
@@ -159,229 +154,286 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else{
+    } else {
       _saveTransaction();
+    }
+  }
+
+  Widget _getCurrentPage() {
+    final theme = Theme.of(context);
+    String capitalize(String s) =>
+        s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : s;
+    final int successIndex = widget.isInvoice ? 3 : 2;
+
+    if (_currentStep == successIndex) {
+      return Center(
+        key: ValueKey(_currentStep),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset(
+              "assets/animations/success.json",
+              width: 150,
+              repeat: false,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              "${capitalize(widget.type)} added succesfully!",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    switch (_currentStep) {
+      case 0:
+        return Padding(
+          key: ValueKey(_currentStep),
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Add ${capitalize(widget.type)}",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "First insert the value of the transaction, then a short commentary if you want to",
+                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+              ),
+              const SizedBox(height: 30),
+              TextField(
+                controller: _value,
+                keyboardType: TextInputType.number,
+                style: theme.textTheme.bodyMedium,
+
+                decoration: InputDecoration(
+                  hintText: "500,00",
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 14,
+                      top: 14,
+                      bottom: 14,
+                    ),
+                    child: Text(
+                      "R\$",
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 0,
+                    minHeight: 0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _note,
+                style: theme.textTheme.bodyMedium,
+                decoration: const InputDecoration(
+                  hintText: "Optional commentary",
+                ),
+              ),
+            ],
+          ),
+        );
+
+      case 1:
+        return Padding(
+          key: ValueKey(_currentStep),
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Details",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Choose category, date and recurrence",
+                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+              ),
+              const SizedBox(height: 30),
+              ListTile(
+                title: Text(
+                  selectedCategoryName ?? "Select Category",
+                  style: theme.textTheme.bodyMedium,
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _pickCategory(context),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _date,
+                readOnly: true,
+                onTap: _pickDate,
+                style: theme.textTheme.bodyMedium,
+                decoration: const InputDecoration(
+                  hintText: "Date",
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isRecurrent,
+                    onChanged: (val) {
+                      setState(() => _isRecurrent = val ?? false);
+                    },
+                  ),
+                  Text("Is this recurrent?", style: theme.textTheme.bodyMedium),
+                ],
+              ),
+            ],
+          ),
+        );
+      case 2:
+        return Padding(
+          key: ValueKey(_currentStep),
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+          child: Column(
+            children: [
+              if (widget.isInvoice) ...[
+                const SizedBox(height: 20),
+                Text(
+                  "Items",
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ..._items.map(
+                  (item) => ListTile(
+                    title: Text(item['name'] ?? ''),
+                    trailing: Text('R\$ ${item['value'] ?? ''}'),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        final nameCtrl = TextEditingController();
+                        final valueCtrl = TextEditingController();
+                        return AlertDialog(
+                          title: const Text("Add Item"),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: nameCtrl,
+                                decoration: const InputDecoration(
+                                  hintText: "Name",
+                                ),
+                              ),
+                              TextField(
+                                controller: valueCtrl,
+                                decoration: const InputDecoration(
+                                  hintText: "Value",
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                if (nameCtrl.text.isNotEmpty &&
+                                    valueCtrl.text.isNotEmpty) {
+                                  setState(() {
+                                    _items.add({
+                                      'name': nameCtrl.text.trim(),
+                                      'value': valueCtrl.text.trim(),
+                                    });
+                                  });
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: const Text("Add"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: const Text("Add New Item"),
+                ),
+              ],
+            ],
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    String capitalize(String s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : s;
+    final int numPages = widget.isInvoice ? 4 : 3;
+    final int numInputSteps = widget.isInvoice ? 3 : 2;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 30),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: LinearProgressIndicator(
-                  value: (_currentStep + 1) / 4,
-                  backgroundColor: Colors.grey.shade300,
-                  color: theme.primaryColor,
-                  minHeight: 4,
-                ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: 10.0,
+          right: 20.0,
+          left: 20.0,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: LinearProgressIndicator(
+                value: (_currentStep + 1) / 4,
+                backgroundColor: Colors.grey.shade300,
+                color: theme.primaryColor,
+                minHeight: 4,
               ),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Add ${capitalize(widget.type)}",
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "First insert the value of the transaction, then a short commentary if you want to",
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          TextField(
-                            controller: _value,
-                            keyboardType: TextInputType.number,
-                            style: theme.textTheme.bodyMedium,
-
-                            decoration: InputDecoration(
-                              hintText: "500,00",
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.only(left: 14, top: 14, bottom: 14),
-                                child: Text(
-                                  "R\$",
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0)
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          TextField(
-                            controller: _note,
-                            style: theme.textTheme.bodyMedium,
-                            decoration: const InputDecoration(
-                              hintText: "Optional commentary",
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Details",
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Choose category, date and recurrence",
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          ListTile(
-                            title: Text(
-                              selectedCategoryName ?? "Select Category",
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _pickCategory(context),
-                          ),
-                          const SizedBox(height: 20),
-                          TextField(
-                            controller: _date,
-                            readOnly: true,
-                            onTap: _pickDate,
-                            style: theme.textTheme.bodyMedium,
-                            decoration: const InputDecoration(
-                              hintText: "Date",
-                              suffixIcon: Icon(Icons.calendar_today),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _isRecurrent,
-                                onChanged: (val) {
-                                  setState(() => _isRecurrent = val ?? false);
-                                },
-                              ),
-                              Text(
-                                "Is this recurrent?",
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                   if (widget.isInvoice) Padding(
-                      padding: const EdgeInsets.symmetric(
-                      vertical: 0,
-                      horizontal: 0,), child: Column(
-                      children: [
-                        if (widget.isInvoice) ...[
-                          const SizedBox(height: 20,),
-                          Text("Items", style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),),
-                          const SizedBox(height: 8,),
-                          ..._items.map((item) => ListTile(
-                            title: Text(item['name'] ?? ''),
-                            trailing: Text('R\$ ${item['value'] ?? ''}'),
-                          )),
-                          TextButton(
-                            onPressed: (){
-                              showDialog(context: context, builder: (context) {
-                                final nameCtrl = TextEditingController();
-                                final valueCtrl = TextEditingController();
-                                return AlertDialog(
-                                  title: const Text("Add Item"),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(controller: nameCtrl, decoration: const InputDecoration(hintText: "Name"),),
-                                      TextField(controller: valueCtrl, decoration: const InputDecoration(hintText: "Value"), keyboardType: TextInputType.number,)
-                                    ],
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: (){
-                                        if (nameCtrl.text.isNotEmpty && valueCtrl.text.isNotEmpty){
-                                          setState(() {
-                                            _items.add({'name': nameCtrl.text.trim(), 'value': valueCtrl.text.trim()});
-                                          });
-                                            Navigator.pop(context);
-                                        }
-                                      },
-                                      child: const Text("Add"),
-                                    )
-                                  ],
-                                );
-                              });
-                            },
-                            child: const Text("Add New Item"),
-                          )
-                        ]
-                      ],
-                    ),
-                    ),
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Lottie.asset(
-                            "assets/animations/success.json",
-                            width: 150,
-                            repeat: false,
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "${capitalize(widget.type)} added succesfully!",
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: const Offset(0.0, 0.0),
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+              child: _getCurrentPage(),
+            ),
+            const SizedBox(height: 10,),
+            if (_currentStep < numInputSteps)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FloatingActionButton(
+                    onPressed: _nextStep,
+                    backgroundColor: theme.primaryColor,
+                    child: const Icon(Icons.arrow_forward_ios),
+                  ),
+                ],
               ),
-            ],
-          ),
+          ],
         ),
       ),
-      floatingActionButton: _currentStep < 3
-          ? FloatingActionButton(
-              onPressed: _nextStep,
-              backgroundColor: theme.primaryColor,
-              child: const Icon(Icons.arrow_forward_ios),
-            )
-          : null,
     );
   }
 }
