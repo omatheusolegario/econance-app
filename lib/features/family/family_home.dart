@@ -23,47 +23,65 @@ class _FamilyHomePageState extends State<FamilyHomePage>{
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-    body: Column(
-      children: [
-        Expanded(
-          child: StreamBuilder<QuerySnapshot>(
-            stream: _fs.membersStream(_familyId!),
-            builder: (context, snap) {
-              if (!snap.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final members = snap.data!.docs;
-              return ListView.separated(
-                padding: const EdgeInsets.all(12),
-                itemCount: members.length,
-                separatorBuilder: (_, __) => const Divider(),
-                itemBuilder: (ctx, i) {
-                  final m = members[i];
-                  if (m.id != uid) {
-                    return MemberCard(
-                      familyId: _familyId!,
-                      memberUid: m.id,
-                      displayName: m['displayName'] ?? '',
-                      email: m['email'] ?? '',
-                      role: m['role'] ?? 'member',
-                      isAdminView: _role == "admin",
-                    );
-                  }else{
-                    return MemberCard(
+    body: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30,vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Here you can manage",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white60,
+            ),
+          ),
+          Text(
+            "Family members",
+            style: theme.textTheme.headlineLarge?.copyWith(
+              color: theme.textTheme.bodyLarge?.color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20,),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _fs.membersStream(_familyId!),
+              builder: (context, snap) {
+                if (!snap.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final members = snap.data!.docs;
+                return ListView.separated(
+                  itemCount: members.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (ctx, i) {
+                    final m = members[i];
+                    if (m.id != uid) {
+                      return MemberCard(
                         familyId: _familyId!,
                         memberUid: m.id,
                         displayName: m['displayName'] ?? '',
                         email: m['email'] ?? '',
-                        role: m['role'] ?? 'member'
-                    );
-                  }
-                },
-              );
-            },
+                        role: m['role'] ?? 'member',
+                        isAdminView: _role == "admin",
+                      );
+                    }else{
+                      return MemberCard(
+                          familyId: _familyId!,
+                          memberUid: m.id,
+                          displayName: m['displayName'] ?? '',
+                          email: m['email'] ?? '',
+                          role: m['role'] ?? 'member'
+                      );
+                    }
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
 
     );

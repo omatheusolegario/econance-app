@@ -33,13 +33,15 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
 
   List<Widget> get _pages {
     if (_familyId == null || _role == null) {
-      return [FamilyCreatePage(familyId: null, role: null), InvitePage(familyId: null),];
-
+      return [
+        FamilyCreatePage(familyId: null, role: null),
+        InvitePage(familyId: null, role: null,),
+      ];
     }
     return [
       FamilyHomePage(familyId: _familyId, role: _role),
-      InvitePage(familyId: _familyId),
-      FamilyAIInsightsPage(familyId: _familyId!),
+      InvitePage(familyId: _familyId, role: _role,),
+      FamilyAIInsightsPage(familyId: _familyId!, role: _role!),
     ];
   }
 
@@ -90,16 +92,28 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Leave Family?"),
-        content: const Text("Are you sure you want to leave this family?"),
+        backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
+        title: Text(
+          "Leave Family?",
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          "Are you sure you want to leave this family?",
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("No"),
+            child: Text("No", style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade500,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Yes"),
+            child: Text("Yes", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -113,16 +127,26 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
       await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text("Delete Family?"),
-          content: const Text(
-            "You are the last one in the family, leaving will delete it. Are you sure?",
+          backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
+          title: Text(
+            "Delete Family?",
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            "You are the last one in the family, leaving will delete it.\nAre you sure?",
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text("Cancel"),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade500,
+              ),
               onPressed: () async {
                 Navigator.pop(ctx, true);
                 await _fs.removeMember(
@@ -136,7 +160,10 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
                 });
                 await _loadUserFamily();
               },
-              child: const Text("Delete Family"),
+              child: const Text(
+                "   Delete Family   ",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -182,15 +209,24 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Family Space"),
         actions: [
-          if (_role == "admin")
+          if (_familyId != null)
             PopupMenuButton(
+              borderRadius: BorderRadius.circular(50),
+              icon: Icon(Icons.exit_to_app_rounded),
               onSelected: (v) {
                 if (v == "leave") _leaveFamily();
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(child: Text("Leave Family"), value: "leave"),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  child: Text(
+                    "Leave Family",
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.red.shade500,
+                    ),
+                  ),
+                  value: "leave",
+                ),
               ],
             ),
         ],
@@ -217,17 +253,17 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       buildNavButton(Icons.dashboard, 0),
-                      buildNavButton(Icons.qr_code_scanner, 1),
+                      buildNavButton(Icons.email_outlined, 1),
                       buildNavButton(Icons.pie_chart_sharp, 2),
                     ],
                   )
                 : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                buildNavButton(Icons.dashboard, 0),
-                buildNavButton(Icons.qr_code_scanner, 1),
-              ],
-            ),
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      buildNavButton(Icons.dashboard, 0),
+                      buildNavButton(Icons.email_outlined, 1),
+                    ],
+                  ),
           ),
         ),
       ),

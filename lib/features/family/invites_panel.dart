@@ -3,6 +3,8 @@ import 'package:econance/services/family_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'family_main_screen.dart';
+
 class InvitesList extends StatelessWidget {
   final FamilyService _familyService = FamilyService();
 
@@ -43,17 +45,21 @@ class InvitesList extends StatelessWidget {
                 final familyName = familySnap.data?['name'] ?? 'a family';
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 8,
-                    horizontal: 16,
+                  color: Colors.grey.shade900,
+                  margin: const EdgeInsets.only(
+                    bottom: 4,
+                    top: 4,
+                    left: 8,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
-                    title: Text("$inviterName invited you to $familyName"),
+                    title: Text("$inviterName invited you to \"$familyName\"", style: Theme.of(context).textTheme.bodyMedium,),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IconButton(
                           onPressed: () async {
@@ -62,8 +68,9 @@ class InvitesList extends StatelessWidget {
                               true,
                             );
                             if (context.mounted) {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => FamilySpacePage()));
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                                const SnackBar(
                                   content: Text(
                                     "Invite accepted, joined family",
                                   ),
@@ -81,7 +88,7 @@ class InvitesList extends StatelessWidget {
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Invite declined")),
+                                const SnackBar(content: Text("Invite declined")),
                               );
                             }
                           },

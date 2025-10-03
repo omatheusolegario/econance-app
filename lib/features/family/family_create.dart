@@ -1,3 +1,4 @@
+import 'package:econance/features/family/family_main_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/family_service.dart';
@@ -29,7 +30,7 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.black12.withValues(alpha: .9),
+        backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
         title: Text(
           "Create Family",
           style: Theme.of(
@@ -66,7 +67,9 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
         _familyId = fId;
         _role = "admin";
       });
-    } else {
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (ctx) => FamilySpacePage()));
+
+    } else if (ok == true && controller.text.trim() == ''){
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Family name can't be empty")));
@@ -78,10 +81,24 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
     final theme = Theme.of(context);
     return Scaffold(
         body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            Text(
+              "Create or manage your own",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white60,
+              ),
+            ),
+            Text(
+              "Family",
+              style: theme.textTheme.headlineLarge?.copyWith(
+                color: theme.textTheme.bodyLarge?.color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20,),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),

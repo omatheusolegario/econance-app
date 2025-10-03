@@ -41,7 +41,7 @@ class MemberCard extends StatelessWidget {
         ),
       ),
       title: Text(displayName.isNotEmpty ? displayName : email),
-      subtitle: Text("$email • ${role.toUpperCase()}"),
+      subtitle: Text("$email\n${role.toUpperCase()}"),
       trailing: isAdminView
           ? IconButton(
               icon: const Icon(Icons.settings),

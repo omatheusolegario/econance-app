@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:intl/intl.dart';
 
 class FamilyAIInsightsPage extends StatefulWidget {
   final String familyId;
-  const FamilyAIInsightsPage({required this.familyId, super.key});
+  final String role;
+  const FamilyAIInsightsPage({required this.familyId, required this.role, super.key});
 
   @override
   State<FamilyAIInsightsPage> createState() => _FamilyAIInsightsPageState();
@@ -28,6 +30,33 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
 
   Future<void> _fetchAndAnalyse() async {
     final db = FirebaseFirestore.instance;
+    final todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    final docRef = FirebaseFirestore.instance
+        .collection('families')
+        .doc(widget.familyId)
+        .collection('aiInsights')
+
+        .doc(todayKey);
+
+    final docSnap = await docRef.get();
+
+    if (docSnap.exists) {
+      setState(() {
+        _insights = docSnap['text'];
+        _loading = false;
+      });
+      return;
+    }else if (widget.role == 'member'){
+      setState(() {
+        _insights = "Wait for your admin to generate it first.";
+        _loading = false;
+      });
+      return;
+    }
+
+
+
     final membersSnap = await db
         .collection('families')
         .doc(widget.familyId)
@@ -106,6 +135,11 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
 
     final resp = await _model.generateContent([Content.text(prompt)]);
 
+    await docRef.set({
+      "text": resp.text,
+      "generatedAt": FieldValue.serverTimestamp(),
+    });
+
     setState(() {
       _insights = resp.text;
       _loading = false;
@@ -117,7 +151,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
     final theme = Theme.of(context);
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -136,7 +170,9 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
             ),
             const SizedBox(height: 7),
             Expanded(
-              child: _loading
+              child:
+
+                  _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _insights == null
                   ? const Text("No insights available")

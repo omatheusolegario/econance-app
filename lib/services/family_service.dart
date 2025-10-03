@@ -50,7 +50,9 @@ class FamilyService {
     final userDoc = await _db.collection('users').doc(uid).get();
     if (userDoc.exists) {
       final data = userDoc.data();
-      if (data != null && data['personalInfo']['familyId'] != null && data['personalInfo']['familyId'] != '') {
+      if (data != null &&
+          data['personalInfo']['familyId'] != null &&
+          data['personalInfo']['familyId'] != '') {
         return true;
       }
     }
@@ -65,23 +67,23 @@ class FamilyService {
     final currentUser = FirebaseAuth.instance.currentUser!;
     final alreadyInFamily = await isUserInFamily(invitedUid);
 
-    if (!alreadyInFamily){
+    if (!alreadyInFamily) {
       await _db
           .collection('families')
           .doc(familyId)
           .collection('invites')
           .doc(invitedUid)
           .set({
-        'invitedUid': invitedUid,
-        'inviterUid': currentUser.uid,
-        'inviterName': inviterName,
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+            'invitedUid': invitedUid,
+            'inviterUid': currentUser.uid,
+            'inviterName': inviterName,
+            'status': 'pending',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
 
       return true;
     }
-return false;
+    return false;
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> streamMyInvites() {
@@ -100,7 +102,6 @@ return false;
         .collection('families')
         .doc(familyId)
         .collection('invites')
-        .where('status', isEqualTo: 'pending')
         .snapshots();
   }
 
@@ -127,6 +128,7 @@ return false;
             'displayName': currentUser.displayName ?? '',
             'email': currentUser.email ?? '',
           });
+
       await _db.collection('users').doc(currentUser.uid).set({
         'personalInfo': {'familyId': familyId},
       }, SetOptions(merge: true));
@@ -137,28 +139,34 @@ return false;
     });
   }
 
-  Future<void> removeMember(String familyId, String memberUid, bool isLastMember) async {
+  Future<void> removeMember(
+    String familyId,
+    String memberUid,
+    bool isLastMember,
+  ) async {
+    await FirebaseFirestore.instance.collection('users').doc(memberUid).set({
+      'personalInfo': {'familyId': FieldValue.delete()},
+    }, SetOptions(merge: true));
 
-    if (isLastMember){
+    if (isLastMember) {
       final membersSnap = await _db
           .collection('families')
           .doc(familyId)
-          .collection('members').get();
-      for (var doc in membersSnap.docs){
+          .collection('members')
+          .get();
+      for (var doc in membersSnap.docs) {
         await doc.reference.delete();
       }
       final invitesSnap = await _db
           .collection('families')
           .doc(familyId)
-          .collection('invites').get();
-      for (var doc in invitesSnap.docs){
+          .collection('invites')
+          .get();
+      for (var doc in invitesSnap.docs) {
         await doc.reference.delete();
       }
-      await _db
-          .collection('families')
-          .doc(familyId)
-          .delete();
-    }else{
+      await _db.collection('families').doc(familyId).delete();
+    } else {
       await _db
           .collection('families')
           .doc(familyId)
