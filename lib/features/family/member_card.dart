@@ -52,6 +52,7 @@ class MemberCard extends StatelessWidget {
   }
 
   void _openAdminActions(BuildContext context) {
+
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
@@ -94,7 +95,7 @@ class MemberCard extends StatelessWidget {
                     ),
                   );
                   if (ok == true) {
-                    await FamilyService().removeMember(familyId, memberUid);
+                    await FamilyService().removeMember(familyId, memberUid, false);
                     if (onRemoved != null) onRemoved!();
                   }
                 },

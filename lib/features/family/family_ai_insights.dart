@@ -92,7 +92,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
 
     final prompt =
         """
-        Family financial summary (compact JSON). For each member provide:
+        Family financial summary. For each member provide:
         - short balance overview,
         - top 3 categories for spending,
         - any recurring items noticed,
@@ -105,6 +105,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
       """;
 
     final resp = await _model.generateContent([Content.text(prompt)]);
+
     setState(() {
       _insights = resp.text;
       _loading = false;

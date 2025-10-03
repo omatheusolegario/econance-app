@@ -64,6 +64,7 @@ final ThemeData darkTheme = ThemeData(
   ),
   inputDecorationTheme: InputDecorationTheme(
     isDense: true,
+
     hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
     labelStyle: TextStyle(color: Color(0xFF9E9E9E)),
     contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 12),

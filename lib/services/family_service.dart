@@ -46,25 +46,42 @@ class FamilyService {
         .snapshots();
   }
 
-  Future<void> inviteByUid({
+  Future<bool> isUserInFamily(String uid) async {
+    final userDoc = await _db.collection('users').doc(uid).get();
+    if (userDoc.exists) {
+      final data = userDoc.data();
+      if (data != null && data['personalInfo']['familyId'] != null && data['personalInfo']['familyId'] != '') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> inviteByUid({
     required String invitedUid,
     required String familyId,
     required String inviterName,
   }) async {
     final currentUser = FirebaseAuth.instance.currentUser!;
+    final alreadyInFamily = await isUserInFamily(invitedUid);
 
-    await _db
-        .collection('families')
-        .doc(familyId)
-        .collection('invites')
-        .doc(invitedUid)
-        .set({
-          'invitedUid': invitedUid,
-          'inviterUid': currentUser.uid,
-          'inviterName': inviterName,
-          'status': 'pending',
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+    if (!alreadyInFamily){
+      await _db
+          .collection('families')
+          .doc(familyId)
+          .collection('invites')
+          .doc(invitedUid)
+          .set({
+        'invitedUid': invitedUid,
+        'inviterUid': currentUser.uid,
+        'inviterName': inviterName,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      return true;
+    }
+return false;
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> streamMyInvites() {
@@ -75,7 +92,10 @@ class FamilyService {
         .where('status', isEqualTo: 'pending')
         .snapshots();
   }
-  Stream<QuerySnapshot<Map<String, dynamic>>> streamFamilyPendingInvites(String familyId) {
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamFamilyPendingInvites(
+    String familyId,
+  ) {
     return _db
         .collection('families')
         .doc(familyId)
@@ -108,7 +128,7 @@ class FamilyService {
             'email': currentUser.email ?? '',
           });
       await _db.collection('users').doc(currentUser.uid).set({
-        'personalInfo': {'familyId': familyId}
+        'personalInfo': {'familyId': familyId},
       }, SetOptions(merge: true));
     }
     await inviteRef.update({
@@ -117,13 +137,35 @@ class FamilyService {
     });
   }
 
-  Future<void> removeMember(String familyId, String memberUid) async {
-    await _db
-        .collection('families')
-        .doc(familyId)
-        .collection('members')
-        .doc(memberUid)
-        .delete();
+  Future<void> removeMember(String familyId, String memberUid, bool isLastMember) async {
+
+    if (isLastMember){
+      final membersSnap = await _db
+          .collection('families')
+          .doc(familyId)
+          .collection('members').get();
+      for (var doc in membersSnap.docs){
+        await doc.reference.delete();
+      }
+      final invitesSnap = await _db
+          .collection('families')
+          .doc(familyId)
+          .collection('invites').get();
+      for (var doc in invitesSnap.docs){
+        await doc.reference.delete();
+      }
+      await _db
+          .collection('families')
+          .doc(familyId)
+          .delete();
+    }else{
+      await _db
+          .collection('families')
+          .doc(familyId)
+          .collection('members')
+          .doc(memberUid)
+          .delete();
+    }
   }
 
   Future<void> changeMemberRole(
@@ -145,6 +187,15 @@ class FamilyService {
         .doc(familyId)
         .collection('members')
         .where('role', isEqualTo: 'admin')
+        .get();
+    return snap.size;
+  }
+
+  Future<int> memberCount(String familyId) async {
+    final snap = await _db
+        .collection('families')
+        .doc(familyId)
+        .collection('members')
         .get();
     return snap.size;
   }
