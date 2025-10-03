@@ -29,9 +29,9 @@ class MemberCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return ListTile(
-      onTap: () {
-        showModalBottomSheet(context: context, builder: (ctx) => GraphsPage(uid: memberUid));
-      },
+      onTap: isAdminView ? () {
+        showModalBottomSheet(backgroundColor: Theme.of(context).scaffoldBackgroundColor,showDragHandle: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),context: context, builder: (ctx) => GraphsPage(uid: memberUid));
+      }: null,
       leading: CircleAvatar(
         child: Text(
           displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
@@ -69,7 +69,7 @@ class MemberCard extends StatelessWidget {
                 leading: const Icon(Icons.bar_chart),
                 title: Text("View member graphs", style: Theme.of(context).textTheme.bodyMedium,),
                 onTap: () {
-                  showModalBottomSheet(context: context, builder: (ctx) => GraphsPage(uid: memberUid));
+                  showModalBottomSheet(backgroundColor: Theme.of(context).scaffoldBackgroundColor,showDragHandle: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),context: context, builder: (ctx) => GraphsPage(uid: memberUid));
                 },
               ),
               ListTile(

@@ -73,7 +73,7 @@ class _GraphsPageState extends State<GraphsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Here you'll manage your,",
+                "Here you'll manage",
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.white60,
                 ),
@@ -143,7 +143,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                             ),
                                           ),
                                           builder: (context) =>
-                                              RevenuesExpensesPage(),
+                                              RevenuesExpensesPage(uid: uid),
                                         );
                                       },
                                       child: Text("Check"),
@@ -175,7 +175,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                             ),
                                           ),
                                           builder: (context) =>
-                                              CategoriesPage(),
+                                              CategoriesPage(uid: uid),
                                         );
                                       },
                                       child: Text("Manage"),

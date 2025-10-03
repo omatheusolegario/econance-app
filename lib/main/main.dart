@@ -62,9 +62,6 @@ class EconanceApp extends StatelessWidget {
         "/forgot-password": (context) => const ForgotPasswordPage(),
         "/home": (context) => const HomePage(),
         "/main": (context) => const MainScreen(),
-        "/revenues-expenses": (context) => const RevenuesExpensesPage(),
-        "/add-category": (context) => const AddCategoryPage(),
-        "/categories": (context) => const CategoriesPage(),
       },
       home: const AuthWrapper(),
     );

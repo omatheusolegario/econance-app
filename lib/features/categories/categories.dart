@@ -4,14 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_category.dart';
 
 class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key});
+  final String uid;
+  const CategoriesPage({super.key, required this.uid});
 
   @override
   State<CategoriesPage> createState() => _CategoriesPageState();
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  final uid = FirebaseAuth.instance.currentUser!.uid;
+  late final uid = widget.uid;
 
   @override
   Widget build(BuildContext context) {

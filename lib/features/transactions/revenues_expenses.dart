@@ -4,14 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class RevenuesExpensesPage extends StatefulWidget {
-  const RevenuesExpensesPage({super.key});
+  final String uid;
+  const RevenuesExpensesPage({super.key, required this.uid});
 
   @override
   State<RevenuesExpensesPage> createState() => _RevenuesExpensesPageState();
 }
 
 class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteAware{
-  final uid = FirebaseAuth.instance.currentUser!.uid;
+  late final uid = widget.uid;
 
   Future<List<Map<String, dynamic>>> _fetchTransactions() async {
     final expensesSnap = await FirebaseFirestore.instance

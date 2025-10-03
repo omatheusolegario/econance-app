@@ -66,6 +66,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       await userDoc.set({
         'personalInfo': {
           'fullName': _fullNameController.text.trim(),
+          'email': _emailController.text.trim(),
           'phone': _phoneController.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
         }

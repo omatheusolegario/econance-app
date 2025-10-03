@@ -26,9 +26,9 @@ class _MainScreenState extends State<MainScreen> {
 
   late final List<Widget> _pages = [
     const HomePage(),
-    const RevenuesExpensesPage(),
+    RevenuesExpensesPage(uid: uid),
     const AddCategoryPage(),
-    const CategoriesPage(),
+    CategoriesPage(uid: uid),
     const Config(),
     const AddTransactionPage(type: "revenue"),
     const AddTransactionPage(type: "expense"),
