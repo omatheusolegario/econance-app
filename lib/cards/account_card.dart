@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:econance/features/family/family_space.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -104,7 +105,7 @@ class AccountCard extends StatelessWidget {
         const SizedBox(height: 16),
         const Divider(color: Colors.white54),
         const SizedBox(height: 16),
-        _buildFamilySpaceTile(theme),
+        _buildFamilySpaceTile(context, theme),
       ],
     );
   }
@@ -139,11 +140,12 @@ class AccountCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFamilySpaceTile(ThemeData theme) {
+  Widget _buildFamilySpaceTile( BuildContext ctx, ThemeData theme) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.family_restroom, color: Colors.white),
       title: const Text("Family Space", style: TextStyle(color: Colors.white)),
+      onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (context) => FamilySpacePage())),
       trailing: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(

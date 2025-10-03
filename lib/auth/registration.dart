@@ -57,6 +57,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
         password: _passwordController.text.trim(),
       );
 
+      await userCredential.user!.updateDisplayName(_fullNameController.text.trim());
+      await userCredential.user!.reload();
+
       final uid = userCredential.user!.uid;
       final userDoc = FirebaseFirestore.instance.collection('users').doc(uid);
 

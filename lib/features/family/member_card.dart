@@ -32,10 +32,7 @@ class MemberCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) =>
-                GraphsPage(userId: memberUid, displayName: displayName),
-          ),
+          MaterialPageRoute(builder: (_) => GraphsPage(uid: memberUid)),
         );
       },
       leading: CircleAvatar(
@@ -66,7 +63,7 @@ class MemberCard extends StatelessWidget {
                 title: const Text("Change role"),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _showChangeRoleDialog(context);
+                  _showChangedRoleDialog(context);
                 },
               ),
               ListTile(
@@ -110,10 +107,7 @@ class MemberCard extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => GraphsPage(
-                        userId: memberUid,
-                        displayName: displayName,
-                      ),
+                      builder: (_) => GraphsPage(uid: memberUid),
                     ),
                   );
                 },

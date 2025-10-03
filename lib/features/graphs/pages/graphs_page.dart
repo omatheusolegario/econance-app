@@ -7,7 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:econance/features/graphs/widgets/balance_chart_card.dart';
 
 class GraphsPage extends StatefulWidget {
-  const GraphsPage({super.key});
+  final String uid;
+  const GraphsPage({super.key, required this.uid});
 
   @override
   State<GraphsPage> createState() => _GraphsPageState();
@@ -22,7 +23,7 @@ class _GraphsPageState extends State<GraphsPage> {
     _dataFuture = _fetchData();
   }
 
-  final uid = FirebaseAuth.instance.currentUser!.uid;
+  late final uid = widget.uid;
 
   Future<Map<String, dynamic>> _fetchData() async {
     final userDoc = await FirebaseFirestore.instance

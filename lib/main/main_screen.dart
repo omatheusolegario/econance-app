@@ -9,6 +9,7 @@ import 'package:econance/features/transactions/add_transaction.dart';
 import 'package:econance/features/transactions/revenues_expenses.dart';
 import 'package:flutter/material.dart';
 import '../features/home/home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:econance/cards/account_card.dart';
 
 class MainScreen extends StatefulWidget {
@@ -21,8 +22,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   bool _hideSensitive = false;
   int _currentIndex = 0;
+  final uid = FirebaseAuth.instance.currentUser!.uid;
 
-  final List<Widget> _pages = [
+  late final List<Widget> _pages = [
     const HomePage(),
     const RevenuesExpensesPage(),
     const AddCategoryPage(),
@@ -30,7 +32,7 @@ class _MainScreenState extends State<MainScreen> {
     const Config(),
     const AddTransactionPage(type: "revenue"),
     const AddTransactionPage(type: "expense"),
-    const GraphsPage(),
+    GraphsPage(uid: uid),
     const InvoicePage(),
     const AiInsightsPage()
   ];
