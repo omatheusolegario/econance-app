@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:econance/features/family/family_invites_list.dart';
-import 'package:econance/features/family/invites_panel.dart';
+import 'package:econance/features/family/user_invites_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -90,7 +90,7 @@ class _InvitePageState extends State<InvitePage> {
 
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,7 +121,7 @@ class _InvitePageState extends State<InvitePage> {
                 const SizedBox(height: 20),
                 _familyId != null
                     ? FamilyInvitesList(familyId: _familyId!, role: _role!,)
-                    : InvitesList(),
+                    : UserInvitesList(),
               ],
             ),
 

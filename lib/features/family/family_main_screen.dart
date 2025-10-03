@@ -8,16 +8,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/family_service.dart';
 import 'member_card.dart';
-import 'invites_panel.dart';
+import 'user_invites_list.dart';
 
-class FamilySpacePage extends StatefulWidget {
-  const FamilySpacePage({super.key});
+class FamilyMainScreenPage extends StatefulWidget {
+  const FamilyMainScreenPage({super.key});
 
   @override
-  State<FamilySpacePage> createState() => _FamilySpacePageState();
+  State<FamilyMainScreenPage> createState() => _FamilyMainScreenPageState();
 }
 
-class _FamilySpacePageState extends State<FamilySpacePage> {
+class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
   final _fs = FamilyService();
   final _auth = FirebaseAuth.instance;
   int _currentIndex = 0;
@@ -209,6 +209,7 @@ class _FamilySpacePageState extends State<FamilySpacePage> {
 
     return Scaffold(
       appBar: AppBar(
+        actionsPadding: EdgeInsets.symmetric(horizontal: 10),
         actions: [
           if (_familyId != null)
             PopupMenuButton(

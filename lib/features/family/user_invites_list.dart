@@ -5,10 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'family_main_screen.dart';
 
-class InvitesList extends StatelessWidget {
+class UserInvitesList extends StatelessWidget {
   final FamilyService _familyService = FamilyService();
 
-  InvitesList({super.key});
+  UserInvitesList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class InvitesList extends StatelessWidget {
                               true,
                             );
                             if (context.mounted) {
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => FamilySpacePage()));
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => FamilyMainScreenPage()));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(

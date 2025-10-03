@@ -151,7 +151,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
     final theme = Theme.of(context);
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30.0),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

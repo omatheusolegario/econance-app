@@ -2,7 +2,7 @@ import 'package:econance/features/family/family_main_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/family_service.dart';
-import 'invites_panel.dart';
+import 'user_invites_list.dart';
 
 class FamilyCreatePage extends StatefulWidget {
   final String? familyId;
@@ -67,7 +67,7 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
         _familyId = fId;
         _role = "admin";
       });
-      Navigator.pushReplacement(context,MaterialPageRoute(builder: (ctx) => FamilySpacePage()));
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (ctx) => FamilyMainScreenPage()));
 
     } else if (ok == true && controller.text.trim() == ''){
       ScaffoldMessenger.of(
@@ -81,7 +81,7 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
     final theme = Theme.of(context);
     return Scaffold(
         body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -30,18 +30,15 @@ class MemberCard extends StatelessWidget {
 
     return ListTile(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => GraphsPage(uid: memberUid)),
-        );
+        showModalBottomSheet(context: context, builder: (ctx) => GraphsPage(uid: memberUid));
       },
       leading: CircleAvatar(
         child: Text(
           displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
         ),
       ),
-      title: Text(displayName.isNotEmpty ? displayName : email),
-      subtitle: Text("$email\n${role.toUpperCase()}"),
+      title: Text(displayName.isNotEmpty ? displayName : email,   style: theme.textTheme.bodyLarge),
+      subtitle: Text("$email\n${role.toUpperCase()}",),
       trailing: isAdminView
           ? IconButton(
               icon: const Icon(Icons.settings),
@@ -54,6 +51,7 @@ class MemberCard extends StatelessWidget {
   void _openAdminActions(BuildContext context) {
 
     showModalBottomSheet(
+      backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
       context: context,
       builder: (ctx) {
         return SafeArea(
@@ -61,35 +59,44 @@ class MemberCard extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
-                title: const Text("Change role"),
+                title: Text("Change role", style: Theme.of(context).textTheme.bodyMedium),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showChangedRoleDialog(context);
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.bar_chart),
+                title: Text("View member graphs", style: Theme.of(context).textTheme.bodyMedium,),
+                onTap: () {
+                  showModalBottomSheet(context: context, builder: (ctx) => GraphsPage(uid: memberUid));
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
+                title: Text(
                   "Remove from family",
-                  style: TextStyle(color: Colors.red),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
                 ),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final ok = await showDialog(
                     context: context,
                     builder: (dC) => AlertDialog(
-                      title: const Text("Remove member?"),
+                      backgroundColor: Colors.grey.shade900,
+                      title: Text("Remove member?", style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),),
                       content: const Text(
                         "Are you sure you want to remove this member?",
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dC, false),
-                          child: const Text("Cancel"),
+                          child: const Text("Cancel", style: TextStyle(color: Colors.white70),),
                         ),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(dC, true),
-                          child: const Text("Remove"),
+                          child: const Text("Remove", style: TextStyle(color: Colors.white),),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade500),
                         ),
                       ],
                     ),
@@ -98,19 +105,6 @@ class MemberCard extends StatelessWidget {
                     await FamilyService().removeMember(familyId, memberUid, false);
                     if (onRemoved != null) onRemoved!();
                   }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.bar_chart),
-                title: const Text("View member graphs"),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => GraphsPage(uid: memberUid),
-                    ),
-                  );
                 },
               ),
             ],
@@ -126,9 +120,11 @@ class MemberCard extends StatelessWidget {
       builder: (ctx) {
         String selected = role;
         return AlertDialog(
-          title: const Text("Change role"),
+          backgroundColor: Colors.grey.shade900,
+          title: Text("Change role",style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),),
           content: DropdownButtonFormField<String>(
             initialValue: selected,
+            style:  Theme.of(context).textTheme.bodyMedium ,
             items: const [
               DropdownMenuItem(value: 'admin', child: Text('Admin')),
               DropdownMenuItem(value: 'member', child: Text('Member')),
@@ -140,7 +136,7 @@ class MemberCard extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Cancel"),
+              child: Text("Cancel", style: TextStyle(color: Colors.red.shade500),),
             ),
             ElevatedButton(
               onPressed: () async {

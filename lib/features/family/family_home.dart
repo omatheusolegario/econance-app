@@ -26,7 +26,7 @@ class _FamilyHomePageState extends State<FamilyHomePage>{
     final theme = Theme.of(context);
     return Scaffold(
     body: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30,vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 30,vertical: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
