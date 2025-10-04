@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Welcome Back,",
+                  "Welcome,",
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.white60,
                   ),
@@ -109,28 +109,28 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 DashboardCard(
                                   title: "Total Balance",
-                                  value: 'R\$${data['balance']}',
+                                  value: '${data['balance']}',
                                   subtitle: "+17% VS Last Month",
                                   icon: Icons.account_balance_wallet,
                                   iconColor: Colors.green,
                                 ),
                                 DashboardCard(
                                   title: "Revenue",
-                                  value: 'R\$${data['totalRevenue']}',
+                                  value: '${data['totalRevenue']}',
                                   subtitle: "Same revenue as last month",
                                   icon: Icons.attach_money,
                                   iconColor: Colors.green,
                                 ),
                                 DashboardCard(
                                   title: "Expenses",
-                                  value: 'R\$${data['totalExpenses']}',
+                                  value: '${data['totalExpenses']}',
                                   subtitle: "-8% VS Last Month",
                                   icon: Icons.remove_circle,
                                   iconColor: Colors.red,
                                 ),
                                 DashboardCard(
                                   title: "Investments",
-                                  value: 'R\$${data['balance']}',
+                                  value: '${data['balance']}',
                                   subtitle: "+29% VS Last Month",
                                   backgroundColor: Colors.green.shade500,
                                   icon: Icons.show_chart,

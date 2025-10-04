@@ -18,6 +18,12 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
   void _nextStep() {
     if (_currentStep == 0) {
+      if (_nameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Category name cannot be empty")),
+        );
+        return;
+      }
       setState(() {
         _currentStep++;
       });
@@ -26,12 +32,41 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else if(_currentStep == 1){
+    } else if (_currentStep == 1){
+      if (type == null){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Select a type first")),
+        );
+        return;
+      }
+      setState(() {
+        _currentStep++;
+        _nextStep();
+      });
+    } else if (_currentStep == 2) {
       _addCategory();
     }
   }
 
+  void _previousStep() {
+    if (_currentStep > 0) {
+      setState(() {
+        _currentStep--;
+      });
+
+      _pageController.animateToPage(
+        _currentStep,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   Future<void> _addCategory() async {
+    setState(() {
+      _currentStep++;
+    });
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
     await FirebaseFirestore.instance
         .collection('users')
@@ -43,9 +78,6 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-    setState(() {
-      _currentStep++;
-    });
     _pageController.animateToPage(
       _currentStep,
       duration: const Duration(milliseconds: 400),
@@ -60,7 +92,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
   }) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -86,74 +118,118 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: LinearProgressIndicator(
-                value: (_currentStep + 1) / 3,
-                backgroundColor: Colors.white10,
-                color: theme.primaryColor,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 26, left: 20, right: 20, bottom: 6),
+                child: LinearProgressIndicator(
+                  value: (_currentStep + 1) / 3,
+                  backgroundColor: Colors.grey.shade300,
+                  color: theme.primaryColor,
+                ),
               ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildStepContent(
-                    title: "Add Category",
-                    subtitle: "Give your category a name",
-                    child: TextField(
-                      controller: _nameController,
-                      style: theme.textTheme.bodyMedium,
-                      decoration: const InputDecoration(
-                        hintText: "e.g. Groceries, Salary",
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildStepContent(
+                      title: "Add Category",
+                      subtitle: "Give your category a name",
+                      child: TextField(
+                        controller: _nameController,
+                        style: theme.textTheme.bodyMedium,
+                        decoration: const InputDecoration(
+                          hintText: "e.g. Groceries, Salary",
+                        ),
                       ),
                     ),
-                  ),
-                  _buildStepContent(
-                    title: "Choose the type",
-                    subtitle: "Is your category an expense or a revenue?",
-                    child: DropdownButtonFormField<String>(
-                      initialValue: "expense",
-                      style: theme.textTheme.bodyMedium,
-                      items: const [
-                        DropdownMenuItem(
-                          value: "expense",
-                          child: Text("Expense"),
-                        ),
-                        DropdownMenuItem(
-                          value: "revenue",
-                          child: Text("Revenue"),
-                        ),
-                      ],
-                      onChanged: (val) => setState(() => type = val),
-                      decoration:InputDecoration(hintText: "Select a type"),
-                    ),
-                  ),
-                  Center(child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Lottie.asset(
-                        "assets/animations/success.json",
-                        width: 150,
-                        repeat: false
+                    _buildStepContent(
+                      title: "Choose the type",
+                      subtitle: "Is your category an expense or a revenue?",
+                      child: DropdownButtonFormField<String>(
+                        style: theme.textTheme.bodyMedium,
+                        items: const [
+                          DropdownMenuItem(
+                            value: "expense",
+                            child: Text("Expense"),
+                          ),
+                          DropdownMenuItem(
+                            value: "revenue",
+                            child: Text("Revenue"),
+                          ),
+                        ],
+                        onChanged: (val) => setState(() => type = val),
+                        decoration: InputDecoration(hintText: "Select a type"),
                       ),
-                      const SizedBox(height: 20,),
-                      Text("Category successfully added!", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.green),)
-                    ],
-                  ),)
-                ],
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Lottie.asset(
+                            "assets/animations/success.json",
+                            width: 150,
+                            repeat: false,
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "Category successfully added!",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(onPressed: () {
+                                setState(() {
+                                  _currentStep = 0;
+                                  _nameController.text = '';
+                                  _pageController.animateToPage(
+                                    _currentStep,
+                                    duration: const Duration(milliseconds: 400),
+                                    curve: Curves.easeInOut,
+                                  );
+                                });
+                          }, child: Text("   Add another category   "))
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      floatingActionButton:  _currentStep < 2 ? FloatingActionButton(onPressed: _nextStep, backgroundColor: theme.primaryColor,child: const Icon(Icons.arrow_forward_ios),) : null
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: _currentStep < 2
+          ? SizedBox(
+        width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (_currentStep > 0)
+                      FloatingActionButton(
+                        heroTag: "backBtn",
+                        onPressed: _previousStep,
+                        backgroundColor: Colors.grey,
+                        child: const Icon(Icons.arrow_back_ios),
+                      ),
+                    const Spacer(),
+                    FloatingActionButton(
+                      onPressed: _nextStep,
+                      backgroundColor: theme.primaryColor,
+                      child: const Icon(Icons.arrow_forward_ios),
+                    ),
+                  ],
+                ),
+            ),
+          )
+          : null,
     );
   }
 }

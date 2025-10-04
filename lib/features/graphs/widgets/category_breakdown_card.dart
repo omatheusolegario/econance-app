@@ -5,8 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class CategoryBreakdownChart extends StatelessWidget {
   final String type;
+  final String uid;
 
-  const CategoryBreakdownChart({super.key, required this.type});
+  const CategoryBreakdownChart({super.key, required this.type, required this.uid});
 
   Stream<Map<String, double>> _getCategoryData(String uid) async* {
     final categoriesSnapshot = await FirebaseFirestore.instance
@@ -48,7 +49,6 @@ class CategoryBreakdownChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     final theme = Theme.of(context);
 
     return StreamBuilder<Map<String, double>>(

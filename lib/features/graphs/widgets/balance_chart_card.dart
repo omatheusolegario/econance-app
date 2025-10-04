@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class BalanceChartCard extends StatelessWidget {
+  final String uid;
+  const BalanceChartCard({super.key, required this.uid});
 
   Stream<Map<String, Map<String,double>>> _getMonthlyData(String uid){
     final revenuesStream = FirebaseFirestore.instance
@@ -54,7 +56,7 @@ class BalanceChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+
 
   return StreamBuilder<Map<String, Map<String, double>>>(stream: _getMonthlyData(uid), builder: (context, snapshot){
     if (!snapshot.hasData){

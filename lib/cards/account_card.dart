@@ -146,21 +146,6 @@ class AccountCard extends StatelessWidget {
       leading: const Icon(Icons.family_restroom, color: Colors.white),
       title: const Text("Family Space", style: TextStyle(color: Colors.white)),
       onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (context) => FamilyMainScreenPage())),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: theme.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          "WIP",
-          style: TextStyle(
-            fontSize: 12,
-            color: theme.primaryColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 }

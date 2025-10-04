@@ -34,6 +34,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   final _value = TextEditingController();
   final _note = TextEditingController();
   final _date = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   String? selectedCategoryId;
   String? selectedCategoryName;
@@ -138,7 +139,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         .collection(widget.type == "expense" ? "expenses" : "revenues")
         .add(data);
 
-    setState(() => _currentStep++);
     _pageController.animateToPage(
       _currentStep,
       duration: const Duration(milliseconds: 400),
@@ -147,15 +147,45 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   void _nextStep() {
-    if (_currentStep < 2) {
-      setState(() => _currentStep++);
+    if (_currentStep == 0) {
+      if (!_formKey.currentState!.validate()) return;
+      setState(() {
+        _currentStep++;
+      });
+    } else if (_currentStep == 1) {
+      if (_selectedDate == null || selectedCategoryId == null || selectedCategoryId == '') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please fill all fields first")),
+        );
+        return;
+      }
+      if (!widget.isInvoice) {
+        setState(() {
+          _currentStep++;
+          _saveTransaction();
+        });
+      }
+      if (widget.isInvoice) {
+        setState(() {
+          _currentStep++;
+        });
+      }
+    } else if (widget.isInvoice && _currentStep == 2) {
+      setState(() {
+        _currentStep++;
+        _saveTransaction();
+      });
+    }
+  }
+
+  void _previousStep() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
       _pageController.animateToPage(
         _currentStep,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
-    } else {
-      _saveTransaction();
     }
   }
 
@@ -170,6 +200,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         key: ValueKey(_currentStep),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Lottie.asset(
               "assets/animations/success.json",
@@ -184,6 +215,28 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 color: Colors.green,
               ),
             ),
+            const SizedBox(height: 20),
+            SizedBox(
+              child: widget.isInvoice == false
+                  ? ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentStep = 0;
+                          _value.text = '';
+                          _date.text = '';
+                          selectedCategoryId = '';
+                          selectedCategoryName = "Select Category";
+                          _selectedDate = null;
+                          _note.text = '';
+                          _getCurrentPage();
+                        });
+                      },
+                      child: Text(
+                        "   Add another ${capitalize(widget.type)}   ",
+                      ),
+                    )
+                  : null,
+            ),
           ],
         ),
       );
@@ -194,56 +247,70 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         return Padding(
           key: ValueKey(_currentStep),
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Add ${capitalize(widget.type)}",
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "First insert the value of the transaction, then a short commentary if you want to",
-                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-              ),
-              const SizedBox(height: 30),
-              TextField(
-                controller: _value,
-                keyboardType: TextInputType.number,
-                style: theme.textTheme.bodyMedium,
 
-                decoration: InputDecoration(
-                  hintText: "500,00",
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 14,
-                      top: 14,
-                      bottom: 14,
-                    ),
-                    child: Text(
-                      "R\$",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Add ${capitalize(widget.type)}",
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "First insert the value of the transaction, then a short commentary if you want to",
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                TextFormField(
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Please enter a value";
+                    }
+                    if (double.tryParse(value.replaceAll(',', '.')) == null) {
+                      return "Enter a valid number";
+                    }
+                    return null;
+                  },
+                  controller: _value,
+                  keyboardType: TextInputType.number,
+                  style: theme.textTheme.bodyMedium,
+                  decoration: InputDecoration(
+                    hintText: "500,00",
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 14,
+                        top: 14,
+                        bottom: 14,
+                      ),
+                      child: Text(
+                        "R\$",
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 0,
-                    minHeight: 0,
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: 0,
+                      minHeight: 0,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _note,
-                style: theme.textTheme.bodyMedium,
-                decoration: const InputDecoration(
-                  hintText: "Optional commentary",
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _note,
+                  style: theme.textTheme.bodyMedium,
+                  decoration: const InputDecoration(
+                    hintText: "Optional commentary",
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
 
@@ -400,7 +467,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: LinearProgressIndicator(
-                value: (_currentStep + 1) / 4,
+                value: (_currentStep + 1) / numPages,
                 backgroundColor: Colors.grey.shade300,
                 color: theme.primaryColor,
                 minHeight: 4,
@@ -419,11 +486,19 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               },
               child: _getCurrentPage(),
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(height: 10),
             if (_currentStep < numInputSteps)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  if (_currentStep > 0)
+                    FloatingActionButton(
+                      heroTag: "backBtn",
+                      onPressed: _previousStep,
+                      backgroundColor: Colors.grey,
+                      child: const Icon(Icons.arrow_back_ios),
+                    ),
+                  const Spacer(),
                   FloatingActionButton(
                     onPressed: _nextStep,
                     backgroundColor: theme.primaryColor,

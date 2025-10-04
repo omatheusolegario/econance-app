@@ -97,6 +97,10 @@ class _GraphsPageState extends State<GraphsPage> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     }
                     final data = snapshot.data!;
+
+                    final balanceData = data['balance'] as double;
+                    final balanceString = balanceData.toStringAsFixed(2);
+
                     return Padding(
                       padding: EdgeInsets.symmetric(vertical: 0),
                       child: Column(
@@ -113,17 +117,17 @@ class _GraphsPageState extends State<GraphsPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Your balance is R\$${data['balance']}',
+                                    'The balance is R\$${balanceString}',
                                     style: theme.textTheme.bodyLarge?.copyWith(
                                       color: theme.textTheme.bodyLarge?.color,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  BalanceChartCard(),
+                                  BalanceChartCard(uid: uid),
                                   const SizedBox(height: 30),
                                   Text(
-                                    'Want to check on your revenues/expenses?',
+                                    'Want to check on revenues/expenses?',
                                     style: theme.textTheme.bodyLarge?.copyWith(
                                       color: theme.textTheme.bodyLarge?.color,
                                       fontWeight: FontWeight.bold,
@@ -150,9 +154,9 @@ class _GraphsPageState extends State<GraphsPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 20),
-                                  CategoryBreakdownChart(type: "expense"),
+                                  CategoryBreakdownChart(type: "expense", uid: uid),
                                   const SizedBox(height: 20),
-                                  CategoryBreakdownChart(type: "revenue"),
+                                  CategoryBreakdownChart(type: "revenue", uid: uid),
                                   const SizedBox(height: 20),
                                   Text(
                                     'Manage your categories',

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class DashboardCard extends StatelessWidget {
@@ -21,6 +22,7 @@ class DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final doubleValue = double.tryParse(value) ?? 0.0;
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -46,7 +48,7 @@ class DashboardCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            value,
+            "R\$ ${doubleValue.toStringAsFixed(2)}",
             style: theme.textTheme.bodyMedium?.copyWith(
                fontWeight: FontWeight.bold,
             ),
