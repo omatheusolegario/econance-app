@@ -12,50 +12,133 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late Future<Map<String,dynamic>> _dataFuture;
+  late Future<Map<String, dynamic>> _dataFuture;
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+
+  int selectedIndex = 0;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _dataFuture = _fetchData();
   }
 
-  final uid = FirebaseAuth.instance.currentUser!.uid;
-
   Future<Map<String, dynamic>> _fetchData() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
-    final personalInfo = userDoc['personalInfo'] as Map<String, dynamic>? ?? {};
-    final name = personalInfo['fullName'] ?? 'User';
+    final now = DateTime.now();
+    final firstDayThisMonth = DateTime(now.year, now.month, 1);
+    final firstDayLastMonth = DateTime(now.year, now.month - 1, 1);
+    final firstDayNextMonth = DateTime(now.year, now.month + 1, 1);
 
-    final expensesSnap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('expenses')
-        .get();
-    final totalExpenses = expensesSnap.docs.fold<double>(
-      0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
-    );
-
-    final revenuesSnap = await FirebaseFirestore.instance
+    final revenuesSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .collection('revenues')
+        .where('date', isGreaterThanOrEqualTo: firstDayThisMonth)
+        .where('date', isLessThan: firstDayNextMonth)
         .get();
-    final totalRevenue = revenuesSnap.docs.fold<double>(
+
+    final revenuesSnapLastMonth = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('revenues')
+        .where('date', isGreaterThanOrEqualTo: firstDayLastMonth)
+        .where('date', isLessThan: firstDayThisMonth)
+        .get();
+
+    double totalRevenueThisMonth = revenuesSnapThisMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
+    double totalRevenueLastMonth = revenuesSnapLastMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
 
+    double revenueChange = totalRevenueLastMonth == 0
+        ? 0
+        : ((totalRevenueThisMonth - totalRevenueLastMonth) / totalRevenueLastMonth) * 100;
+
+    final expensesSnapThisMonth = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('expenses')
+        .where('date', isGreaterThanOrEqualTo: firstDayThisMonth)
+        .where('date', isLessThan: firstDayNextMonth)
+        .get();
+
+    final expensesSnapLastMonth = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('expenses')
+        .where('date', isGreaterThanOrEqualTo: firstDayLastMonth)
+        .where('date', isLessThan: firstDayThisMonth)
+        .get();
+
+    double totalExpensesThisMonth = expensesSnapThisMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
+    double totalExpensesLastMonth = expensesSnapLastMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
+
+    double expensesChange = totalExpensesLastMonth == 0
+        ? 0
+        : ((totalExpensesThisMonth - totalExpensesLastMonth) / totalExpensesLastMonth) * 100;
+
+    final investmentsSnapThisMonth = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('investments')
+        .where('date', isGreaterThanOrEqualTo: firstDayThisMonth)
+        .where('date', isLessThan: firstDayNextMonth)
+        .get();
+
+    final investmentsSnapLastMonth = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('investments')
+        .where('date', isGreaterThanOrEqualTo: firstDayLastMonth)
+        .where('date', isLessThan: firstDayThisMonth)
+        .get();
+
+    double totalInvestmentsThisMonth = investmentsSnapThisMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
+    double totalInvestmentsLastMonth = investmentsSnapLastMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
+
+    double investmentsChange = totalInvestmentsLastMonth == 0
+        ? 0
+        : ((totalInvestmentsThisMonth - totalInvestmentsLastMonth) / totalInvestmentsLastMonth) * 100;
+
+    final balanceThisMonth = totalRevenueThisMonth - totalExpensesThisMonth;
+    final balanceLastMonth = totalRevenueLastMonth - totalExpensesLastMonth;
+
+    double balanceChange = balanceLastMonth == 0
+        ? 0
+        : ((balanceThisMonth - balanceLastMonth) / balanceLastMonth) * 100;
+
     return {
-      'name': name,
-      'totalRevenue': totalRevenue,
-      'totalExpenses': totalExpenses,
-      'balance': totalRevenue - totalExpenses,
+      'balance': balanceThisMonth,
+      'totalRevenue': totalRevenueThisMonth,
+      'totalExpenses': totalExpensesThisMonth,
+      'investments': totalInvestmentsThisMonth,
+      'balanceChange': balanceChange,
+      'revenueChange': revenueChange,
+      'expensesChange': expensesChange,
+      'investmentsChange': investmentsChange,
     };
+  }
+
+  Color _getChangeColor(double change) {
+    if (change > 0) return Colors.green;
+    if (change < 0) return Colors.red;
+    return Colors.grey;
   }
 
   @override
@@ -63,93 +146,124 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome,",
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white60,
-                  ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Welcome,",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 ),
-                Container(
-                  child: FutureBuilder<Map<String, dynamic>>(
-                    future: _dataFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      }
-                      final data = snapshot.data!;
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${data['name']}!',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.textTheme.bodyLarge?.color,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 30),
-                            GridView.count(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              childAspectRatio: 1.4,
-                              shrinkWrap: true,
-                              children: [
-                                DashboardCard(
-                                  title: "Total Balance",
-                                  value: '${data['balance']}',
-                                  subtitle: "+17% VS Last Month",
-                                  icon: Icons.account_balance_wallet,
-                                  iconColor: Colors.green,
-                                ),
-                                DashboardCard(
-                                  title: "Revenue",
-                                  value: '${data['totalRevenue']}',
-                                  subtitle: "Same revenue as last month",
-                                  icon: Icons.attach_money,
-                                  iconColor: Colors.green,
-                                ),
-                                DashboardCard(
-                                  title: "Expenses",
-                                  value: '${data['totalExpenses']}',
-                                  subtitle: "-8% VS Last Month",
-                                  icon: Icons.remove_circle,
-                                  iconColor: Colors.red,
-                                ),
-                                DashboardCard(
-                                  title: "Investments",
-                                  value: '${data['balance']}',
-                                  subtitle: "+29% VS Last Month",
-                                  backgroundColor: Colors.green.shade500,
-                                  icon: Icons.show_chart,
-                                  iconColor: Colors.green.shade900,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+              ),
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const CircularProgressIndicator();
+
+                  final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+                  final personalInfo = data['personalInfo'] as Map<String, dynamic>? ?? {};
+                  final name = personalInfo['fullName'] ?? 'User';
+
+                  return Text(
+                    "$name!",
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 30),
+              FutureBuilder<Map<String, dynamic>>(
+                future: _dataFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+
+                  final data = snapshot.data!;
+
+                  final cards = [
+                    {
+                      'title': 'Total Balance',
+                      'value': 'balance',
+                      'change': 'balanceChange',
+                      'icon': Icons.account_balance_wallet,
+                      'iconColor': theme.primaryColor,
+                    },
+                    {
+                      'title': 'Revenue',
+                      'value': 'totalRevenue',
+                      'change': 'revenueChange',
+                      'icon': Icons.attach_money,
+                      'iconColor': theme.primaryColor,
+                    },
+                    {
+                      'title': 'Expenses',
+                      'value': 'totalExpenses',
+                      'change': 'expensesChange',
+                      'icon': Icons.remove_circle,
+                      'iconColor': Colors.red,
+                    },
+                    {
+                      'title': 'Investments',
+                      'value': 'investments',
+                      'change': 'investmentsChange',
+                      'icon': Icons.show_chart,
+                      'iconColor': Colors.purple,
+                    },
+                  ];
+
+                  return GridView.builder(
+                    itemCount: cards.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1.4,
+                    ),
+                    itemBuilder: (context, index) {
+                      final card = cards[index];
+                      final valueKey = card['value'] as String;
+                      final changeKey = card['change'] as String;
+                      final changeValue =
+                          (data[changeKey] as double?)?.toStringAsFixed(1) ?? '0';
+
+                      return DashboardCard(
+                        title: card['title'] as String,
+                        value: '${data[valueKey]}',
+                        subtitle: "$changeValue% VS Last Month",
+                        icon: card['icon'] as IconData?,
+                        iconColor: card['iconColor'] as Color?,
+                        subtitleColor: _getChangeColor(data[changeKey] as double? ?? 0),
+                        isSelected: selectedIndex == index,
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                        },
                       );
                     },
-                  ),
-                ),
-                const SizedBox(height: 30,),
-                RevenueLineChart(),
-              ],
-            ),
+                  );
+                },
+              ),
+              const SizedBox(height: 30),
+              RevenueLineChart(selectedCardIndex: selectedIndex),
+            ],
           ),
         ),
+      ),
     );
   }
 }

@@ -4,8 +4,7 @@ import '../l10n/app_localizations.dart';
 
 class VerificationPage extends StatefulWidget {
   final User user;
-  final String? verificationId;
-  const VerificationPage({super.key, required this.user, this.verificationId});
+  const VerificationPage({super.key, required this.user});
 
   @override
   State<VerificationPage> createState() => _VerificationPageState();
@@ -13,7 +12,6 @@ class VerificationPage extends StatefulWidget {
 
 class _VerificationPageState extends State<VerificationPage> {
   bool _isLoading = false;
-  final otpController = TextEditingController();
 
   Future<bool> checkEmailVerified() async {
     await widget.user.reload();
@@ -21,41 +19,21 @@ class _VerificationPageState extends State<VerificationPage> {
     return user.emailVerified;
   }
 
-  Future<bool> verifySmsCode() async {
-    if (widget.verificationId == null) return true;
-    String smsCode = otpController.text.trim();
-    if (smsCode.isEmpty) return false;
-
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId!,
-        smsCode: smsCode,
-      );
-      await widget.user.linkWithCredential(credential);
-      return true;
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Deu ruim")),
-      );
-      return false;
-    }
-  }
-
-  Future<void> verifyAll() async {
+  Future<void> verifyEmail() async {
     setState(() => _isLoading = true);
 
     bool emailOk = await checkEmailVerified();
-    bool smsOk = await verifySmsCode();
 
     setState(() => _isLoading = false);
 
-    if (emailOk && smsOk) {
+    if (emailOk) {
       Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
     } else {
-      String message = '';
-      if (!emailOk) message += AppLocalizations.of(context)!.notverified + '\n';
-      if (!smsOk) message += "Deu ruim";
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.notverified),
+        ),
+      );
     }
   }
 
@@ -84,18 +62,6 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
             const SizedBox(height: 20),
 
-            if (widget.verificationId != null) ...[
-              TextField(
-                controller: otpController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'texto sms',
-                  hintText: '123456',
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-
             _isLoading
                 ? const CircularProgressIndicator()
                 : Column(
@@ -103,7 +69,7 @@ class _VerificationPageState extends State<VerificationPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: verifyAll,
+                    onPressed: verifyEmail,
                     child: Text(AppLocalizations.of(context)!.iverified),
                   ),
                 ),

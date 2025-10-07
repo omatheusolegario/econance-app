@@ -14,16 +14,27 @@ class LineChartCard extends StatelessWidget {
     required this.total,
     required this.labels,
   });
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final Color lineColor = title.toLowerCase().contains('expense')
+        ? Colors.red
+        : title.toLowerCase().contains('revenue')
+        ? Colors.green
+        : title.toLowerCase().contains('balance')
+        ? Colors.blueAccent
+        : title.toLowerCase().contains('investment')
+        ? Colors.purple
+        : theme.primaryColor;
 
     return Card(
       color: Colors.white10.withValues(alpha: .04),
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -46,10 +57,10 @@ class LineChartCard extends StatelessWidget {
             SizedBox(
               height: 200,
               child: Padding(
-                padding: const EdgeInsets.only(left:15.0),
+                padding: const EdgeInsets.only(left: 15.0),
                 child: LineChart(
                   LineChartData(
-                    gridData: FlGridData(show: false),
+                    gridData: const FlGridData(show: false),
                     borderData: FlBorderData(show: false),
                     titlesData: FlTitlesData(
                       bottomTitles: AxisTitles(
@@ -60,18 +71,19 @@ class LineChartCard extends StatelessWidget {
                             int index = value.toInt();
                             if (index >= 0 && index < labels.length) {
                               return Padding(
-                                  padding: EdgeInsets.only(top: 12),
-                                  child:Text(
-                                labels[index],
-                                style: const TextStyle(fontSize: 10),
-                              ));
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Text(
+                                  labels[index],
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              );
                             }
                             return const SizedBox.shrink();
                           },
                           interval: 1,
                         ),
                       ),
-                      leftTitles: AxisTitles(
+                      leftTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false),
                       ),
                       rightTitles: AxisTitles(
@@ -79,19 +91,20 @@ class LineChartCard extends StatelessWidget {
                           reservedSize: 60,
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
-                            if(value == meta.max || value == meta.min){
+                            if (value == meta.max || value == meta.min) {
                               return const SizedBox.shrink();
                             }
                             return Padding(
                               padding: const EdgeInsets.only(left: 25),
-                              child:Text(
-                              value.toStringAsFixed(0),
-                              style: const TextStyle(fontSize: 10),)
+                              child: Text(
+                                value.toStringAsFixed(0),
+                                style: const TextStyle(fontSize: 10),
+                              ),
                             );
                           },
                         ),
                       ),
-                      topTitles: AxisTitles(
+                      topTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false),
                       ),
                     ),
@@ -99,9 +112,9 @@ class LineChartCard extends StatelessWidget {
                       LineChartBarData(
                         spots: points,
                         isCurved: true,
-                        color: Colors.green,
+                        color: lineColor,
                         barWidth: 3,
-                        dotData: FlDotData(show: true),
+                        dotData: const FlDotData(show: true),
                       ),
                     ],
                   ),

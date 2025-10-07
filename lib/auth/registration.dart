@@ -16,15 +16,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _smsController = TextEditingController();
 
-  final _phoneFormatter =
-  MaskTextInputFormatter(mask: '+## ## #####-####', filter: {"#": RegExp(r'[0-9]')});
+  final _phoneFormatter = MaskTextInputFormatter(
+    mask: '+## ## #####-####',
+    filter: {"#": RegExp(r'[0-9]')},
+  );
 
   bool _isLoading = false;
   bool _obscurePassword = true;
   int _step = 0;
-  String? _verificationId;
 
   double get progress => (_step + 1) / 4;
 
@@ -44,6 +44,34 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   void nextStep() {
+    String error = '';
+
+    if (_step == 0 && _fullNameController.text.trim().isEmpty) {
+      error = 'Digite seu nome completo';
+    } else if (_step == 1) {
+      final email = _emailController.text.trim();
+      if (email.isEmpty || !email.contains('@')) {
+        error = 'Digite um email válido';
+      }
+    } else if (_step == 2) {
+      final phone = _phoneController.text.trim();
+      if (phone.isEmpty || phone.length < 10) {
+        error = 'Digite um telefone válido';
+      }
+    } else if (_step == 3) {
+      final pass = _passwordController.text.trim();
+      if (pass.isEmpty || pass.length < 6) {
+        error = 'A senha deve ter no mínimo 6 caracteres';
+      }
+    }
+
+    if (error.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+      return;
+    }
+
     if (_step < 3) {
       setState(() => _step++);
     }
@@ -74,21 +102,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
       await userCredential.user?.sendEmailVerification();
 
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: _phoneController.text.trim(),
-        verificationCompleted: (cred) async {
-          await userCredential.user?.linkWithCredential(cred);
-        },
-        verificationFailed: (e) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(e.message ?? 'Erro SMS')));
-        },
-        codeSent: (verificationId, _) {
-          setState(() => _verificationId = verificationId);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Código SMS enviado!')));
-        },
-        codeAutoRetrievalTimeout: (id) {},
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Verificação de email enviada')),
       );
     } on FirebaseAuthException catch (e) {
       String msg = 'Erro ao registrar';
@@ -100,35 +115,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
   }
 
-  Future<void> verifyEmailAndSms() async {
+  Future<void> verifyEmail() async {
     setState(() => _isLoading = true);
 
     await _auth.currentUser?.reload();
     final user = _auth.currentUser!;
     bool emailVerified = user.emailVerified;
 
-    bool smsVerified = true;
-    if (_verificationId != null && _smsController.text.isNotEmpty) {
-      try {
-        PhoneAuthCredential credential = PhoneAuthProvider.credential(
-          verificationId: _verificationId!,
-          smsCode: _smsController.text.trim(),
-        );
-        await user.linkWithCredential(credential);
-      } catch (_) {
-        smsVerified = false;
-      }
-    }
-
     setState(() => _isLoading = false);
 
-    if (emailVerified && smsVerified) {
+    if (emailVerified) {
       Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
     } else {
-      String msg = '';
-      if (!emailVerified) msg += 'Email não verificado.\n';
-      if (!smsVerified) msg += 'Código SMS inválido.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email não verificado.')),
+      );
     }
   }
 
@@ -180,22 +181,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 child: const Text('Registrar'),
               ),
             ),
-            if (_verificationId != null) ...[
-              const SizedBox(height: 20),
-              TextField(
-                controller: _smsController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Código SMS',
-                  hintText: '123456',
-                ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: verifyEmailAndSms,
-                child: const Text('Verificar Email e SMS'),
-              ),
-            ],
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: verifyEmail,
+              child: const Text('Verificar Email'),
+            ),
           ],
         );
       default:
@@ -205,29 +195,67 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: Text(getStepTitle())),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-          child: Column(
-            children: [
-              LinearProgressIndicator(value: progress),
-              const SizedBox(height: 20),
-              Expanded(child: getStepWidget()),
-              if (_step < 3)
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: nextStep,
-                    child: const Text('Próximo'),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 30.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              if (_isLoading) const CircularProgressIndicator(),
-            ],
-          ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+
+            Text(
+              "Complete seu cadastro",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white60,
+              ),
+            ),
+            const SizedBox(height: 7),
+
+            Text(
+              getStepTitle(),
+              style: theme.textTheme.headlineLarge?.copyWith(
+                color: theme.textTheme.bodyLarge?.color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Expanded(child: getStepWidget()),
+
+            LinearProgressIndicator(value: progress),
+
+            const SizedBox(height: 20),
+
+            if (_step < 3)
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: nextStep,
+                  child: const Text('Próximo'),
+                ),
+              ),
+          ],
         ),
       ),
     );

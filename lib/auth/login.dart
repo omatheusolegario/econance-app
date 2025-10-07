@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../theme/theme_manager.dart';
 import '../l10n/app_localizations.dart';
 import 'register_verification.dart';
@@ -15,17 +14,10 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  bool isEmailSelected = true;
   bool _obscurePassword = true;
   bool _isLoading = false;
   final fieldText = TextEditingController();
   final passwordController = TextEditingController();
-
-  final phoneFormatter = MaskTextInputFormatter(
-    mask: '+## ## #####-####',
-    filter: {"#": RegExp(r'[0-9]')},
-    type: MaskAutoCompletionType.eager,
-  );
 
   void clearText() {
     fieldText.clear();
@@ -36,9 +28,9 @@ class _LoginState extends State<Login> {
     try {
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
-            email: fieldText.text.trim(),
-            password: passwordController.text.trim(),
-          );
+        email: fieldText.text.trim(),
+        password: passwordController.text.trim(),
+      );
 
       final user = userCredential.user!;
       if (!user.emailVerified) {
@@ -65,63 +57,6 @@ class _LoginState extends State<Login> {
     } finally {
       setState(() => _isLoading = false);
     }
-  }
-
-  Future<void> signInWithPhone() async {
-    setState(() => _isLoading = true);
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: fieldText.text.trim(),
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Erro ao verificar telefone')),
-        );
-        setState(() => _isLoading = false);
-      },
-      codeSent: (String verificationId, int? resendToken) async {
-        setState(() => _isLoading = false);
-
-        String smsCode = '';
-        await showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text("Digite o código SMS"),
-              content: TextField(
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  smsCode = value;
-                },
-              ),
-              actions: [
-                TextButton(
-                  child: const Text("Confirmar"),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          },
-        );
-
-        if (smsCode.isNotEmpty) {
-          PhoneAuthCredential credential = PhoneAuthProvider.credential(
-            verificationId: verificationId,
-            smsCode: smsCode,
-          );
-
-          await FirebaseAuth.instance.signInWithCredential(credential);
-          Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
-        }
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        setState(() => _isLoading = false);
-      },
-    );
   }
 
   @override
@@ -152,162 +87,90 @@ class _LoginState extends State<Login> {
                 ),
               ),
               const SizedBox(height: 50),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () {
-                      clearText();
-                      FocusScope.of(context).unfocus();
-                      setState(() => isEmailSelected = true);
-                    },
-                    child: Text(
-                      "Email",
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: isEmailSelected
-                            ? Colors.green
-                            : theme.textTheme.bodyMedium?.color,
-                        decoration: isEmailSelected
-                            ? TextDecoration.underline
-                            : TextDecoration.none,
-                        decorationStyle: TextDecorationStyle.solid,
-                        decorationColor: Colors.green,
-                        decorationThickness: 2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    onPressed: () {
-                      clearText();
-                      FocusScope.of(context).unfocus();
-                      setState(() => isEmailSelected = false);
-                    },
-                    child: Text(
-                      AppLocalizations.of(context)!.phonenumber,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: !isEmailSelected
-                            ? Colors.green
-                            : theme.textTheme.bodyMedium?.color,
-                        decoration: !isEmailSelected
-                            ? TextDecoration.underline
-                            : TextDecoration.none,
-                        decorationStyle: TextDecorationStyle.solid,
-                        decorationColor: Colors.green,
-                        decorationThickness: 2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 40),
+
               Text(
-                isEmailSelected
-                    ? AppLocalizations.of(context)!.emailaddress
-                    : AppLocalizations.of(context)!.phonenumber,
+                AppLocalizations.of(context)!.emailaddress,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.textTheme.bodyMedium?.color,
                 ),
               ),
               const SizedBox(height: 5),
+
               TextField(
                 controller: fieldText,
-                keyboardType: isEmailSelected
-                    ? TextInputType.emailAddress
-                    : TextInputType.phone,
-                inputFormatters: isEmailSelected ? [] : [phoneFormatter],
+                keyboardType: TextInputType.emailAddress,
                 style: theme.textTheme.bodyMedium,
                 decoration: InputDecoration(
-                  hintText: isEmailSelected
-                      ? AppLocalizations.of(context)!.emailinput
-                      : AppLocalizations.of(context)!.phoneinput,
+                  hintText: AppLocalizations.of(context)!.emailinput,
                 ),
               ),
               const SizedBox(height: 20),
-              if (isEmailSelected) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.password,
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.password,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/forgot-password");
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.forgotpassword,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.textTheme.bodyMedium?.color,
+                        color: Colors.green,
                       ),
-                    ),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, "/forgot-password");
-                      },
-                      child: Text(
-                        AppLocalizations.of(context)!.forgotpassword,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                TextField(
-                  controller: passwordController,
-                  obscureText: _obscurePassword,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.passwordinput,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 5),
+
+              TextField(
+                controller: passwordController,
+                obscureText: _obscurePassword,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.passwordinput,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 40),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          if (isEmailSelected) {
-                            signInWithEmail();
-                          } else {
-                            signInWithPhone();
-                          }
-                        },
+                  onPressed: _isLoading ? null : signInWithEmail,
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          AppLocalizations.of(context)!.login,
-                          style: theme.textTheme.labelMedium,
-                        ),
+                    AppLocalizations.of(context)!.login,
+                    style: theme.textTheme.labelMedium,
+                  ),
                 ),
               ),
             ],

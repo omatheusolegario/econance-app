@@ -1,10 +1,13 @@
 import 'package:econance/features/categories/categories.dart';
 import 'package:econance/features/graphs/widgets/category_breakdown_card.dart';
 import 'package:econance/features/transactions/revenues_expenses.dart';
+import 'package:econance/features/graphs/widgets/balance_chart_card.dart';
+import 'package:econance/features/investments/investments_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:econance/features/graphs/widgets/balance_chart_card.dart';
+
+import '../../investments/investment_breakdown_chart.dart';
 
 class GraphsPage extends StatefulWidget {
   final String uid;
@@ -40,7 +43,7 @@ class _GraphsPageState extends State<GraphsPage> {
         .get();
     final totalExpenses = expensesSnap.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
 
     final revenuesSnap = await FirebaseFirestore.instance
@@ -50,7 +53,7 @@ class _GraphsPageState extends State<GraphsPage> {
         .get();
     final totalRevenue = revenuesSnap.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
 
     return {
@@ -68,7 +71,7 @@ class _GraphsPageState extends State<GraphsPage> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -86,114 +89,141 @@ class _GraphsPageState extends State<GraphsPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Container(
-                child: FutureBuilder<Map<String, dynamic>>(
-                  future: _dataFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-                    final data = snapshot.data!;
+              FutureBuilder<Map<String, dynamic>>(
+                future: _dataFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  final data = snapshot.data!;
+                  final balanceData = data['balance'] as double;
+                  final balanceString = balanceData.toStringAsFixed(2);
 
-                    final balanceData = data['balance'] as double;
-                    final balanceString = balanceData.toStringAsFixed(2);
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Card(
-                            color: Colors.white10.withValues(alpha: .04),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'The balance is R\$${balanceString}',
-                                    style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme.textTheme.bodyLarge?.color,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  BalanceChartCard(uid: uid),
-                                  const SizedBox(height: 30),
-                                  Text(
-                                    'Want to check on revenues/expenses?',
-                                    style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme.textTheme.bodyLarge?.color,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  SizedBox(
-                                    width: 100,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(25),
-                                            ),
-                                          ),
-                                          builder: (context) =>
-                                              RevenuesExpensesPage(uid: uid),
-                                        );
-                                      },
-                                      child: Text("Check"),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  CategoryBreakdownChart(type: "expense", uid: uid),
-                                  const SizedBox(height: 20),
-                                  CategoryBreakdownChart(type: "revenue", uid: uid),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    'Manage your categories',
-                                    style: theme.textTheme.bodyLarge?.copyWith(
-                                      color: theme.textTheme.bodyLarge?.color,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  SizedBox(
-                                    width: 100,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(25),
-                                            ),
-                                          ),
-                                          builder: (context) =>
-                                              CategoriesPage(uid: uid),
-                                        );
-                                      },
-                                      child: Text("Manage"),
-                                    ),
-                                  ),
-                                ],
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+                        color: Colors.white10.withOpacity(.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'The balance is R\$${balanceString}',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 20),
+                              BalanceChartCard(uid: uid),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    );
-                  },
-                ),
+                      const SizedBox(height: 20),
+
+                      Card(
+                        color: Colors.white10.withOpacity(.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Want to check on revenues/expenses?',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              SizedBox(
+                                width: 100,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(25),
+                                        ),
+                                      ),
+                                      builder: (context) =>
+                                          RevenuesExpensesPage(uid: uid),
+                                    );
+                                  },
+                                  child: const Text("Check"),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              CategoryBreakdownChart(type: "expense", uid: uid),
+                              const SizedBox(height: 20),
+                              CategoryBreakdownChart(type: "revenue", uid: uid),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      InvestmentBreakdownChart(uid: uid),
+                      const SizedBox(height: 20),
+
+                      Card(
+                        color: Colors.white10.withOpacity(.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Manage your categories',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              SizedBox(
+                                width: 100,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(25),
+                                        ),
+                                      ),
+                                      builder: (context) =>
+                                          CategoriesPage(uid: uid),
+                                    );
+                                  },
+                                  child: const Text("Manage"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

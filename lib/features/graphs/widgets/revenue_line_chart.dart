@@ -4,39 +4,72 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'line_chart_card.dart';
 
-Stream<Map<String, double>> getMonthyRevenues(String uid) {
+Stream<Map<String, double>> getMonthlyData(String uid, String collection) {
   return FirebaseFirestore.instance
       .collection('users')
       .doc(uid)
-      .collection('revenues')
+      .collection(collection)
       .snapshots()
       .map((snapshot) {
-        final Map<String, double> monthyTotals = {};
-        for (final doc in snapshot.docs) {
-          final data = doc.data();
-          final ts = data['date'] as Timestamp;
-          final date = ts.toDate();
+    final Map<String, double> monthlyTotals = {};
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final ts = data['date'] as Timestamp;
+      final date = ts.toDate();
+      final monthKey = "${date.year}-${date.month.toString().padLeft(2, '0')}";
+      monthlyTotals[monthKey] =
+          (monthlyTotals[monthKey] ?? 0) + (data['value'] as num).toDouble();
+    }
+    return monthlyTotals;
+  });
+}
 
-          final monthKey =
-              "${date.year}-${date.month.toString().padLeft(2, '0')}";
+Stream<Map<String, double>> getMonthlyBalance(String uid) async* {
+  final revenueStream = getMonthlyData(uid, 'revenues');
+  final expenseStream = getMonthlyData(uid, 'expenses');
 
-          monthyTotals[monthKey] =
-              (monthyTotals[monthKey] ?? 0) + (data['value'] as num).toDouble();
-        }
+  await for (final revenues in revenueStream) {
+    final expensesSnapshot = await expenseStream.first;
+    final allMonths = {...revenues.keys, ...expensesSnapshot.keys};
 
-        return monthyTotals;
-      });
+    final Map<String, double> balances = {};
+    for (final month in allMonths) {
+      final revenue = revenues[month] ?? 0;
+      final expense = expensesSnapshot[month] ?? 0;
+      balances[month] = revenue - expense;
+    }
+
+    yield balances;
+  }
 }
 
 class RevenueLineChart extends StatelessWidget {
-  const RevenueLineChart({super.key});
+  final int selectedCardIndex;
+
+  const RevenueLineChart({super.key, required this.selectedCardIndex});
 
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
+    final Stream<Map<String, double>> stream = switch (selectedCardIndex) {
+      0 => getMonthlyBalance(uid),
+      1 => getMonthlyData(uid, 'revenues'),
+      2 => getMonthlyData(uid, 'expenses'),
+      3 => getMonthlyData(uid, 'investments'),
+      _ => getMonthlyData(uid, 'revenues'),
+    };
+
+    final titles = [
+      'Balance Over Time',
+      'Revenue Over Time',
+      'Expenses Over Time',
+      'Investments Over Time'
+    ];
+    final title = titles[selectedCardIndex];
+
     return StreamBuilder<Map<String, double>>(
-      stream: getMonthyRevenues(uid),
+      stream: stream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -55,7 +88,7 @@ class RevenueLineChart extends StatelessWidget {
             .toStringAsFixed(2);
 
         return LineChartCard(
-          title: "Revenues Over Time",
+          title: title,
           total: "R\$ $total",
           points: points,
           labels: months,

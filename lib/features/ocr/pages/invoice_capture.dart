@@ -1,14 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
 import 'package:econance/features/transactions/add_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
@@ -43,19 +40,52 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
   }
 
   Future<void> _initializeCamera() async {
-    _cameras = await availableCameras();
-    if (_cameras.isNotEmpty) {
-      _controller = CameraController(
-        _cameras[_currentCameraIndex],
-        ResolutionPreset.high,
+    final status = await Permission.camera.request();
+
+    if (status.isGranted) {
+      final allCameras = await availableCameras();
+
+      CameraDescription? backCamera;
+      CameraDescription? frontCamera;
+
+      for (final cam in allCameras) {
+        if (cam.lensDirection == CameraLensDirection.back && backCamera == null) {
+          backCamera = cam;
+        } else if (cam.lensDirection == CameraLensDirection.front && frontCamera == null) {
+          frontCamera = cam;
+        }
+      }
+
+      _cameras = [
+        if (backCamera != null) backCamera,
+        if (frontCamera != null) frontCamera,
+      ];
+
+      if (_cameras.isNotEmpty) {
+        _currentCameraIndex = 0;
+        _controller = CameraController(
+          _cameras[_currentCameraIndex],
+          ResolutionPreset.high,
+        );
+        _initializeControllerFuture = _controller!.initialize();
+        setState(() {});
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Nenhuma câmera compatível encontrada.")),
+        );
+      }
+    } else if (status.isPermanentlyDenied) {
+      await openAppSettings();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Permissão da câmera é necessária.")),
       );
-      _initializeControllerFuture = _controller!.initialize();
-      setState(() {});
     }
   }
 
   Future<void> _flipCamera() async {
-    if (_cameras.isEmpty) return;
+    if (_cameras.length < 2) return;
+
     _currentCameraIndex = (_currentCameraIndex + 1) % _cameras.length;
     await _controller?.dispose();
     _controller = CameraController(
@@ -126,10 +156,10 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
         .doc(uid)
         .collection('categories')
         .add({
-          'type': 'expense',
-          'name': suggestedName,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+      'type': 'expense',
+      'name': suggestedName,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
     return newDocRef.id;
   }
@@ -149,15 +179,15 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
         Content.multi([
           TextPart(
             'Extract the following from this Brazilian invoice image as JSON:'
-            '{"date": "DD/MM/YYYY", "total": "XX.XX" (number only), "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]'
-            'For number use "." to represent decimal values'
+                '{"date": "DD/MM/YYYY", "total": "XX.XX" (number only), "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]}'
+                'For number use "." to represent decimal values'
                 'Be accurate with formats. If missing, use "".'
-            'Focus on the main purchase details; ignore headers/footers if irrelevant.'
-            '\nExisting expense categories (id:name):$categoriesJson.'
-            'Based on the items or store, match to the closest category if reasonable (e.g., food items to "Groceries").'
-            'Include "categoryId": "matching_id" in JSON if match found'
-            'If no good match, include "suggestedCategoryName":"logical new name" (e.g., "Supermarket" for general purchases).'
-            'Be careful to not send wrongly, it could crash the Flutter App',
+                'Focus on the main purchase details; ignore headers/footers if irrelevant.'
+                '\nExisting expense categories (id:name):$categoriesJson.'
+                'Based on the items or store, match to the closest category if reasonable (e.g., food items to "Groceries").'
+                'Include "categoryId": "matching_id" in JSON if match found'
+                'If no good match, include "suggestedCategoryName":"logical new name" (e.g., "Supermarket" for general purchases).'
+                'Be careful to not send wrongly, it could crash the Flutter App',
           ),
           DataPart('image/png', bytes),
         ]),
@@ -168,16 +198,14 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
           response.text
               ?.replaceAll('```json', '')
               .replaceAll('```', '')
-              .trim() ??
-          '{}';
+              .trim() ?? '{}';
       Map<String, dynamic> parsedResult;
-     try{
-       final decoded = jsonDecode(jsonText);
-       parsedResult = (decoded is Map<String, dynamic>)? decoded : {};
-     } catch(_){
-       parsedResult = {};
-     }
-
+      try {
+        final decoded = jsonDecode(jsonText);
+        parsedResult = (decoded is Map<String, dynamic>) ? decoded : {};
+      } catch (_) {
+        parsedResult = {};
+      }
 
       String? categoryId = parsedResult['categoryId'] as String?;
       if (categoryId == null && parsedResult['suggestedCategoryName'] != null) {
@@ -195,14 +223,12 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
 
       if (parsedResult['total'] != null && parsedResult['total'].isNotEmpty) {
         if (context.mounted) {
-
           if (_controller != null && _controller!.value.isInitialized) {
             try {
               await _controller!.setFlashMode(FlashMode.off);
               final lastFrame = await _controller!.takePicture();
               _frozenFrame = File(lastFrame.path);
-              setState(() {
-              });
+              setState(() {});
             } catch (_) {
               _frozenFrame = null;
             }
@@ -220,21 +246,21 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
               initialDate: parsedResult['date'],
               initialValue: parsedResult['total'],
               initialItems:
-                  (parsedResult['items'] as List<dynamic>?)
-                      ?.map(
-                        (item) => {
-                          'name': item['name'] ?? '',
-                          'value': item['value'] ?? '',
-                        },
-                      )
-                      .toList() ??
+              (parsedResult['items'] as List<dynamic>?)
+                  ?.map(
+                    (item) => {
+                  'name': item['name'] ?? '',
+                  'value': item['value'] ?? '',
+                },
+              )
+                  .toList() ??
                   [],
               initialCategoryId: categoryId,
               initialNote: parsedResult['cnpj'] != null
                   ? 'Invoice from CNPJ: ${parsedResult['cnpj']}'
                   : '',
             ),
-          ).whenComplete((){
+          ).whenComplete(() {
             setState(() {
               _frozenFrame = null;
             });
@@ -293,7 +319,7 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
                       child: Container(
-                        color: Colors.black.withValues(alpha: 0.2),
+                        color: Colors.black.withOpacity(0.2),
                       ),
                     ),
                   ),
@@ -301,10 +327,7 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
               )
             else
               Container(color: Colors.black),
-
-
             if (_loading) const Center(child: CircularProgressIndicator()),
-
             Positioned(
               top: 10,
               left: 5,
@@ -314,9 +337,8 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.arrow_back_ios),
+                    icon: const Icon(Icons.arrow_back_ios),
                   ),
-
                   Column(
                     children: [
                       Text(
@@ -340,7 +362,6 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
                 ],
               ),
             ),
-
             Positioned(
               bottom: 110,
               left: 0,

@@ -1,0 +1,341 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+
+class AddInvestmentPage extends StatefulWidget {
+  final String uid;
+  const AddInvestmentPage({super.key, required this.uid});
+
+  @override
+  State<AddInvestmentPage> createState() => _AddInvestmentPageState();
+}
+
+class _AddInvestmentPageState extends State<AddInvestmentPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _pageController = PageController();
+  int _currentStep = 0;
+
+  final _name = TextEditingController();
+  final _type = TextEditingController();
+  final _value = TextEditingController();
+  final _rate = TextEditingController();
+  final _targetValue = TextEditingController();
+  final _notes = TextEditingController();
+  final _date = TextEditingController();
+
+  String? _status;
+  DateTime? _selectedDate;
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        _date.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+  Future<void> _saveInvestment() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedDate == null || _status == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all required fields")),
+      );
+      return;
+    }
+
+    final data = {
+      'name': _name.text.trim(),
+      'type': _type.text.trim(),
+      'value': double.tryParse(_value.text.replaceAll(',', '.')) ?? 0,
+      'rate': double.tryParse(_rate.text) ?? 0,
+      'targetValue': double.tryParse(_targetValue.text) ?? 0,
+      'status': _status,
+      'notes': _notes.text.trim(),
+      'date': Timestamp.fromDate(_selectedDate!),
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .collection('investments')
+        .add(data);
+
+    setState(() {
+      _currentStep = 3; // sucesso
+    });
+  }
+
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    _name.clear();
+    _type.clear();
+    _value.clear();
+    _rate.clear();
+    _targetValue.clear();
+    _notes.clear();
+    _date.clear();
+    _status = null;
+    _selectedDate = null;
+    _pageController.jumpToPage(0);
+    setState(() {
+      _currentStep = 0;
+    });
+  }
+
+  InputDecoration _textFieldDecoration(String hint, {Widget? suffixIcon}) {
+    final theme = Theme.of(context);
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: theme.primaryColor, width: 2),
+      ),
+      suffixIcon: suffixIcon,
+    );
+  }
+
+  Widget _stepGeneralInfo() {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Name", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _name,
+          validator: (v) => v == null || v.isEmpty ? "Required" : null,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration("e.g. Bitcoin"),
+        ),
+        const SizedBox(height: 20),
+        Text("Type", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _type,
+          validator: (v) => v == null || v.isEmpty ? "Required" : null,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration("crypto / stock / fund"),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepFinancials() {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Invested Value (R\$)", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _value,
+          keyboardType: TextInputType.number,
+          validator: (v) => v == null || v.isEmpty ? "Required" : null,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration("1000"),
+        ),
+        const SizedBox(height: 20),
+        Text("Target Value (R\$)", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _targetValue,
+          keyboardType: TextInputType.number,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration("3000"),
+        ),
+        const SizedBox(height: 20),
+        Text("Rate (%)", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _rate,
+          keyboardType: TextInputType.number,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration("0.0021"),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepStatusNotes() {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Status", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        DropdownButtonFormField<String>(
+          value: _status,
+          validator: (v) => v == null ? "Required" : null,
+          items: const [
+            DropdownMenuItem(value: "active", child: Text("Active")),
+            DropdownMenuItem(value: "closed", child: Text("Closed")),
+          ],
+          onChanged: (v) => setState(() => _status = v),
+          decoration: _textFieldDecoration("Select status"),
+          style: theme.textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 20),
+        Text("Date", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _date,
+          readOnly: true,
+          onTap: _pickDate,
+          validator: (v) => v == null || v.isEmpty ? "Required" : null,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration(
+            "Select date",
+            suffixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text("Notes", style: theme.textTheme.bodySmall),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: _notes,
+          maxLines: 2,
+          style: theme.textTheme.bodyMedium,
+          decoration: _textFieldDecoration("Optional observations"),
+        ),
+      ],
+    );
+  }
+
+  Widget _getCurrentStep() {
+    final theme = Theme.of(context);
+    if (_currentStep == 3) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset("assets/animations/success.json", width: 150, repeat: false),
+            const SizedBox(height: 20),
+            Text(
+              "Investment added successfully!",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _resetForm,
+              child: const Text("Add Another Investment"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return PageView(
+      controller: _pageController,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _stepGeneralInfo(),
+        _stepFinancials(),
+        _stepStatusNotes(),
+      ],
+    );
+  }
+
+  void _nextStep() {
+    if (_formKey.currentState!.validate()) {
+      if (_currentStep < 2) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        setState(() => _currentStep++);
+      } else {
+        _saveInvestment();
+      }
+    }
+  }
+
+  void _prevStep() {
+    if (_currentStep > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      setState(() => _currentStep--);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                LinearProgressIndicator(
+                  value: (_currentStep + 1) / 4,
+                  backgroundColor: Colors.grey.shade300,
+                  color: theme.primaryColor,
+                  minHeight: 4,
+                ),
+                const SizedBox(height: 20),
+                Expanded(child: _getCurrentStep()),
+                const SizedBox(height: 20),
+                if (_currentStep < 3)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (_currentStep > 0)
+                        FloatingActionButton(
+                          heroTag: "backBtn",
+                          onPressed: _prevStep,
+                          backgroundColor: Colors.grey,
+                          mini: true,
+                          child: const Icon(Icons.arrow_back_ios),
+                        )
+                      else
+                        const SizedBox(width: 40),
+                      FloatingActionButton(
+                        onPressed: _nextStep,
+                        backgroundColor: theme.primaryColor,
+                        mini: true,
+                        child: const Icon(Icons.arrow_forward_ios),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

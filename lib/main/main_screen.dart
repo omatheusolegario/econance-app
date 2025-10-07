@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../features/home/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:econance/cards/account_card.dart';
+import 'package:econance/features/investments/add_investment_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -34,7 +35,8 @@ class _MainScreenState extends State<MainScreen> {
     const AddTransactionPage(type: "expense"),
     GraphsPage(uid: uid),
     const InvoicePage(),
-    const AiInsightsPage()
+    const AiInsightsPage(),
+    AddInvestmentPage(uid: uid),
   ];
 
   void _onTabTap(int index) {
@@ -101,6 +103,17 @@ class _MainScreenState extends State<MainScreen> {
                   onTap: () {
                     Navigator.pop(context);
                     _onTabTap(5);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.attach_money),
+                  title: Text(
+                    "New Investments",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _onTabTap(10);
                   },
                 ),
               ],

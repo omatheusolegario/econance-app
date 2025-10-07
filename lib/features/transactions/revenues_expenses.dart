@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:intl/intl.dart';
+import 'edit_transaction.dart';
 
 class RevenuesExpensesPage extends StatefulWidget {
   final String uid;
@@ -11,7 +12,7 @@ class RevenuesExpensesPage extends StatefulWidget {
   State<RevenuesExpensesPage> createState() => _RevenuesExpensesPageState();
 }
 
-class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteAware{
+class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteAware {
   late final uid = widget.uid;
 
   Future<List<Map<String, dynamic>>> _fetchTransactions() async {
@@ -54,27 +55,53 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
   final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
   List<Map<String, dynamic>>? transactions;
 
-
-  @override void didChangeDependencies() {
+  @override
+  void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context)!);
     _loadTransactions();
   }
 
-  @override void dispose() {
+  @override
+  void dispose() {
     routeObserver.unsubscribe(this);
     super.dispose();
   }
 
-  @override void didPopNext() {
-   _loadTransactions();
+  @override
+  void didPopNext() {
+    _loadTransactions();
   }
 
-  Future<void> _loadTransactions() async{
+  Future<void> _loadTransactions() async {
     final data = await _fetchTransactions();
     setState(() {
       transactions = data;
     });
+  }
+
+  void _openEditModal(Map<String, dynamic> t, double amount, DateTime date) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: EditTransactionPage(
+          type: t['kind'],
+          transactionId: t['id'],
+          initialValue: amount.toString(),
+          initialDate: DateFormat('dd/MM/yyyy').format(date),
+          initialCategoryId: t['categoryId'],
+          initialNote: t['note'],
+          initialItems: t['items'] != null
+              ? List<Map<String, dynamic>>.from(t['items'])
+              : null,
+        ),
+      ),
+    ).then((_) => _loadTransactions());
   }
 
   @override
@@ -83,12 +110,12 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 50, horizontal: 30.0),
+        padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment:  MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   width: 40,
@@ -96,20 +123,17 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
                       color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(2)
-                  ),
+                      borderRadius: BorderRadius.circular(2)),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
-                )
+                ),
               ],
             ),
             Text(
               "Here, you will manage",
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white60,
-              ),
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
             ),
             const SizedBox(height: 7),
             Text(
@@ -155,22 +179,27 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                               color: isExpense ? Colors.red : Colors.green,
                             ),
                           ),
-                          subtitle: Text(
-                            "${date.day}/${date.month}/${date.year}",
-                          ),
-                          trailing: IconButton(
-                            onPressed: () {
-                              FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(FirebaseAuth.instance.currentUser!.uid)
-                                  .collection(
-                                    isExpense ? 'expenses' : 'revenues',
-                                  )
-                                  .doc(t['id'])
-                                  .delete();
-                              setState(() {});
-                            },
-                            icon: const Icon(Icons.delete, color: Colors.grey),
+                          subtitle: Text("${date.day}/${date.month}/${date.year}"),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.grey),
+                                onPressed: () => _openEditModal(t, amount, date),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.grey),
+                                onPressed: () {
+                                  FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(uid)
+                                      .collection(isExpense ? 'expenses' : 'revenues')
+                                      .doc(t['id'])
+                                      .delete();
+                                  _loadTransactions();
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       );
