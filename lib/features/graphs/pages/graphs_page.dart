@@ -2,16 +2,16 @@ import 'package:econance/features/categories/categories.dart';
 import 'package:econance/features/graphs/widgets/category_breakdown_card.dart';
 import 'package:econance/features/transactions/revenues_expenses.dart';
 import 'package:econance/features/graphs/widgets/balance_chart_card.dart';
-import 'package:econance/features/investments/investments_page.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../investments/investment_breakdown_chart.dart';
+import '../../investments/investments_page.dart';
+import '../../investments_types/investment_type.dart';
 
 class GraphsPage extends StatefulWidget {
   final String uid;
-  const GraphsPage({super.key, required this.uid});
+  final bool hideSensitive;
+  const GraphsPage({super.key, required this.uid,  required this.hideSensitive});
 
   @override
   State<GraphsPage> createState() => _GraphsPageState();
@@ -29,33 +29,13 @@ class _GraphsPageState extends State<GraphsPage> {
   late final uid = widget.uid;
 
   Future<Map<String, dynamic>> _fetchData() async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final personalInfo = userDoc['personalInfo'] as Map<String, dynamic>? ?? {};
     final name = personalInfo['fullName'] ?? 'User';
-
-    final expensesSnap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('expenses')
-        .get();
-    final totalExpenses = expensesSnap.docs.fold<double>(
-      0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
-    );
-
-    final revenuesSnap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('revenues')
-        .get();
-    final totalRevenue = revenuesSnap.docs.fold<double>(
-      0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
-    );
-
+    final expensesSnap = await FirebaseFirestore.instance.collection('users').doc(uid).collection('expenses').get();
+    final totalExpenses = expensesSnap.docs.fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
+    final revenuesSnap = await FirebaseFirestore.instance.collection('users').doc(uid).collection('revenues').get();
+    final totalRevenue = revenuesSnap.docs.fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
     return {
       'name': name,
       'totalRevenue': totalRevenue,
@@ -67,7 +47,6 @@ class _GraphsPageState extends State<GraphsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -101,7 +80,6 @@ class _GraphsPageState extends State<GraphsPage> {
                   final data = snapshot.data!;
                   final balanceData = data['balance'] as double;
                   final balanceString = balanceData.toStringAsFixed(2);
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -116,20 +94,21 @@ class _GraphsPageState extends State<GraphsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'The balance is R\$${balanceString}',
+                                widget.hideSensitive
+                                    ? 'The balance is R\$•••••'
+                                    : 'The balance is R\$${balanceString}',
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: theme.textTheme.bodyLarge?.color,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              BalanceChartCard(uid: uid),
+                              BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
-
                       Card(
                         color: Colors.white10.withOpacity(.04),
                         shape: RoundedRectangleBorder(
@@ -160,8 +139,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                           top: Radius.circular(25),
                                         ),
                                       ),
-                                      builder: (context) =>
-                                          RevenuesExpensesPage(uid: uid),
+                                      builder: (context) => RevenuesExpensesPage(uid: uid),
                                     );
                                   },
                                   child: const Text("Check"),
@@ -176,10 +154,8 @@ class _GraphsPageState extends State<GraphsPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
                       InvestmentBreakdownChart(uid: uid),
                       const SizedBox(height: 20),
-
                       Card(
                         color: Colors.white10.withOpacity(.04),
                         shape: RoundedRectangleBorder(
@@ -210,8 +186,91 @@ class _GraphsPageState extends State<GraphsPage> {
                                           top: Radius.circular(25),
                                         ),
                                       ),
-                                      builder: (context) =>
-                                          CategoriesPage(uid: uid),
+                                      builder: (context) => CategoriesPage(uid: uid),
+                                    );
+                                  },
+                                  child: const Text("Manage"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      InvestmentBreakdownChart(uid: uid),
+                      const SizedBox(height: 20),
+                      Card(
+                        color: Colors.white10.withOpacity(.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Manage your investments',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              SizedBox(
+                                width: 100,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(25),
+                                        ),
+                                      ),
+                                      builder: (_) => InvestmentsPage(uid: uid),
+                                    );
+                                  },
+                                  child: const Text("Manage"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Card(
+                        color: Colors.white10.withOpacity(.04),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Manage your investments types',
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              SizedBox(
+                                width: 100,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(25),
+                                        ),
+                                      ),
+                                      builder: (_) => InvestmentTypesPage(uid: uid),
                                     );
                                   },
                                   child: const Text("Manage"),

@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../investments/investments_page.dart';
 
 class InvestmentBreakdownChart extends StatelessWidget {
   final String uid;
@@ -15,18 +14,18 @@ class InvestmentBreakdownChart extends StatelessWidget {
         .collection('investments')
         .snapshots()
         .map((snapshot) {
-      final Map<String, double> typeSums = {};
+          final Map<String, double> typeSums = {};
 
-      for (final doc in snapshot.docs) {
-        final data = doc.data();
-        final type = data['type'] as String? ?? "Unknown";
-        final value = (data['value'] as num?)?.toDouble() ?? 0.0;
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            final type = data['type'] as String? ?? "Unknown";
+            final value = (data['value'] as num?)?.toDouble() ?? 0.0;
 
-        typeSums[type] = (typeSums[type] ?? 0) + value;
-      }
+            typeSums[type] = (typeSums[type] ?? 0) + value;
+          }
 
-      return typeSums;
-    });
+          return typeSums;
+        });
   }
 
   @override
@@ -50,7 +49,7 @@ class InvestmentBreakdownChart extends StatelessWidget {
         final sections = data.entries.map((entry) {
           final percent = (entry.value / total) * 100;
           final color =
-          Colors.primaries[entry.key.hashCode % Colors.primaries.length];
+              Colors.primaries[entry.key.hashCode % Colors.primaries.length];
           return PieChartSectionData(
             value: entry.value,
             color: color,
@@ -73,28 +72,14 @@ class InvestmentBreakdownChart extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Investments by Type",
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => InvestmentsPage(uid: uid),
-                        );
-                      },
-                      child: const Text("Manage"),
-                    ),
-                  ],
+                Text(
+                  "Investments by Type",
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                const SizedBox(height: 12),
+
                 const SizedBox(height: 16),
                 SizedBox(
                   height: 200,
@@ -112,8 +97,8 @@ class InvestmentBreakdownChart extends StatelessWidget {
                   spacing: 10,
                   runSpacing: 6,
                   children: data.keys.map((type) {
-                    final color =
-                    Colors.primaries[type.hashCode % Colors.primaries.length];
+                    final color = Colors
+                        .primaries[type.hashCode % Colors.primaries.length];
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

@@ -1,6 +1,4 @@
 import 'package:econance/auth/registration.dart';
-import 'package:econance/features/categories/add_category.dart';
-import 'package:econance/features/categories/categories.dart';
 import 'package:econance/l10n/app_localizations.dart';
 import 'package:econance/main/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +13,12 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import '../auth/forgot_password.dart';
 import '../features/home/home.dart';
-import '../features/transactions/revenues_expenses.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // from firebase_options.dart
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(
       ChangeNotifierProvider(
@@ -60,7 +58,7 @@ class EconanceApp extends StatelessWidget {
         "/login": (context) => const Login(),
         "/register": (context) => const RegistrationPage(),
         "/forgot-password": (context) => const ForgotPasswordPage(),
-        "/home": (context) => const HomePage(),
+        "/home": (context) => const HomePage(hideSensitive: true),
         "/main": (context) => const MainScreen(),
       },
       home: const AuthWrapper(),

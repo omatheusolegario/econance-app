@@ -160,9 +160,11 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                   : Markdown(
                       data: _insights ?? "",
                       shrinkWrap: true,
-                      styleSheet: MarkdownStyleSheet.fromTheme(
-                        theme,
-                      ).copyWith(p: theme.textTheme.bodyMedium, h3:TextStyle(color: theme.primaryColor), blockSpacing: 12),
+                      styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                        p: theme.textTheme.bodyMedium,
+                        h3: TextStyle(color: theme.primaryColor),
+                        blockSpacing: 12,
+                      ),
                     ),
             ),
           ],

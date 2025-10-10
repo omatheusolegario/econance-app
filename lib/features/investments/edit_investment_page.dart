@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:econance/features/investments_types/investment_type_picker.dart';
 
 class EditInvestmentPage extends StatefulWidget {
   final String investmentId;
@@ -35,7 +36,6 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
   final uid = FirebaseAuth.instance.currentUser!.uid;
   final _formKey = GlobalKey<FormState>();
   final _pageController = PageController();
-
   int _currentPage = 0;
 
   final _name = TextEditingController();
@@ -83,6 +83,18 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
     }
   }
 
+  Future<void> _pickType() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const InvestmentTypePickerPage()),
+    );
+    if (result != null && result is String) {
+      setState(() {
+        _type.text = result;
+      });
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -110,11 +122,14 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
 
   Widget _label(String text, BuildContext context) {
     final theme = Theme.of(context);
-    return Text(
-      text,
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
-        fontWeight: FontWeight.w500,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Text(
+        text,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -125,7 +140,6 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _label("Name", context),
-        const SizedBox(height: 5),
         TextFormField(
           controller: _name,
           style: theme.textTheme.bodyMedium,
@@ -133,14 +147,17 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
           validator: (v) => v == null || v.isEmpty ? "Required" : null,
         ),
         const SizedBox(height: 20),
-
-        const SizedBox(height: 20),
         _label("Type", context),
-        const SizedBox(height: 5),
-        TextField(
+        TextFormField(
           controller: _type,
+          readOnly: true,
+          onTap: _pickType,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "crypto / stock / fund"),
+          decoration: const InputDecoration(
+            hintText: "Select type",
+            suffixIcon: Icon(Icons.arrow_drop_down),
+          ),
+          validator: (v) => v == null || v.isEmpty ? "Required" : null,
         ),
       ],
     );
@@ -152,7 +169,6 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _label("Invested Value (R\$)", context),
-        const SizedBox(height: 5),
         TextFormField(
           controller: _value,
           keyboardType: TextInputType.number,
@@ -162,8 +178,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
         ),
         const SizedBox(height: 20),
         _label("Target Value (R\$)", context),
-        const SizedBox(height: 5),
-        TextField(
+        TextFormField(
           controller: _targetValue,
           keyboardType: TextInputType.number,
           style: theme.textTheme.bodyMedium,
@@ -171,8 +186,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
         ),
         const SizedBox(height: 20),
         _label("Rate (%)", context),
-        const SizedBox(height: 5),
-        TextField(
+        TextFormField(
           controller: _rate,
           keyboardType: TextInputType.number,
           style: theme.textTheme.bodyMedium,
@@ -188,7 +202,6 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _label("Status", context),
-        const SizedBox(height: 5),
         DropdownButtonFormField<String>(
           value: _status,
           style: theme.textTheme.bodyMedium,
@@ -201,7 +214,6 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
         ),
         const SizedBox(height: 20),
         _label("Date", context),
-        const SizedBox(height: 5),
         TextField(
           controller: _date,
           readOnly: true,
@@ -214,7 +226,6 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
         ),
         const SizedBox(height: 20),
         _label("Notes", context),
-        const SizedBox(height: 5),
         TextField(
           controller: _notes,
           maxLines: 2,
@@ -226,20 +237,24 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
   }
 
   void _nextPage() {
-    if (_currentPage < 2) {
-      _pageController.nextPage(
+    if (_formKey.currentState!.validate()) {
+      if (_currentPage < 2) {
+        _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut);
-    } else {
-      _save();
+          curve: Curves.easeInOut,
+        );
+      } else {
+        _save();
+      }
     }
   }
 
   void _prevPage() {
     if (_currentPage > 0) {
       _pageController.previousPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut);
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -249,101 +264,109 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
     final steps = ["General", "Financials", "Status & Notes"];
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: 20,
-          right: 20,
-          left: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(2),
+      padding: EdgeInsets.only(
+        top: 20,
+        right: 20,
+        left: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            Text(
+              steps[_currentPage],
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
               ),
-              // Title + Subtitle
-              Text(
-                "Edit Investment",
-                style: theme.textTheme.titleLarge,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              "Edit Investment",
+              style: theme.textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 5),
-              Text(
-                steps[_currentPage],
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 10),
-              // Progress Indicator
-              Row(
-                children: List.generate(
-                  steps.length,
-                      (i) => Expanded(
-                    child: Container(
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: i <= _currentPage
-                            ? theme.primaryColor
-                            : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: List.generate(
+                steps.length,
+                    (i) => Expanded(
+                  child: Container(
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: i <= _currentPage
+                          ? theme.primaryColor
+                          : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: 350, // limitar altura para não ocupar tela inteira
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  children: [
-                    _stepGeneralInfo(context),
-                    _stepFinancials(context),
-                    _stepStatusNotes(context),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 350,
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (i) => setState(() => _currentPage = i),
                 children: [
-                  if (_currentPage > 0)
-                    ElevatedButton(
-                      onPressed: _prevPage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[400],
-                        foregroundColor: Colors.black,
-                        minimumSize: const Size(120, 45),
-                      ),
-                      child: const Text("← Back"),
-                    )
-                  else
-                    const SizedBox(width: 120),
-                  ElevatedButton(
-                    onPressed: _nextPage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.primaryColor,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(120, 45),
-                    ),
-                    child: Text(_currentPage == 2 ? "Save" : "Next →"),
-                  ),
+                  _stepGeneralInfo(context),
+                  _stepFinancials(context),
+                  _stepStatusNotes(context),
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (_currentPage > 0)
+                  ElevatedButton(
+                    onPressed: _prevPage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[400],
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size(120, 45),
+                    ),
+                    child: const Text("← Back"),
+                  )
+                else
+                  const SizedBox(width: 120),
+                ElevatedButton(
+                  onPressed: _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.primaryColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(120, 45),
+                  ),
+                  child: Text(_currentPage == 2 ? "Save" : "Next →"),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

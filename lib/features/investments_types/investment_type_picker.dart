@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class InvestmentTypePickerPage extends StatefulWidget {
+  const InvestmentTypePickerPage({super.key});
+
+  @override
+  State<InvestmentTypePickerPage> createState() =>
+      _InvestmentTypePickerPageState();
+}
+
+class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
+  String _search = "";
+  String? _selectedType;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          style: theme.textTheme.bodyMedium,
+          decoration: const InputDecoration(
+            hintText: "Search investment types...",
+            border: InputBorder.none,
+          ),
+          onChanged: (value) {
+            setState(() {
+              _search = value.toLowerCase();
+            });
+          },
+        ),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('investments_types')
+            .orderBy('createdAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final types = snapshot.data!.docs.where((doc) {
+            final name = (doc['name'] as String).toLowerCase();
+            return name.contains(_search);
+          }).toList();
+
+          if (types.isEmpty) {
+            return const Center(child: Text("No types found. Add one first!"));
+          }
+
+          return ListView.builder(
+            itemCount: types.length,
+            itemBuilder: (context, index) {
+              final doc = types[index];
+              final data = doc.data() as Map<String, dynamic>;
+              final isSelected = _selectedType == doc.id;
+
+              return ListTile(
+                title: Text(data['name'], style: theme.textTheme.bodyMedium),
+                trailing: isSelected
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
+                onTap: () {
+                  setState(() {
+                    _selectedType = doc.id;
+                  });
+                },
+              );
+            },
+          );
+        },
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton.icon(
+          onPressed: _selectedType == null
+              ? null
+              : () async {
+                  final doc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(uid)
+                      .collection('investments_types')
+                      .doc(_selectedType!)
+                      .get();
+
+                  if (doc.exists) {
+                    final name = doc['name'];
+                    Navigator.pop(context, name);
+                  }
+                },
+          icon: const Icon(Icons.arrow_forward),
+          label: const Text("Select"),
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size.fromHeight(45),
+          ),
+        ),
+      ),
+    );
+  }
+}

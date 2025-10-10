@@ -1,8 +1,6 @@
 import 'package:econance/features/graphs/pages/graphs_page.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/family_service.dart';
-import '../graphs/widgets/balance_chart_card.dart';
 
 class MemberCard extends StatelessWidget {
   final String familyId;
@@ -30,7 +28,7 @@ class MemberCard extends StatelessWidget {
 
     return ListTile(
       onTap: isAdminView ? () {
-        showModalBottomSheet(backgroundColor: Theme.of(context).scaffoldBackgroundColor,showDragHandle: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),context: context, builder: (ctx) => GraphsPage(uid: memberUid));
+        showModalBottomSheet(backgroundColor: Theme.of(context).scaffoldBackgroundColor,showDragHandle: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),context: context, builder: (ctx) => GraphsPage(uid: memberUid, hideSensitive: true));
       }: null,
       leading: CircleAvatar(
         child: Text(
@@ -69,7 +67,7 @@ class MemberCard extends StatelessWidget {
                 leading: const Icon(Icons.bar_chart),
                 title: Text("View member graphs", style: Theme.of(context).textTheme.bodyMedium,),
                 onTap: () {
-                  showModalBottomSheet(backgroundColor: Theme.of(context).scaffoldBackgroundColor,showDragHandle: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),context: context, builder: (ctx) => GraphsPage(uid: memberUid));
+                  showModalBottomSheet(backgroundColor: Theme.of(context).scaffoldBackgroundColor,showDragHandle: true, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),context: context, builder: (ctx) => GraphsPage(uid: memberUid, hideSensitive: true));
                 },
               ),
               ListTile(

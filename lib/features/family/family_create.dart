@@ -2,7 +2,6 @@ import 'package:econance/features/family/family_main_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/family_service.dart';
-import 'user_invites_list.dart';
 
 class FamilyCreatePage extends StatefulWidget {
   final String? familyId;

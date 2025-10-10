@@ -12,6 +12,7 @@ import '../features/home/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:econance/cards/account_card.dart';
 import 'package:econance/features/investments/add_investment_page.dart';
+import 'package:econance/features/investments_types/add_investment_type.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -21,23 +22,40 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  bool _hideSensitive = false;
+  bool _hideSensitive = true;
   int _currentIndex = 0;
   final uid = FirebaseAuth.instance.currentUser!.uid;
 
-  late final List<Widget> _pages = [
-    const HomePage(),
-    RevenuesExpensesPage(uid: uid),
-    const AddCategoryPage(),
-    CategoriesPage(uid: uid),
-    const Config(),
-    const AddTransactionPage(type: "revenue"),
-    const AddTransactionPage(type: "expense"),
-    GraphsPage(uid: uid),
-    const InvoicePage(),
-    const AiInsightsPage(),
-    AddInvestmentPage(uid: uid),
-  ];
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return HomePage(hideSensitive: _hideSensitive);
+      case 1:
+        return RevenuesExpensesPage(uid: uid);
+      case 2:
+        return const AddCategoryPage();
+      case 3:
+        return CategoriesPage(uid: uid);
+      case 4:
+        return const Config();
+      case 5:
+        return const AddTransactionPage(type: "revenue");
+      case 6:
+        return const AddTransactionPage(type: "expense");
+      case 7:
+        return GraphsPage(uid: uid, hideSensitive: _hideSensitive);
+      case 8:
+        return const InvoicePage();
+      case 9:
+        return const AiInsightsPage();
+      case 10:
+        return AddInvestmentPage(uid: uid);
+      case 11:
+        return AddInvestmentTypePage();
+      default:
+        return HomePage(hideSensitive: _hideSensitive);
+    }
+  }
 
   void _onTabTap(int index) {
     setState(() {
@@ -45,12 +63,11 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-
   void _openAddModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
+      barrierColor: Colors.black.withOpacity(0.3),
       isScrollControlled: true,
       clipBehavior: Clip.antiAlias,
       builder: (context) => ClipRRect(
@@ -58,7 +75,7 @@ class _MainScreenState extends State<MainScreen> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha:0.7),
+            color: Theme.of(context).cardColor,
             padding: const EdgeInsets.only(bottom: 30, left: 12, right: 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -68,7 +85,7 @@ class _MainScreenState extends State<MainScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.white.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -116,6 +133,17 @@ class _MainScreenState extends State<MainScreen> {
                     _onTabTap(10);
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.add_chart),
+                  title: Text(
+                    "New Type",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _onTabTap(11);
+                  },
+                ),
               ],
             ),
           ),
@@ -144,27 +172,28 @@ class _MainScreenState extends State<MainScreen> {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.primaryColor.withValues(alpha: 0.2)
+                ? theme.primaryColor.withOpacity(0.2)
                 : Colors.transparent,
-            shape: BoxShape
-                .circle,
+            shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
             size: 28,
             color: isSelected
                 ? theme.primaryColor
-                : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                : theme.colorScheme.onSurface.withOpacity(0.5),
           ),
         ),
       );
     }
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: theme.primaryColor,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         titleSpacing: 0,
         automaticallyImplyLeading: false,
+        iconTheme: IconThemeData(color: theme.primaryColor),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
@@ -187,22 +216,21 @@ class _MainScreenState extends State<MainScreen> {
                 icon: const Icon(
                   Icons.account_circle_outlined,
                   size: 32,
-                  color: Colors.white,
                 ),
               ),
               IconButton(
                 onPressed: _toggleHide,
                 icon: Icon(
-                  _hideSensitive ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: Colors.white,
+                  _hideSensitive
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                 ),
               ),
             ],
           ),
         ),
       ),
-      body: _pages[_currentIndex],
-
+      body: _getPage(_currentIndex),
       bottomNavigationBar: SafeArea(
         child: GestureDetector(
           onTap: () {},
@@ -213,7 +241,7 @@ class _MainScreenState extends State<MainScreen> {
             curve: Curves.easeInOut,
             height: bottomHeight,
             decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.7),
+              color: theme.scaffoldBackgroundColor.withOpacity(0.7),
               borderRadius: BorderRadius.circular(31),
             ),
             child: Row(

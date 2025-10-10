@@ -1,8 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:econance/features/investments_types/investment_type_picker.dart';
+
+class StepHeader extends StatelessWidget {
+  final String title;
+  final String description;
+
+  const StepHeader({super.key, required this.title, required this.description});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            description,
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class AddInvestmentPage extends StatefulWidget {
   final String uid;
@@ -43,6 +74,18 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     }
   }
 
+  Future<void> _pickType() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const InvestmentTypePickerPage()),
+    );
+    if (result != null && result is String) {
+      setState(() {
+        _type.text = result;
+      });
+    }
+  }
+
   Future<void> _saveInvestment() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null || _status == null) {
@@ -72,7 +115,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         .add(data);
 
     setState(() {
-      _currentStep = 3; // sucesso
+      _currentStep = 3;
     });
   }
 
@@ -94,84 +137,79 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   }
 
   InputDecoration _textFieldDecoration(String hint, {Widget? suffixIcon}) {
-    final theme = Theme.of(context);
     return InputDecoration(
       hintText: hint,
-      hintStyle: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
-      isDense: true,
-      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade400),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade400),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: theme.primaryColor, width: 2),
-      ),
       suffixIcon: suffixIcon,
     );
   }
 
   Widget _stepGeneralInfo() {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Name", style: theme.textTheme.bodySmall),
+        const StepHeader(
+          title: "Investment Info",
+          description: "Enter the basic information of your investment.",
+        ),
+        Text("Name", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _name,
           validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: _textFieldDecoration("e.g. Bitcoin"),
         ),
         const SizedBox(height: 20),
-        Text("Type", style: theme.textTheme.bodySmall),
+        Text("Type", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _type,
+          readOnly: true,
+          onTap: _pickType,
           validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: theme.textTheme.bodyMedium,
-          decoration: _textFieldDecoration("crypto / stock / fund"),
+          style: Theme.of(context).textTheme.bodyMedium,
+          decoration: _textFieldDecoration(
+            "Select type",
+            suffixIcon: const Icon(Icons.arrow_drop_down),
+          ),
         ),
       ],
     );
   }
 
   Widget _stepFinancials() {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Invested Value (R\$)", style: theme.textTheme.bodySmall),
+        const StepHeader(
+          title: "Financial Info",
+          description: "Enter investment value, target and rate.",
+        ),
+        Text("Invested Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _value,
           keyboardType: TextInputType.number,
           validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: _textFieldDecoration("1000"),
         ),
         const SizedBox(height: 20),
-        Text("Target Value (R\$)", style: theme.textTheme.bodySmall),
+        Text("Target Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _targetValue,
           keyboardType: TextInputType.number,
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: _textFieldDecoration("3000"),
         ),
         const SizedBox(height: 20),
-        Text("Rate (%)", style: theme.textTheme.bodySmall),
+        Text("Rate (%)", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _rate,
           keyboardType: TextInputType.number,
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: _textFieldDecoration("0.0021"),
         ),
       ],
@@ -179,11 +217,14 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   }
 
   Widget _stepStatusNotes() {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Status", style: theme.textTheme.bodySmall),
+        const StepHeader(
+          title: "Status & Notes",
+          description: "Select status, date and add optional notes.",
+        ),
+        Text("Status", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         DropdownButtonFormField<String>(
           value: _status,
@@ -194,29 +235,29 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           ],
           onChanged: (v) => setState(() => _status = v),
           decoration: _textFieldDecoration("Select status"),
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
-        Text("Date", style: theme.textTheme.bodySmall),
+        Text("Date", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _date,
           readOnly: true,
           onTap: _pickDate,
           validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: _textFieldDecoration(
             "Select date",
             suffixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
           ),
         ),
         const SizedBox(height: 20),
-        Text("Notes", style: theme.textTheme.bodySmall),
+        Text("Notes", style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 5),
         TextFormField(
           controller: _notes,
           maxLines: 2,
-          style: theme.textTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
           decoration: _textFieldDecoration("Optional observations"),
         ),
       ],
@@ -224,17 +265,20 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   }
 
   Widget _getCurrentStep() {
-    final theme = Theme.of(context);
     if (_currentStep == 3) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset("assets/animations/success.json", width: 150, repeat: false),
+            Lottie.asset(
+              "assets/animations/success.json",
+              width: 150,
+              repeat: false,
+            ),
             const SizedBox(height: 20),
             Text(
               "Investment added successfully!",
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
               ),
@@ -252,11 +296,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     return PageView(
       controller: _pageController,
       physics: const NeverScrollableScrollPhysics(),
-      children: [
-        _stepGeneralInfo(),
-        _stepFinancials(),
-        _stepStatusNotes(),
-      ],
+      children: [_stepGeneralInfo(), _stepFinancials(), _stepStatusNotes()],
     );
   }
 

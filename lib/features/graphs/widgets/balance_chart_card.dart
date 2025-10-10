@@ -1,11 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class BalanceChartCard extends StatelessWidget {
   final String uid;
-  const BalanceChartCard({super.key, required this.uid});
+  final bool hideSensitive;
+  const BalanceChartCard({super.key, required this.uid,required this.hideSensitive,});
 
   Stream<Map<String, Map<String,double>>> _getMonthlyData(String uid){
     final revenuesStream = FirebaseFirestore.instance

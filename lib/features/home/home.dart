@@ -5,7 +5,8 @@ import '../../cards/home_card.dart';
 import '../graphs/widgets/revenue_line_chart.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final bool hideSensitive;
+  const HomePage({super.key, required this.hideSensitive});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -14,7 +15,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<Map<String, dynamic>> _dataFuture;
   final uid = FirebaseAuth.instance.currentUser!.uid;
-
   int selectedIndex = 0;
 
   @override
@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage> {
         .where('date', isGreaterThanOrEqualTo: firstDayThisMonth)
         .where('date', isLessThan: firstDayNextMonth)
         .get();
-
     final revenuesSnapLastMonth = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -47,16 +46,17 @@ class _HomePageState extends State<HomePage> {
 
     double totalRevenueThisMonth = revenuesSnapThisMonth.docs.fold<double>(
       0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+      (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double totalRevenueLastMonth = revenuesSnapLastMonth.docs.fold<double>(
       0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+      (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
-
     double revenueChange = totalRevenueLastMonth == 0
         ? 0
-        : ((totalRevenueThisMonth - totalRevenueLastMonth) / totalRevenueLastMonth) * 100;
+        : ((totalRevenueThisMonth - totalRevenueLastMonth) /
+                  totalRevenueLastMonth) *
+              100;
 
     final expensesSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
@@ -65,7 +65,6 @@ class _HomePageState extends State<HomePage> {
         .where('date', isGreaterThanOrEqualTo: firstDayThisMonth)
         .where('date', isLessThan: firstDayNextMonth)
         .get();
-
     final expensesSnapLastMonth = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -76,16 +75,17 @@ class _HomePageState extends State<HomePage> {
 
     double totalExpensesThisMonth = expensesSnapThisMonth.docs.fold<double>(
       0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+      (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double totalExpensesLastMonth = expensesSnapLastMonth.docs.fold<double>(
       0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+      (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
-
     double expensesChange = totalExpensesLastMonth == 0
         ? 0
-        : ((totalExpensesThisMonth - totalExpensesLastMonth) / totalExpensesLastMonth) * 100;
+        : ((totalExpensesThisMonth - totalExpensesLastMonth) /
+                  totalExpensesLastMonth) *
+              100;
 
     final investmentsSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
@@ -94,7 +94,6 @@ class _HomePageState extends State<HomePage> {
         .where('date', isGreaterThanOrEqualTo: firstDayThisMonth)
         .where('date', isLessThan: firstDayNextMonth)
         .get();
-
     final investmentsSnapLastMonth = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -103,22 +102,18 @@ class _HomePageState extends State<HomePage> {
         .where('date', isLessThan: firstDayThisMonth)
         .get();
 
-    double totalInvestmentsThisMonth = investmentsSnapThisMonth.docs.fold<double>(
-      0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
-    );
-    double totalInvestmentsLastMonth = investmentsSnapLastMonth.docs.fold<double>(
-      0,
-          (sum, doc) => sum + (doc['value'] as num).toDouble(),
-    );
-
+    double totalInvestmentsThisMonth = investmentsSnapThisMonth.docs
+        .fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
+    double totalInvestmentsLastMonth = investmentsSnapLastMonth.docs
+        .fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
     double investmentsChange = totalInvestmentsLastMonth == 0
         ? 0
-        : ((totalInvestmentsThisMonth - totalInvestmentsLastMonth) / totalInvestmentsLastMonth) * 100;
+        : ((totalInvestmentsThisMonth - totalInvestmentsLastMonth) /
+                  totalInvestmentsLastMonth) *
+              100;
 
     final balanceThisMonth = totalRevenueThisMonth - totalExpensesThisMonth;
     final balanceLastMonth = totalRevenueLastMonth - totalExpensesLastMonth;
-
     double balanceChange = balanceLastMonth == 0
         ? 0
         : ((balanceThisMonth - balanceLastMonth) / balanceLastMonth) * 100;
@@ -144,7 +139,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
@@ -165,12 +159,13 @@ class _HomePageState extends State<HomePage> {
                     .doc(uid)
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const CircularProgressIndicator();
-
-                  final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-                  final personalInfo = data['personalInfo'] as Map<String, dynamic>? ?? {};
+                  if (!snapshot.hasData)
+                    return const CircularProgressIndicator();
+                  final data =
+                      snapshot.data!.data() as Map<String, dynamic>? ?? {};
+                  final personalInfo =
+                      data['personalInfo'] as Map<String, dynamic>? ?? {};
                   final name = personalInfo['fullName'] ?? 'User';
-
                   return Text(
                     "$name!",
                     style: theme.textTheme.bodyLarge?.copyWith(
@@ -189,9 +184,7 @@ class _HomePageState extends State<HomePage> {
                   if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
-
                   final data = snapshot.data!;
-
                   final cards = [
                     {
                       'title': 'Total Balance',
@@ -222,31 +215,35 @@ class _HomePageState extends State<HomePage> {
                       'iconColor': Colors.purple,
                     },
                   ];
-
                   return GridView.builder(
                     itemCount: cards.length,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 1.4,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 1.4,
+                        ),
                     itemBuilder: (context, index) {
                       final card = cards[index];
                       final valueKey = card['value'] as String;
                       final changeKey = card['change'] as String;
-                      final changeValue =
-                          (data[changeKey] as double?)?.toStringAsFixed(1) ?? '0';
+                      final double realValue = data[valueKey] as double;
+                      final double changeValue = data[changeKey] as double;
 
                       return DashboardCard(
                         title: card['title'] as String,
-                        value: '${data[valueKey]}',
-                        subtitle: "$changeValue% VS Last Month",
+                        value: widget.hideSensitive
+                            ? "•••••"
+                            : realValue.toStringAsFixed(1),
+                        subtitle: widget.hideSensitive
+                            ? "••••• VS Last Month"
+                            : "${changeValue.toStringAsFixed(1)}% VS Last Month",
                         icon: card['icon'] as IconData?,
                         iconColor: card['iconColor'] as Color?,
-                        subtitleColor: _getChangeColor(data[changeKey] as double? ?? 0),
+                        subtitleColor: _getChangeColor(changeValue),
                         isSelected: selectedIndex == index,
                         onTap: () {
                           setState(() {
@@ -259,7 +256,10 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 30),
-              RevenueLineChart(selectedCardIndex: selectedIndex),
+              RevenueLineChart(
+                selectedCardIndex: selectedIndex,
+                hideSensitive: widget.hideSensitive,
+              ),
             ],
           ),
         ),

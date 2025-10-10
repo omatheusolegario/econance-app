@@ -7,8 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/family_service.dart';
-import 'member_card.dart';
-import 'user_invites_list.dart';
 
 class FamilyMainScreenPage extends StatefulWidget {
   const FamilyMainScreenPage({super.key});

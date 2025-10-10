@@ -27,7 +27,16 @@ class DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final doubleValue = double.tryParse(value) ?? 0.0;
+
+    final parsedValue = double.tryParse(value);
+
+    String displayValue;
+
+    if (parsedValue != null) {
+      displayValue = "R\$ ${parsedValue.toStringAsFixed(2)}";
+    } else {
+      displayValue = value;
+    }
 
     final cardColor = isSelected
         ? theme.primaryColor.withOpacity(0.2)
@@ -55,15 +64,12 @@ class DashboardCard extends StatelessWidget {
               children: [
                 if (icon != null) Icon(icon, color: iconColor, size: 20),
                 if (icon != null) const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: theme.textTheme.bodySmall,
-                ),
+                Text(title, style: theme.textTheme.bodySmall),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              "R\$ ${doubleValue.toStringAsFixed(2)}",
+              displayValue,
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),

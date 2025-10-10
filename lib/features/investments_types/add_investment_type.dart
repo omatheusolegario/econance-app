@@ -3,48 +3,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
 
-class AddCategoryPage extends StatefulWidget {
-  const AddCategoryPage({super.key});
+class AddInvestmentTypePage extends StatefulWidget {
+  const AddInvestmentTypePage({super.key});
 
   @override
-  State<AddCategoryPage> createState() => _AddCategoryPageState();
+  State<AddInvestmentTypePage> createState() => _AddInvestmentTypePageState();
 }
 
-class _AddCategoryPageState extends State<AddCategoryPage> {
+class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
   final PageController _pageController = PageController();
   final TextEditingController _nameController = TextEditingController();
-  String? type;
   int _currentStep = 0;
 
   void _nextStep() {
     if (_currentStep == 0) {
       if (_nameController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Category name cannot be empty")),
+          const SnackBar(content: Text("Type name cannot be empty")),
         );
         return;
       }
-      setState(() {
-        _currentStep++;
-      });
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    } else if (_currentStep == 1) {
-      if (type == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Select a type first")));
-        return;
-      }
-      setState(() {
-        _currentStep++;
-        _nextStep();
-      });
-    } else if (_currentStep == 2) {
-      _addCategory();
+      _addType();
     }
   }
 
@@ -53,7 +32,6 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       setState(() {
         _currentStep--;
       });
-
       _pageController.animateToPage(
         _currentStep,
         duration: const Duration(milliseconds: 400),
@@ -62,21 +40,21 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     }
   }
 
-  Future<void> _addCategory() async {
-    setState(() {
-      _currentStep++;
-    });
-
+  Future<void> _addType() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
+
     await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
-        .collection('categories')
+        .collection('investments_types')
         .add({
-          'name': _nameController.text.trim(),
-          'type': type,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+      'name': _nameController.text.trim(),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    setState(() {
+      _currentStep = 1;
+    });
 
     _pageController.animateToPage(
       _currentStep,
@@ -130,7 +108,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 bottom: 6,
               ),
               child: LinearProgressIndicator(
-                value: (_currentStep + 1) / 3,
+                value: (_currentStep + 1) / 2,
                 backgroundColor: Colors.grey.shade300,
                 color: theme.primaryColor,
               ),
@@ -141,33 +119,15 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildStepContent(
-                    title: "Add Category",
-                    subtitle: "Give your category a name",
+                    title: "Add Investment Type",
+                    subtitle:
+                    "Give your type a name (e.g. Crypto, Stocks, Real Estate)",
                     child: TextField(
                       controller: _nameController,
                       style: theme.textTheme.bodyMedium,
                       decoration: const InputDecoration(
-                        hintText: "e.g. Groceries, Salary",
+                        hintText: "e.g. Crypto",
                       ),
-                    ),
-                  ),
-                  _buildStepContent(
-                    title: "Choose the type",
-                    subtitle: "Is your category an expense or a revenue?",
-                    child: DropdownButtonFormField<String>(
-                      style: theme.textTheme.bodyMedium,
-                      items: const [
-                        DropdownMenuItem(
-                          value: "expense",
-                          child: Text("Expense"),
-                        ),
-                        DropdownMenuItem(
-                          value: "revenue",
-                          child: Text("Revenue"),
-                        ),
-                      ],
-                      onChanged: (val) => setState(() => type = val),
-                      decoration: InputDecoration(hintText: "Select a type"),
                     ),
                   ),
                   Center(
@@ -181,7 +141,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          "Category successfully added!",
+                          "Type successfully added!",
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.green,
@@ -192,15 +152,15 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                           onPressed: () {
                             setState(() {
                               _currentStep = 0;
-                              _nameController.text = '';
-                              _pageController.animateToPage(
-                                _currentStep,
-                                duration: const Duration(milliseconds: 400),
-                                curve: Curves.easeInOut,
-                              );
+                              _nameController.clear();
                             });
+                            _pageController.animateToPage(
+                              _currentStep,
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
+                            );
                           },
-                          child: Text("   Add another category   "),
+                          child: const Text("Add another type"),
                         ),
                       ],
                     ),
@@ -212,31 +172,31 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _currentStep < 2
+      floatingActionButton: _currentStep == 0
           ? SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (_currentStep > 0)
-                      FloatingActionButton(
-                        heroTag: "backBtn",
-                        onPressed: _previousStep,
-                        backgroundColor: Colors.grey,
-                        child: const Icon(Icons.arrow_back_ios),
-                      ),
-                    const Spacer(),
-                    FloatingActionButton(
-                      onPressed: _nextStep,
-                      backgroundColor: theme.primaryColor,
-                      child: const Icon(Icons.arrow_forward_ios),
-                    ),
-                  ],
+        width: MediaQuery.of(context).size.width,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (_currentStep > 0)
+                FloatingActionButton(
+                  heroTag: "backBtn",
+                  onPressed: _previousStep,
+                  backgroundColor: Colors.grey,
+                  child: const Icon(Icons.arrow_back_ios),
                 ),
+              const Spacer(),
+              FloatingActionButton(
+                onPressed: _nextStep,
+                backgroundColor: theme.primaryColor,
+                child: const Icon(Icons.arrow_forward_ios),
               ),
-            )
+            ],
+          ),
+        ),
+      )
           : null,
     );
   }

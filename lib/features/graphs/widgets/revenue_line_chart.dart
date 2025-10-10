@@ -45,8 +45,13 @@ Stream<Map<String, double>> getMonthlyBalance(String uid) async* {
 
 class RevenueLineChart extends StatelessWidget {
   final int selectedCardIndex;
+  final bool hideSensitive;
 
-  const RevenueLineChart({super.key, required this.selectedCardIndex});
+  const RevenueLineChart({
+    super.key,
+    required this.selectedCardIndex,
+    required this.hideSensitive,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +94,7 @@ class RevenueLineChart extends StatelessWidget {
 
         return LineChartCard(
           title: title,
-          total: "R\$ $total",
+          total: hideSensitive ? "•••••" : "R\$ $total",
           points: points,
           labels: months,
         );

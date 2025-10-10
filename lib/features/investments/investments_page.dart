@@ -55,7 +55,9 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: EditInvestmentPage(
           investmentId: inv['id'],
           initialName: inv['name'],
@@ -86,124 +88,150 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: Container(
-          color: Colors.transparent,
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (_, controller) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Column(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
                     width: 40,
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(2)),
-                  ),
-                  Text(
-                    "Your Investments",
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Track and manage your investments",
-                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 15),
-                  Expanded(
-                    child: investments == null
-                        ? const Center(child: CircularProgressIndicator())
-                        : investments!.isEmpty
-                        ? const Center(child: Text("No investments yet"))
-                        : ListView.builder(
-                      controller: controller,
-                      itemCount: investments!.length,
-                      itemBuilder: (context, index) {
-                        final inv = investments![index];
-                        final amount =
-                            (inv['value'] as num?)?.toDouble() ?? 0.0;
-                        final target =
-                            (inv['targetValue'] as num?)?.toDouble() ?? 0.0;
-                        final progress =
-                        target > 0 ? (amount / target).clamp(0.0, 1.0) : 0.0;
-
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          elevation: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      inv['name'] ?? 'Unnamed',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      inv['status'] == 'active'
-                                          ? "🟢 Active"
-                                          : "🔴 Closed",
-                                      style:
-                                      const TextStyle(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                    "R\$ ${amount.toStringAsFixed(2)} / R\$ ${target.toStringAsFixed(2)}"),
-                                const SizedBox(height: 6),
-                                LinearProgressIndicator(
-                                  value: progress,
-                                  color: theme.primaryColor,
-                                  backgroundColor: Colors.grey[300],
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit,
-                                          color: Colors.grey),
-                                      onPressed: () =>
-                                          _openEditInvestment(inv),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.grey),
-                                      onPressed: () =>
-                                          _deleteInvestment(inv['id']),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-            ),
+              Text(
+                "Track and manage your investments",
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.hintColor,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                "Your Investments",
+                style: theme.textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Expanded(
+                child: investments == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : investments!.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No investments yet",
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: investments!.length,
+                        itemBuilder: (context, index) {
+                          final inv = investments![index];
+                          final amount =
+                              (inv['value'] as num?)?.toDouble() ?? 0.0;
+                          final target =
+                              (inv['targetValue'] as num?)?.toDouble() ?? 0.0;
+                          final progress = target > 0
+                              ? (amount / target).clamp(0.0, 1.0)
+                              : 0.0;
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        inv['name'] ?? 'Unnamed',
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.circle,
+                                            size: 12,
+                                            color: inv['status'] == 'active'
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            inv['status'] == 'active'
+                                                ? "Active"
+                                                : "Closed",
+                                            style: theme.textTheme.bodyMedium,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "R\$ ${amount.toStringAsFixed(2)} / R\$ ${target.toStringAsFixed(2)}",
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  LinearProgressIndicator(
+                                    value: progress,
+                                    color: theme.primaryColor,
+                                    backgroundColor: theme.dividerColor,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.edit,
+                                          color: theme.iconTheme.color,
+                                        ),
+                                        onPressed: () =>
+                                            _openEditInvestment(inv),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: theme.iconTheme.color,
+                                        ),
+                                        onPressed: () =>
+                                            _deleteInvestment(inv['id']),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
         ),
       ),
