@@ -64,7 +64,7 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
       final fId = await _fs.createFamily(name: controller.text.trim());
       setState(() {
         _familyId = fId;
-        _role = "admin";
+        _role = "creator";
       });
       Navigator.pushReplacement(context,MaterialPageRoute(builder: (ctx) => FamilyMainScreenPage()));
 

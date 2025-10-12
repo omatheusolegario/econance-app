@@ -17,24 +17,32 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   String? _insights;
   bool _loading = true;
 
-  Future<void> _fetchInsights() async {
+  Future<void> _fetchInsights({bool forceNew = false}) async {
+    setState(() => _loading = true);
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    String docId = todayKey;
+    if (forceNew) {
+      final timestamp = DateFormat('HHmmss').format(DateTime.now());
+      docId = '${todayKey}_$timestamp';
+    }
 
     final docRef = FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .collection('aiInsights')
-        .doc(todayKey);
+        .doc(docId);
 
-    final docSnap = await docRef.get();
-
-    if (docSnap.exists) {
-      setState(() {
-        _insights = docSnap['text'];
-        _loading = false;
-      });
-      return;
+    if (!forceNew) {
+      final docSnap = await docRef.get();
+      if (docSnap.exists) {
+        setState(() {
+          _insights = docSnap['text'];
+          _loading = false;
+        });
+        return;
+      }
     }
 
     final categoriesSnap = await FirebaseFirestore.instance
@@ -88,7 +96,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     }).toList();
 
     final transactions = [...revenues, ...expenses];
-
     final summaryJson = jsonEncode({"transactions": transactions});
 
     final model = GenerativeModel(
@@ -97,18 +104,19 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     );
 
     final prompt =
-        """
-    You are a financial assistant. Analyze this user's financial data:
-    $summaryJson
-    Write a concise financial insights report with these sections:
-    - Balance Overview (compare revenues vs expenses)
-    - Spending by Category
-    - Recurrent Expenses
-    - Suggestions
-    Keep it clear, structured and actionable.
-    Format it nicely, and put really nice spaces between areas that need(it's a flutter app).
-    Currency is R\$ (BRL)
-    """;
+    """
+You are a financial assistant. Analyze this user's financial data:
+$summaryJson
+Write a concise financial insights report with these sections:
+- Balance Overview (compare revenues vs expenses)
+- Spending by Category
+- Recurrent Expenses
+- Suggestions
+Keep it clear, structured and actionable.
+Format it nicely, and put really nice spaces between areas that need(it's a flutter app).
+Currency is R\$ (BRL)
+""";
+
     final response = await model.generateContent([Content.text(prompt)]);
     final text = response.text;
 
@@ -152,20 +160,35 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
               ),
             ),
             const SizedBox(height: 7),
+            ElevatedButton.icon(
+              onPressed: _loading ? null : () => _fetchInsights(forceNew: true),
+              icon: _loading
+                  ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+                  : const Icon(Icons.refresh),
+              label: const Text("Gerar Novamente   "),
+            ),
+            const SizedBox(height: 7),
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _insights == null
                   ? const Text("No insights available")
                   : Markdown(
-                      data: _insights ?? "",
-                      shrinkWrap: true,
-                      styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                        p: theme.textTheme.bodyMedium,
-                        h3: TextStyle(color: theme.primaryColor),
-                        blockSpacing: 12,
-                      ),
-                    ),
+                data: _insights ?? "",
+                shrinkWrap: true,
+                styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                  p: theme.textTheme.bodyMedium,
+                  h3: TextStyle(color: theme.primaryColor),
+                  blockSpacing: 12,
+                ),
+              ),
             ),
           ],
         ),

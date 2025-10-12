@@ -6,6 +6,7 @@ class LineChartCard extends StatelessWidget {
   final List<FlSpot> points;
   final String total;
   final List<String> labels;
+  final bool hideSensitive;
 
   const LineChartCard({
     super.key,
@@ -13,7 +14,15 @@ class LineChartCard extends StatelessWidget {
     required this.points,
     required this.total,
     required this.labels,
+    required this.hideSensitive,
   });
+
+  String formatNumber(double value) {
+    if (value >= 1e9) return "${(value / 1e9).toStringAsFixed(1)}B";
+    if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
+    if (value >= 1e3) return "${(value / 1e3).toStringAsFixed(1)}K";
+    return value.toStringAsFixed(0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +37,10 @@ class LineChartCard extends StatelessWidget {
         : title.toLowerCase().contains('investment')
         ? Colors.purple
         : theme.primaryColor;
+
+    final maxY = points.isNotEmpty
+        ? points.map((p) => p.y).reduce((a, b) => a > b ? a : b)
+        : 0;
 
     return Card(
       color: Colors.white10.withValues(alpha: .04),
@@ -60,6 +73,8 @@ class LineChartCard extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 15.0),
                 child: LineChart(
                   LineChartData(
+                    minY: 0,
+                    maxY: maxY * 1.1,
                     gridData: const FlGridData(show: false),
                     borderData: FlBorderData(show: false),
                     titlesData: FlTitlesData(
@@ -88,19 +103,40 @@ class LineChartCard extends StatelessWidget {
                       ),
                       rightTitles: AxisTitles(
                         sideTitles: SideTitles(
-                          reservedSize: 60,
+                          reservedSize: 55,
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
-                            if (value == meta.max || value == meta.min) {
+                            if (value == meta.max) {
                               return const SizedBox.shrink();
                             }
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 25),
-                              child: Text(
-                                value.toStringAsFixed(0),
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            );
+
+                            if (hideSensitive) {
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 25),
+                                child: Icon(
+                                  Icons.circle,
+                                  size: 6,
+                                  color: Colors.grey[400],
+                                ),
+                              );
+                            } else {
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 20),
+                                child: SizedBox(
+                                  width: 40,
+                                  child: Text(
+                                    formatNumber(value),
+                                    textAlign: TextAlign.left,
+                                    softWrap: false,
+                                    overflow: TextOverflow.fade,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                           },
                         ),
                       ),
@@ -112,9 +148,9 @@ class LineChartCard extends StatelessWidget {
                       LineChartBarData(
                         spots: points,
                         isCurved: true,
-                        color: lineColor,
+                        color: hideSensitive ? Colors.grey[400] : lineColor,
                         barWidth: 3,
-                        dotData: const FlDotData(show: true),
+                        dotData: FlDotData(show: !hideSensitive),
                       ),
                     ],
                   ),

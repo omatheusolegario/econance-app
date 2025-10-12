@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../services/family_service.dart';
 import 'member_card.dart';
 
@@ -18,7 +17,7 @@ class FamilyHomePage extends StatefulWidget {
 class _FamilyHomePageState extends State<FamilyHomePage> {
   final uid = FirebaseAuth.instance.currentUser!.uid;
   late String? _familyId = widget.familyId;
-  late String? _role = widget.role;
+  late String? _role = widget.role?.toLowerCase();
   final _fs = FamilyService();
 
   Future<Map<String, dynamic>> _getUserInfo(String memberUid) async {
@@ -31,9 +30,44 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
     };
   }
 
+  List<Map<String, dynamic>> sortMembers(String currentUserUid, List<Map<String, dynamic>> members) {
+    List<Map<String, dynamic>> currentUser = [];
+    List<Map<String, dynamic>> creator = [];
+    List<Map<String, dynamic>> admins = [];
+    List<Map<String, dynamic>> regularMembers = [];
+
+    for (var member in members) {
+      if (member['uid'] == currentUserUid) {
+        currentUser.add(member);
+      } else if (member['role'] == 'creator') {
+        creator.add(member);
+      } else if (member['role'] == 'admin') {
+        admins.add(member);
+      } else {
+        regularMembers.add(member);
+      }
+    }
+
+    int alphaSort(Map<String, dynamic> a, Map<String, dynamic> b) {
+      return (a['displayName'] as String)
+          .toLowerCase()
+          .compareTo((b['displayName'] as String).toLowerCase());
+    }
+
+    currentUser.sort(alphaSort);
+    creator.sort(alphaSort);
+    admins.sort(alphaSort);
+    regularMembers.sort(alphaSort);
+
+    return [...currentUser, ...creator, ...admins, ...regularMembers];
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    print("Current user role: $_role");
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -42,16 +76,12 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
           children: [
             Text(
               "Here you can manage",
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white60,
-              ),
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
             ),
             Text(
               "Family members",
-              style: theme.textTheme.headlineLarge?.copyWith(
-                color: theme.textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.headlineLarge
+                  ?.copyWith(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -61,30 +91,47 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
                   if (!snap.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  final members = snap.data!.docs;
-                  return ListView.separated(
-                    itemCount: members.length,
-                    separatorBuilder: (_, __) => const Divider(),
-                    itemBuilder: (ctx, i) {
-                      final m = members[i];
 
-                      return FutureBuilder<Map<String, dynamic>>(
-                        future: _getUserInfo(m.id),
-                        builder: (context, userSnap) {
-                          if (!userSnap.hasData) {
-                            return const ListTile(
-                              title: Text('Carregando...'),
-                            );
-                          }
+                  final membersDocs = snap.data!.docs;
 
-                          final userData = userSnap.data!;
+                  return FutureBuilder<List<Map<String, dynamic>>>(
+                    future: Future.wait(
+                      membersDocs.map((m) async {
+                        final userInfo = await _getUserInfo(m.id);
+                        return {
+                          'uid': m.id,
+                          'role': (m['role'] ?? 'member').toLowerCase(),
+                          'displayName': userInfo['fullName'],
+                          'email': userInfo['email'],
+                        };
+                      }),
+                    ),
+                    builder: (context, membersSnap) {
+                      if (!membersSnap.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final membersList = membersSnap.data!;
+                      final sortedMembers = sortMembers(uid, membersList);
+
+                      return ListView.separated(
+                        itemCount: sortedMembers.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (ctx, i) {
+                          final member = sortedMembers[i];
+
                           return MemberCard(
                             familyId: _familyId!,
-                            memberUid: m.id,
-                            displayName: userData['fullName'],
-                            email: userData['email'],
-                            role: m['role'] ?? 'member',
-                            isAdminView: _role == "admin",
+                            memberUid: member['uid'],
+                            displayName: member['displayName'],
+                            email: member['email'],
+                            role: member['role'],
+                            isAdminView: _role == "admin" || _role == "creator",
+                            currentUserUid: uid,
+                            currentUserRole: _role ?? 'member',
+                            onRemoved: () {
+                              setState(() {});
+                            },
                           );
                         },
                       );

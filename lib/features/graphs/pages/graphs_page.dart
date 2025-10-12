@@ -44,6 +44,13 @@ class _GraphsPageState extends State<GraphsPage> {
     };
   }
 
+  String formatNumber(double value) {
+    if (value >= 1e9) return "${(value / 1e9).toStringAsFixed(1)}B";
+    if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
+    if (value >= 1e3) return "${(value / 1e3).toStringAsFixed(1)}K";
+    return value.toStringAsFixed(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -79,7 +86,7 @@ class _GraphsPageState extends State<GraphsPage> {
                   }
                   final data = snapshot.data!;
                   final balanceData = data['balance'] as double;
-                  final balanceString = balanceData.toStringAsFixed(2);
+                  final balanceString = formatNumber(balanceData);
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

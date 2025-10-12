@@ -135,6 +135,12 @@ class _HomePageState extends State<HomePage> {
     if (change < 0) return Colors.red;
     return Colors.grey;
   }
+  String formatNumber(double value) {
+    if (value >= 1e9) return "${(value / 1e9).toStringAsFixed(1)}B";
+    if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
+    if (value >= 1e3) return "${(value / 1e3).toStringAsFixed(1)}K";
+    return value.toStringAsFixed(1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,10 +243,10 @@ class _HomePageState extends State<HomePage> {
                         title: card['title'] as String,
                         value: widget.hideSensitive
                             ? "•••••"
-                            : realValue.toStringAsFixed(1),
+                            : formatNumber(realValue),
                         subtitle: widget.hideSensitive
                             ? "••••• VS Last Month"
-                            : "${changeValue.toStringAsFixed(1)}% VS Last Month",
+                            : "${changeValue > 0 ? '+' : ''}${changeValue.toStringAsFixed(1)}% VS Last Month",
                         icon: card['icon'] as IconData?,
                         iconColor: card['iconColor'] as Color?,
                         subtitleColor: _getChangeColor(changeValue),
@@ -251,6 +257,7 @@ class _HomePageState extends State<HomePage> {
                           });
                         },
                       );
+
                     },
                   );
                 },

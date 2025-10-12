@@ -5,9 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class BalanceChartCard extends StatelessWidget {
   final String uid;
   final bool hideSensitive;
-  const BalanceChartCard({super.key, required this.uid,required this.hideSensitive,});
 
-  Stream<Map<String, Map<String,double>>> _getMonthlyData(String uid){
+  const BalanceChartCard({
+    super.key,
+    required this.uid,
+    required this.hideSensitive,
+  });
+
+  Stream<Map<String, Map<String, double>>> _getMonthlyData(String uid) {
     final revenuesStream = FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -32,35 +37,31 @@ class BalanceChartCard extends StatelessWidget {
 
       final Map<String, Map<String, double>> monthlyData = {};
 
-      for (final doc in revenuesSnapshot.docs) {
-        final data = doc.data();
-        final ts = data['date'] as Timestamp;
-        final date = ts.toDate();
-        final key = "${date.year}-${date.month.toString().padLeft(2,'0')}";
-        monthlyData[key] ??= {"revenue": 0, "expense": 0, "investment": 0};
-        monthlyData[key]!["revenue"] = (monthlyData[key]!["revenue"] ?? 0) + (data['value'] as num).toDouble();
+      void addData(QuerySnapshot snapshot, String keyName) {
+        for (final doc in snapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final ts = data['date'] as Timestamp;
+          final date = ts.toDate();
+          final key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
+          monthlyData[key] ??= {"revenue": 0, "expense": 0, "investment": 0};
+          monthlyData[key]![keyName] =
+              (monthlyData[key]![keyName] ?? 0) + (data['value'] as num).toDouble();
+        }
       }
 
-      for (final doc in expensesSnapshot.docs) {
-        final data = doc.data();
-        final ts = data['date'] as Timestamp;
-        final date = ts.toDate();
-        final key = "${date.year}-${date.month.toString().padLeft(2,'0')}";
-        monthlyData[key] ??= {"revenue": 0, "expense": 0, "investment": 0};
-        monthlyData[key]!["expense"] = (monthlyData[key]!["expense"] ?? 0) + (data['value'] as num).toDouble();
-      }
-
-      for (final doc in investmentsSnapshot.docs) {
-        final data = doc.data();
-        final ts = data['date'] as Timestamp;
-        final date = ts.toDate();
-        final key = "${date.year}-${date.month.toString().padLeft(2,'0')}";
-        monthlyData[key] ??= {"revenue": 0, "expense": 0, "investment": 0};
-        monthlyData[key]!["investment"] = (monthlyData[key]!["investment"] ?? 0) + (data['value'] as num).toDouble();
-      }
+      addData(revenuesSnapshot, "revenue");
+      addData(expensesSnapshot, "expense");
+      addData(investmentsSnapshot, "investment");
 
       return monthlyData;
     });
+  }
+
+  String formatNumber(double value) {
+    if (value >= 1e9) return "${(value / 1e9).toStringAsFixed(1)}B";
+    if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
+    if (value >= 1e3) return "${(value / 1e3).toStringAsFixed(1)}K";
+    return value.toStringAsFixed(0);
   }
 
   @override
@@ -70,7 +71,9 @@ class BalanceChartCard extends StatelessWidget {
     return StreamBuilder<Map<String, Map<String, double>>>(
       stream: _getMonthlyData(uid),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
         final data = snapshot.data!;
         final months = data.keys.toList()..sort();
@@ -118,7 +121,7 @@ class BalanceChartCard extends StatelessWidget {
                       LineChartData(
                         minY: 0,
                         maxY: maxY * 1.1,
-                        gridData: FlGridData(show: false),
+                        gridData: const FlGridData(show: false),
                         borderData: FlBorderData(show: false),
                         titlesData: FlTitlesData(
                           bottomTitles: AxisTitles(
@@ -141,54 +144,74 @@ class BalanceChartCard extends StatelessWidget {
                               interval: 1,
                             ),
                           ),
-                          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                           rightTitles: AxisTitles(
                             sideTitles: SideTitles(
-                              reservedSize: 60,
+                              reservedSize: 80,
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
                                 if (value == meta.max) return const SizedBox.shrink();
-                                return Padding(
-                                  padding: const EdgeInsets.only(left: 25),
-                                  child: Text(
-                                    value.toStringAsFixed(0),
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
-                                );
+
+                                if (hideSensitive) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 25),
+                                    child: Icon(
+                                      Icons.circle,
+                                      size: 6,
+                                      color: Colors.grey[400],
+                                    ),
+                                  );
+                                } else {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(left: 25),
+                                    child: Text(
+                                      formatNumber(value),
+                                      textAlign: TextAlign.left,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                  );
+                                }
                               },
                             ),
                           ),
-                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                         ),
                         lineBarsData: [
                           LineChartBarData(
                             spots: revenuePoints,
                             isCurved: true,
-                            color: Colors.green,
+                            color: hideSensitive ? Colors.grey[400] : Colors.green,
                             barWidth: 3,
-                            dotData: FlDotData(show: false),
+                            dotData: FlDotData(show: !hideSensitive),
                           ),
                           LineChartBarData(
                             spots: expensePoints,
                             isCurved: true,
-                            color: Colors.red,
+                            color: hideSensitive ? Colors.grey[400] : Colors.red,
                             barWidth: 3,
-                            dotData: FlDotData(show: false),
+                            dotData: FlDotData(show: !hideSensitive),
                           ),
                           LineChartBarData(
                             spots: balancePoints,
                             isCurved: true,
-                            color: Colors.blueAccent,
+                            color: hideSensitive ? Colors.grey[400] : Colors.blueAccent,
                             barWidth: 2,
                             isStrokeCapRound: true,
-                            dotData: FlDotData(show: false),
+                            dotData: FlDotData(show: !hideSensitive),
                           ),
                           LineChartBarData(
                             spots: investmentPoints,
                             isCurved: true,
-                            color: Colors.purple,
+                            color: hideSensitive ? Colors.grey[400] : Colors.purple,
                             barWidth: 2,
-                            dotData: FlDotData(show: false),
+                            dotData: FlDotData(show: !hideSensitive),
                           ),
                         ],
                       ),
@@ -201,11 +224,11 @@ class BalanceChartCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.circle, color: Colors.green, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.green, size: 10),
                         const SizedBox(width: 4),
                         Text("Revenues", style: theme.textTheme.bodySmall),
                         const SizedBox(width: 12),
-                        Icon(Icons.circle, color: Colors.red, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.red, size: 10),
                         const SizedBox(width: 4),
                         Text("Expenses", style: theme.textTheme.bodySmall),
                       ],
@@ -213,11 +236,11 @@ class BalanceChartCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.circle, color: Colors.blueAccent, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.blueAccent, size: 10),
                         const SizedBox(width: 4),
                         Text("Balance", style: theme.textTheme.bodySmall),
                         const SizedBox(width: 12),
-                        Icon(Icons.circle, color: Colors.purple, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.purple, size: 10),
                         const SizedBox(width: 4),
                         Text("Investments", style: theme.textTheme.bodySmall),
                       ],

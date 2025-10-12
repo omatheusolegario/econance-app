@@ -28,34 +28,39 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
     _fetchAndAnalyse();
   }
 
-  Future<void> _fetchAndAnalyse() async {
+  Future<void> _fetchAndAnalyse({bool forceNew = false}) async {
+    setState(() => _loading = true);
+
     final db = FirebaseFirestore.instance;
     final todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    String docId = todayKey;
+    if (forceNew) {
+      final timestamp = DateFormat('HHmmss').format(DateTime.now());
+      docId = '${todayKey}_$timestamp';
+    }
 
-    final docRef = FirebaseFirestore.instance
+    final docRef = db
         .collection('families')
         .doc(widget.familyId)
         .collection('aiInsights')
+        .doc(docId);
 
-        .doc(todayKey);
-
-    final docSnap = await docRef.get();
-
-    if (docSnap.exists) {
-      setState(() {
-        _insights = docSnap['text'];
-        _loading = false;
-      });
-      return;
-    }else if (widget.role == 'member'){
-      setState(() {
-        _insights = "Wait for your admin to generate it first.";
-        _loading = false;
-      });
-      return;
+    if (!forceNew) {
+      final docSnap = await docRef.get();
+      if (docSnap.exists && widget.role != 'creator' && widget.role != 'admin') {
+        setState(() {
+          _insights = docSnap['text'];
+          _loading = false;
+        });
+        return;
+      } else if (widget.role == 'member') {
+        setState(() {
+          _insights = "Wait for your admin to generate it first.";
+          _loading = false;
+        });
+        return;
+      }
     }
-
-
 
     final membersSnap = await db
         .collection('families')
@@ -77,6 +82,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
         final data = doc.data();
         categoryMap[doc.id] = data['name'];
       }
+
       final revenuesSnap = await db
           .collection('users')
           .doc(memberUid)
@@ -119,19 +125,18 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
       };
     }
 
-    final prompt =
-        """
-        Family financial summary. For each member provide:
-        - short balance overview,
-        - top 3 categories for spending,
-        - any recurring items noticed,
-        Then provide a short family-level summary and 3 actionable suggestions
-       Data:
-       ${jsonEncode(summary)}
-       Keep it clear, structured and actionable.
-       Format it nicely, and put really nice spaces between areas that need (it's a flutter app).
-       Currency is R\$ (BRL)
-      """;
+    final prompt = """
+Family financial summary. For each member provide:
+- short balance overview,
+- top 3 categories for spending,
+- any recurring items noticed,
+Then provide a short family-level summary and 3 actionable suggestions
+Data:
+${jsonEncode(summary)}
+Keep it clear, structured and actionable.
+Format it nicely, and put really nice spaces between areas that need (it's a flutter app).
+Currency is R\$ (BRL)
+""";
 
     final resp = await _model.generateContent([Content.text(prompt)]);
 
@@ -169,19 +174,35 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
               ),
             ),
             const SizedBox(height: 7),
+            if (widget.role == 'creator' || widget.role == 'admin')
+              ElevatedButton.icon(
+                onPressed: _loading ? null : () => _fetchAndAnalyse(forceNew: true),
+                icon: _loading
+                    ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : const Icon(Icons.refresh),
+                label: const Text("Gerar Novamente   "),
+              ),
+            const SizedBox(height: 7),
             Expanded(
-              child:
-
-                  _loading
+              child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _insights == null
                   ? const Text("No insights available")
                   : Markdown(
                 data: _insights ?? "",
                 shrinkWrap: true,
-                styleSheet: MarkdownStyleSheet.fromTheme(
-                  theme,
-                ).copyWith(p: theme.textTheme.bodyMedium, h3:TextStyle(color: theme.primaryColor), blockSpacing: 12),
+                styleSheet: MarkdownStyleSheet.fromTheme(theme)
+                    .copyWith(
+                    p: theme.textTheme.bodyMedium,
+                    h3: TextStyle(color: theme.primaryColor),
+                    blockSpacing: 12),
               ),
             ),
           ],

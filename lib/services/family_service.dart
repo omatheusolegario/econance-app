@@ -21,7 +21,7 @@ class FamilyService {
     });
 
     await famRef.collection('members').doc(uid).set({
-      'role': 'admin',
+      'role': 'creator',
       'joinedAt': FieldValue.serverTimestamp(),
       'displayName': FirebaseAuth.instance.currentUser!.displayName ?? '',
       'email': FirebaseAuth.instance.currentUser!.email ?? '',

@@ -97,6 +97,7 @@ class RevenueLineChart extends StatelessWidget {
           total: hideSensitive ? "•••••" : "R\$ $total",
           points: points,
           labels: months,
+          hideSensitive: hideSensitive,
         );
       },
     );
