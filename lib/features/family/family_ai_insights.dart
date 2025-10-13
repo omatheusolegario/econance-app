@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 class FamilyAIInsightsPage extends StatefulWidget {
   final String familyId;
@@ -19,7 +21,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
   String? _insights;
   final _model = GenerativeModel(
     model: 'gemini-2.5-flash',
-    apiKey: "AIzaSyB94OyBMfC1GxL6pBZokQohPH8Z0KPSz0c",
+    apiKey: dotenv.env['GEMINI_API_KEY']!,
   );
 
   @override

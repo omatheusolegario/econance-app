@@ -11,7 +11,7 @@ import '../../investments_types/investment_type.dart';
 class GraphsPage extends StatefulWidget {
   final String uid;
   final bool hideSensitive;
-  const GraphsPage({super.key, required this.uid,  required this.hideSensitive});
+  const GraphsPage({super.key, required this.uid, required this.hideSensitive});
 
   @override
   State<GraphsPage> createState() => _GraphsPageState();
@@ -32,15 +32,20 @@ class _GraphsPageState extends State<GraphsPage> {
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final personalInfo = userDoc['personalInfo'] as Map<String, dynamic>? ?? {};
     final name = personalInfo['fullName'] ?? 'User';
+
     final expensesSnap = await FirebaseFirestore.instance.collection('users').doc(uid).collection('expenses').get();
     final totalExpenses = expensesSnap.docs.fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
+
     final revenuesSnap = await FirebaseFirestore.instance.collection('users').doc(uid).collection('revenues').get();
     final totalRevenue = revenuesSnap.docs.fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
+
     return {
       'name': name,
       'totalRevenue': totalRevenue,
       'totalExpenses': totalExpenses,
       'balance': totalRevenue - totalExpenses,
+      'hasExpenses': expensesSnap.docs.isNotEmpty,
+      'hasRevenue': revenuesSnap.docs.isNotEmpty,
     };
   }
 
@@ -63,9 +68,7 @@ class _GraphsPageState extends State<GraphsPage> {
             children: [
               Text(
                 "Here you'll manage",
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white60,
-                ),
+                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
               ),
               Text(
                 "Finances",
@@ -82,35 +85,55 @@ class _GraphsPageState extends State<GraphsPage> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(
+                      child: Text(
+                        'Ocorreu um erro ao carregar os dados.\n${snapshot.error}',
+                        style: const TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
                   }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Nenhuma informação disponível no momento.',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
                   final data = snapshot.data!;
-                  final balanceData = data['balance'] as double;
+                  final balanceData = data['balance'] as double? ?? 0;
                   final balanceString = formatNumber(balanceData);
+                  final hasExpenses = data['hasExpenses'] as bool;
+                  final hasRevenue = data['hasRevenue'] as bool;
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Card(
                         color: Colors.white10.withOpacity(.04),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.hideSensitive
-                                    ? 'The balance is R\$•••••'
-                                    : 'The balance is R\$${balanceString}',
+                                widget.hideSensitive ? 'The balance is R\$•••••' : 'The balance is R\$${balanceString}',
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: theme.textTheme.bodyLarge?.color,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive),
+                              hasExpenses || hasRevenue
+                                  ? BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive)
+                                  : const Text(
+                                'Nenhum dado de balance disponível.',
+                                style: TextStyle(color: Colors.white70),
+                              ),
                             ],
                           ),
                         ),
@@ -118,9 +141,7 @@ class _GraphsPageState extends State<GraphsPage> {
                       const SizedBox(height: 20),
                       Card(
                         color: Colors.white10.withOpacity(.04),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
@@ -142,9 +163,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                       context: context,
                                       isScrollControlled: true,
                                       shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(25),
-                                        ),
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                                       ),
                                       builder: (context) => RevenuesExpensesPage(uid: uid),
                                     );
@@ -153,9 +172,13 @@ class _GraphsPageState extends State<GraphsPage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              CategoryBreakdownChart(type: "expense", uid: uid),
+                              hasExpenses
+                                  ? CategoryBreakdownChart(type: "expense", uid: uid)
+                                  : const Text('Nenhuma despesa registrada.', style: TextStyle(color: Colors.white70)),
                               const SizedBox(height: 20),
-                              CategoryBreakdownChart(type: "revenue", uid: uid),
+                              hasRevenue
+                                  ? CategoryBreakdownChart(type: "revenue", uid: uid)
+                                  : const Text('Nenhuma receita registrada.', style: TextStyle(color: Colors.white70)),
                             ],
                           ),
                         ),
@@ -165,21 +188,13 @@ class _GraphsPageState extends State<GraphsPage> {
                       const SizedBox(height: 20),
                       Card(
                         color: Colors.white10.withOpacity(.04),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Manage your categories',
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              Text('Manage your categories', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 15),
                               SizedBox(
                                 width: 100,
@@ -189,9 +204,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                       context: context,
                                       isScrollControlled: true,
                                       shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(25),
-                                        ),
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                                       ),
                                       builder: (context) => CategoriesPage(uid: uid),
                                     );
@@ -208,21 +221,13 @@ class _GraphsPageState extends State<GraphsPage> {
                       const SizedBox(height: 20),
                       Card(
                         color: Colors.white10.withOpacity(.04),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Manage your investments',
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              Text('Manage your investments', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 15),
                               SizedBox(
                                 width: 100,
@@ -232,9 +237,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                       context: context,
                                       isScrollControlled: true,
                                       shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(25),
-                                        ),
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                                       ),
                                       builder: (_) => InvestmentsPage(uid: uid),
                                     );
@@ -249,21 +252,13 @@ class _GraphsPageState extends State<GraphsPage> {
                       const SizedBox(height: 20),
                       Card(
                         color: Colors.white10.withOpacity(.04),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Manage your investments types',
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              Text('Manage your investments types', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 15),
                               SizedBox(
                                 width: 100,
@@ -273,9 +268,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                       context: context,
                                       isScrollControlled: true,
                                       shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(25),
-                                        ),
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                                       ),
                                       builder: (_) => InvestmentTypesPage(uid: uid),
                                     );

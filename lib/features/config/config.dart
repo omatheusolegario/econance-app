@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/theme/theme_manager.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class Config extends StatefulWidget {
   const Config({super.key});
@@ -14,10 +17,14 @@ class Config extends StatefulWidget {
 class _ConfigState extends State<Config> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
+  String? _photoUrl;
   String? _name;
   String? _email;
   String? _phone;
+
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -175,6 +182,7 @@ class _ConfigState extends State<Config> {
       _name = data?['fullName'] ?? user.displayName ?? '';
       _email = user.email;
       _phone = data?['phone'] ?? '';
+      _photoUrl = data?['photoUrl'] ?? user.photoURL ?? '';
     });
   }
 
@@ -362,6 +370,64 @@ class _ConfigState extends State<Config> {
       }
     }
   }
+  Future<void> _pickAndUploadProfileImage() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final picker = ImagePicker();
+
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Câmera'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Galeria'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
+    if (pickedFile == null) return;
+
+    setState(() => _isUploading = true);
+
+    try {
+      final ref = _storage.ref().child('user_profiles/${user.uid}/profile.jpg');
+      await ref.putFile(File(pickedFile.path));
+
+      final url = await ref.getDownloadURL();
+
+      await _firestore.collection('users').doc(user.uid).update({
+        'personalInfo.photoUrl': url,
+      });
+      await user.updatePhotoURL(url);
+
+      setState(() {
+        _photoUrl = url;
+        _isUploading = false;
+      });
+
+      _showMessage('Imagem atualizada com sucesso!');
+    } catch (e) {
+      setState(() => _isUploading = false);
+      _showMessage('Erro ao atualizar imagem: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -375,6 +441,47 @@ class _ConfigState extends State<Config> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Center(
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundImage: _photoUrl != null && _photoUrl!.isNotEmpty
+                          ? NetworkImage(_photoUrl!)
+                          : const AssetImage('assets/images/default_avatar.png')
+                      as ImageProvider,
+                    ),
+                    if (_isUploading)
+                      const Positioned.fill(
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _pickAndUploadProfileImage,
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: theme.primaryColor,
+                          child: const Icon(Icons.camera_alt, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _name ?? '',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
           _buildListTile(
             icon: Icons.brightness_6,
             title: 'Theme',

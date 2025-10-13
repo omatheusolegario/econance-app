@@ -5,6 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+
 
 class AiInsightsPage extends StatefulWidget {
   const AiInsightsPage({super.key});
@@ -100,7 +103,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
     final model = GenerativeModel(
       model: 'gemini-2.5-flash',
-      apiKey: "AIzaSyB94OyBMfC1GxL6pBZokQohPH8Z0KPSz0c",
+      apiKey: dotenv.env['GEMINI_API_KEY']!,
     );
 
     final prompt =

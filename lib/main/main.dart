@@ -13,10 +13,15 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import '../auth/forgot_password.dart';
 import '../features/home/home.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+
+
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

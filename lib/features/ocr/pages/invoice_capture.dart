@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class InvoiceCapturePage extends StatefulWidget {
   const InvoiceCapturePage({super.key});
@@ -34,7 +35,7 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
     super.initState();
     _model = GenerativeModel(
       model: 'gemini-2.5-flash',
-      apiKey: "AIzaSyB94OyBMfC1GxL6pBZokQohPH8Z0KPSz0c",
+      apiKey: dotenv.env['GEMINI_API_KEY']!,
     );
     _initializeCamera();
   }

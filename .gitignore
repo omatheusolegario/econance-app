@@ -31,7 +31,8 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-/coverage/
+ /coverage/
+.env
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +44,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Google api related
+google-services.json
+GoogleService-Info.plist
+
+# Firebase / Android keys and configs
+*.jks
+*.keystore
+key.properties
+*.env.*
+firebase.json
