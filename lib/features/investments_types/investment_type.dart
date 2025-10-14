@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_investment_type.dart';
 
-class InvestmentTypesPage extends StatelessWidget {
+class InvestmentTypesPage extends StatefulWidget {
   final String uid;
   const InvestmentTypesPage({super.key, required this.uid});
 
+  @override
+  State<InvestmentTypesPage> createState() => _InvestmentTypesPageState();
+}
+
+class _InvestmentTypesPageState extends State<InvestmentTypesPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -55,7 +60,7 @@ class InvestmentTypesPage extends StatelessWidget {
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('users')
-                      .doc(uid)
+                      .doc(widget.uid)
                       .collection('investments_types')
                       .orderBy('createdAt', descending: true)
                       .snapshots(),
@@ -89,6 +94,7 @@ class InvestmentTypesPage extends StatelessWidget {
                                   ),
                                 ),
                                 builder: (context) => EditInvestmentTypePage(
+                                  uid: widget.uid, // use widget.uid
                                   typeId: doc.id,
                                   initialName: data['name'],
                                 ),

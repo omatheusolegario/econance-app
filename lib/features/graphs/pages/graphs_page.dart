@@ -11,6 +11,7 @@ import '../../investments_types/investment_type.dart';
 class GraphsPage extends StatefulWidget {
   final String uid;
   final bool hideSensitive;
+
   const GraphsPage({super.key, required this.uid, required this.hideSensitive});
 
   @override
@@ -145,11 +146,9 @@ class _GraphsPageState extends State<GraphsPage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              if (widget.hideSensitive)
-                                _sensitivePlaceholder(context)
-                              else if (hasExpenses || hasRevenue)
+                              if (!widget.hideSensitive && (hasExpenses || hasRevenue))
                                 BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive)
-                              else
+                              else if (!hasExpenses && !hasRevenue)
                                 const Text(
                                   'Nenhum dado de balance disponível.',
                                   style: TextStyle(color: Colors.white70),
@@ -196,28 +195,6 @@ class _GraphsPageState extends State<GraphsPage> {
                               ),
                               const SizedBox(height: 20),
                               if (widget.hideSensitive)
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _sensitivePlaceholder(context, message: "Sensitive data hidden"),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      "Data temporarily hidden for privacy",
-                                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
-                                    ),
-                                  ],
-                                )
-                              else ...[
-                                hasExpenses
-                                    ? CategoryBreakdownChart(type: "expense", uid: uid)
-                                    : const Text('Nenhuma despesa registrada.', style: TextStyle(color: Colors.white70)),
-                                const SizedBox(height: 20),
-                                hasRevenue
-                                    ? CategoryBreakdownChart(type: "revenue", uid: uid)
-                                    : const Text('Nenhuma receita registrada.', style: TextStyle(color: Colors.white70)),
-                              ],
-                              const SizedBox(height: 20),
-                              if (widget.hideSensitive)
                                 _sensitivePlaceholder(context)
                               else ...[
                                 hasExpenses
@@ -233,7 +210,6 @@ class _GraphsPageState extends State<GraphsPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-
 
                       Card(
                         color: Colors.white10.withOpacity(.04),
@@ -278,11 +254,7 @@ class _GraphsPageState extends State<GraphsPage> {
                       ),
                       const SizedBox(height: 20),
 
-                      if (widget.hideSensitive)
-                        _sensitivePlaceholder(context)
-                      else
-                        InvestmentBreakdownChart(uid: uid),
-
+                      widget.hideSensitive ? _sensitivePlaceholder(context) : InvestmentBreakdownChart(uid: uid),
                       const SizedBox(height: 20),
 
                       Card(

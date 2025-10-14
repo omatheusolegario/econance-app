@@ -163,6 +163,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                             ),
                           ),
                           builder: (context) => EditCategoryPage(
+                            uid: uid,
                             categoryId: doc.id,
                             initialName: data['name'],
                             initialType: data['type'],

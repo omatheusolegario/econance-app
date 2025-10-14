@@ -56,12 +56,12 @@ class MemberCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return ListTile(
-      leading: CircleAvatar( radius: 24,
+      leading: CircleAvatar(
+        radius: 24,
         backgroundColor: theme.primaryColor,
         backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
             ? NetworkImage(photoUrl!)
-            : const AssetImage('assets/images/default_avatar.png')
-        as ImageProvider,
+            : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
       ),
       title: Text(displayName.isNotEmpty ? displayName : email, style: theme.textTheme.bodyLarge),
       subtitle: Text("$email\n${role.toUpperCase()}"),
@@ -95,12 +95,13 @@ class MemberCard extends StatelessWidget {
                 leading: const Icon(Icons.bar_chart),
                 title: Text("View member graphs", style: Theme.of(context).textTheme.bodyMedium),
                 onTap: () {
+                  Navigator.pop(ctx);
                   showModalBottomSheet(
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     showDragHandle: true,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     context: context,
-                    builder: (ctx) => GraphsPage(uid: memberUid, hideSensitive: true),
+                    builder: (ctx) => GraphsPage(uid: memberUid, hideSensitive: false),
                   );
                 },
               ),

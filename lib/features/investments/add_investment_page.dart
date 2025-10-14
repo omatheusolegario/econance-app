@@ -77,7 +77,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   Future<void> _pickType() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const InvestmentTypePickerPage()),
+      MaterialPageRoute(builder: (_) => InvestmentTypePickerPage(uid: widget.uid)),
     );
     if (result != null && result is String) {
       setState(() {

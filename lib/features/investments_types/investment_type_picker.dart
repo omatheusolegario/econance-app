@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InvestmentTypePickerPage extends StatefulWidget {
-  const InvestmentTypePickerPage({super.key});
+  final String uid;
+
+  const InvestmentTypePickerPage({super.key ,required this.uid,});
 
   @override
   State<InvestmentTypePickerPage> createState() =>
@@ -43,7 +45,7 @@ class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(uid)
+            .doc(widget.uid)
             .collection('investments_types')
             .orderBy('createdAt', descending: true)
             .snapshots(),
@@ -91,7 +93,7 @@ class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
               : () async {
                   final doc = await FirebaseFirestore.instance
                       .collection('users')
-                      .doc(uid)
+                      .doc(widget.uid)
                       .collection('investments_types')
                       .doc(_selectedType!)
                       .get();

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../categories/category_picker.dart';
 
 class EditTransactionPage extends StatefulWidget {
+  final String uid;
   final String type;
   final String transactionId;
   final String? initialDate;
@@ -15,6 +15,7 @@ class EditTransactionPage extends StatefulWidget {
 
   const EditTransactionPage({
     super.key,
+    required this.uid,
     required this.type,
     required this.transactionId,
     this.initialDate,
@@ -29,7 +30,6 @@ class EditTransactionPage extends StatefulWidget {
 }
 
 class _EditTransactionPageState extends State<EditTransactionPage> {
-  final uid = FirebaseAuth.instance.currentUser!.uid;
   final _value = TextEditingController();
   final _note = TextEditingController();
   final _date = TextEditingController();
@@ -61,17 +61,17 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     if (selectedCategoryId != null) {
       FirebaseFirestore.instance
           .collection('users')
-          .doc(uid)
+          .doc(widget.uid)
           .collection('categories')
           .doc(selectedCategoryId)
           .get()
           .then((doc) {
-            if (doc.exists) {
-              setState(() {
-                selectedCategoryName = doc['name'];
-              });
-            }
+        if (doc.exists) {
+          setState(() {
+            selectedCategoryName = doc['name'];
           });
+        }
+      });
     }
   }
 
@@ -85,14 +85,14 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
         selectedCategoryId = result;
         FirebaseFirestore.instance
             .collection('users')
-            .doc(uid)
+            .doc(widget.uid)
             .collection('categories')
             .doc(result)
             .get()
             .then((doc) {
-              selectedCategoryName = doc['name'];
-              setState(() {});
-            });
+          selectedCategoryName = doc['name'];
+          setState(() {});
+        });
       });
     }
   }
@@ -132,7 +132,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection(widget.type == "expense" ? "expenses" : "revenues")
         .doc(widget.transactionId)
         .update(data);
@@ -175,8 +175,6 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-
               const SizedBox(height: 10),
               TextFormField(
                 controller: _value,
@@ -261,4 +259,3 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     );
   }
 }
-

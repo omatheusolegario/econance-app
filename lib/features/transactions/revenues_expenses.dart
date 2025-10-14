@@ -89,6 +89,7 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: EditTransactionPage(
+          uid: uid,
           type: t['kind'],
           transactionId: t['id'],
           initialValue: amount.toString(),
@@ -188,8 +189,8 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.grey),
-                                onPressed: () {
-                                  FirebaseFirestore.instance
+                                onPressed: () async {
+                                  await FirebaseFirestore.instance
                                       .collection('users')
                                       .doc(uid)
                                       .collection(isExpense ? 'expenses' : 'revenues')

@@ -5,11 +5,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class EditInvestmentTypePage extends StatefulWidget {
   final String typeId;
   final String initialName;
-
+  final String uid;
   const EditInvestmentTypePage({
     super.key,
     required this.typeId,
     required this.initialName,
+    required this.uid
   });
 
   @override
@@ -26,37 +27,33 @@ class _EditInvestmentTypePageState extends State<EditInvestmentTypePage> {
   }
 
   Future<void> _updateType() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('investments_types')
         .doc(widget.typeId)
         .update({
-          'name': _nameController.text.trim(),
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+      'name': _nameController.text.trim(),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Type updated")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Type updated")),
+    );
     Navigator.pop(context);
   }
 
   Future<void> _deleteType() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid) // use widget.uid aqui também
         .collection('investments_types')
         .doc(widget.typeId)
         .delete();
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Type deleted")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Type deleted")),
+    );
     Navigator.pop(context);
   }
 

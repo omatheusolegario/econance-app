@@ -154,7 +154,7 @@ class _MainScreenState extends State<MainScreen> {
                 ListTile(
                   leading: const Icon(Icons.add_chart),
                   title: Text(
-                    "New Type",
+                    "New Investments Type",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {

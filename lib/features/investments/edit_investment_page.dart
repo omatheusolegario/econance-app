@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:econance/features/investments_types/investment_type_picker.dart';
 
 class EditInvestmentPage extends StatefulWidget {
+  final String uid;
   final String investmentId;
   final String? initialName;
   final String? initialType;
@@ -17,6 +18,7 @@ class EditInvestmentPage extends StatefulWidget {
 
   const EditInvestmentPage({
     super.key,
+    required this.uid,
     required this.investmentId,
     this.initialName,
     this.initialType,
@@ -86,7 +88,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
   Future<void> _pickType() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const InvestmentTypePickerPage()),
+      MaterialPageRoute(builder: (_) =>  InvestmentTypePickerPage(uid: widget.uid)),
     );
     if (result != null && result is String) {
       setState(() {
@@ -112,7 +114,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('investments')
         .doc(widget.investmentId)
         .update(data);

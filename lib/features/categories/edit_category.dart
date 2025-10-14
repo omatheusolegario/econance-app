@@ -4,11 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditCategoryPage extends StatefulWidget {
   final String categoryId;
+  final String uid;
   final String initialName;
   final String initialType;
 
   const EditCategoryPage({
     super.key,
+    required this.uid,
     required this.categoryId,
     required this.initialName,
     required this.initialType,
@@ -34,7 +36,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('categories')
         .doc(widget.categoryId)
         .update({
@@ -53,7 +55,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('categories')
         .doc(widget.categoryId)
         .delete();

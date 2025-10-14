@@ -24,7 +24,7 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
   Future<void> _loadInvestments() async {
     final snap = await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('investments')
         .get();
 
@@ -59,6 +59,7 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         child: EditInvestmentPage(
+          uid: uid,
           investmentId: inv['id'],
           initialName: inv['name'],
           initialType: inv['type'],
@@ -76,7 +77,7 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
   Future<void> _deleteInvestment(String id) async {
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('investments')
         .doc(id)
         .delete();
