@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 import 'package:econance/features/transactions/add_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
@@ -18,7 +17,7 @@ class InvoiceCapturePage extends StatefulWidget {
   State<InvoiceCapturePage> createState() => _InvoiceCapturePageState();
 }
 
-class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
+class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTickerProviderStateMixin {
   File? _image;
   bool _loading = false;
   final picker = ImagePicker();
@@ -29,6 +28,9 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
   int _currentCameraIndex = 0;
   List<CameraDescription> _cameras = [];
   File? _frozenFrame;
+  bool _isFrozen = false;
+  late AnimationController _scanController;
+  late Animation<double> _scanAnimation;
 
   @override
   void initState() {
@@ -37,18 +39,27 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
       model: 'gemini-2.5-flash',
       apiKey: dotenv.env['GEMINI_API_KEY']!,
     );
+    _scanController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+    _scanAnimation = CurvedAnimation(parent: _scanController, curve: Curves.easeInOut);
+    _scanController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _frozenFrame = null;
+        });
+      }
+    });
     _initializeCamera();
   }
 
   Future<void> _initializeCamera() async {
     final status = await Permission.camera.request();
-
     if (status.isGranted) {
       final allCameras = await availableCameras();
-
       CameraDescription? backCamera;
       CameraDescription? frontCamera;
-
       for (final cam in allCameras) {
         if (cam.lensDirection == CameraLensDirection.back && backCamera == null) {
           backCamera = cam;
@@ -56,112 +67,114 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
           frontCamera = cam;
         }
       }
-
       _cameras = [
         if (backCamera != null) backCamera,
         if (frontCamera != null) frontCamera,
       ];
-
       if (_cameras.isNotEmpty) {
         _currentCameraIndex = 0;
-        _controller = CameraController(
-          _cameras[_currentCameraIndex],
-          ResolutionPreset.high,
-        );
+        _controller = CameraController(_cameras[_currentCameraIndex], ResolutionPreset.high);
         _initializeControllerFuture = _controller!.initialize();
         setState(() {});
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Nenhuma câmera compatível encontrada.")),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Nenhuma câmera compatível encontrada.")));
       }
     } else if (status.isPermanentlyDenied) {
       await openAppSettings();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Permissão da câmera é necessária.")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Permissão da câmera é necessária.")));
     }
   }
 
   Future<void> _flipCamera() async {
+    if (_isFrozen) return;
     if (_cameras.length < 2) return;
-
     _currentCameraIndex = (_currentCameraIndex + 1) % _cameras.length;
     await _controller?.dispose();
-    _controller = CameraController(
-      _cameras[_currentCameraIndex],
-      ResolutionPreset.high,
-    );
+    _controller = CameraController(_cameras[_currentCameraIndex], ResolutionPreset.high);
     _initializeControllerFuture = _controller!.initialize();
     setState(() {});
   }
 
   Future<void> _toggleFlash() async {
+    if (_isFrozen) return;
     if (_controller != null && _controller!.value.isInitialized) {
       _isFlashOn = !_isFlashOn;
-      await _controller!.setFlashMode(
-        _isFlashOn ? FlashMode.torch : FlashMode.off,
-      );
+      await _controller!.setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
       setState(() {});
     }
   }
 
   Future<void> _captureImage() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
     try {
       await _initializeControllerFuture;
-      final image = await _controller!.takePicture();
       setState(() {
-        _image = File(image.path);
+        _isFrozen = true;
+        _loading = false;
       });
-      await _performOCR(_image!);
+      final image = await _controller!.takePicture();
+      _frozenFrame = File(image.path);
+      setState(() {});
+      await Future.delayed(const Duration(milliseconds: 100));
+      setState(() {
+        _loading = true;
+      });
+      if (_frozenFrame != null) {
+        await _performOCR(_frozenFrame!);
+      }
+      setState(() {
+        _isFrozen = false;
+        _loading = false;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error capturing image: $e')));
+      setState(() {
+        _isFrozen = false;
+        _loading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error capturing image: $e')));
     }
   }
 
   Future<void> _pickFromGallery() async {
+    if (_isFrozen) return;
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
+        _frozenFrame = _image;
+        _isFrozen = true;
+        _loading = true;
       });
-      await _performOCR(_image!);
+      await Future.delayed(const Duration(milliseconds: 100));
+      await _performOCR(_frozenFrame!);
+      setState(() {
+        _isFrozen = false;
+        _loading = false;
+      });
     }
   }
 
   Future<Map<String, String>> _fetchExpenseCategories() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw Exception("User not logged in");
-
     final categoriesSnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .collection('categories')
         .where('type', isEqualTo: 'expense')
         .get();
-
-    return {
-      for (final doc in categoriesSnapshot.docs) doc.id: doc['name'] as String,
-    };
+    return {for (final doc in categoriesSnapshot.docs) doc.id: doc['name'] as String};
   }
 
   Future<String?> _createNewCategory(String suggestedName) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
-
-    final newDocRef = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('categories')
-        .add({
+    final newDocRef = await FirebaseFirestore.instance.collection('users').doc(uid).collection('categories').add({
       'type': 'expense',
       'name': suggestedName,
       'createdAt': FieldValue.serverTimestamp(),
     });
-
     return newDocRef.id;
   }
 
@@ -169,18 +182,15 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
     setState(() {
       _loading = true;
     });
-
     try {
       final bytes = await file.readAsBytes();
-
       final categories = await _fetchExpenseCategories();
       final categoriesJson = jsonEncode(categories);
-
       final content = [
         Content.multi([
           TextPart(
             'Extract the following from this Brazilian invoice image as JSON:'
-                '{"date": "DD/MM/YYYY", "total": "XX.XX" (number only), "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]}'
+                '{"date": "DD/MM/YYYY", "total": "XX.XX", "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]}'
                 'For number use "." to represent decimal values'
                 'Be accurate with formats. If missing, use "".'
                 'Focus on the main purchase details; ignore headers/footers if irrelevant.'
@@ -193,13 +203,8 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
           DataPart('image/png', bytes),
         ]),
       ];
-
       final response = await _model.generateContent(content);
-      final jsonText =
-          response.text
-              ?.replaceAll('```json', '')
-              .replaceAll('```', '')
-              .trim() ?? '{}';
+      final jsonText = response.text?.replaceAll('```json', '').replaceAll('```', '').trim() ?? '{}';
       Map<String, dynamic> parsedResult;
       try {
         final decoded = jsonDecode(jsonText);
@@ -207,77 +212,42 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
       } catch (_) {
         parsedResult = {};
       }
-
       String? categoryId = parsedResult['categoryId'] as String?;
       if (categoryId == null && parsedResult['suggestedCategoryName'] != null) {
-        categoryId = await _createNewCategory(
-          parsedResult['suggestedCategoryName'] as String,
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Created new category: ${parsedResult['suggestedCategoryName']}",
-            ),
-          ),
-        );
+        categoryId = await _createNewCategory(parsedResult['suggestedCategoryName'] as String);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Created new category: ${parsedResult['suggestedCategoryName']}")));
       }
-
       if (parsedResult['total'] != null && parsedResult['total'].isNotEmpty) {
         if (context.mounted) {
-          if (_controller != null && _controller!.value.isInitialized) {
-            try {
-              await _controller!.setFlashMode(FlashMode.off);
-              final lastFrame = await _controller!.takePicture();
-              _frozenFrame = File(lastFrame.path);
-              setState(() {});
-            } catch (_) {
-              _frozenFrame = null;
-            }
-          }
-
-          showModalBottomSheet(
+          _scanController.stop();
+          await showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-            ),
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
             builder: (context) => AddTransactionPage(
               type: 'expense',
               isInvoice: true,
               initialDate: parsedResult['date'],
               initialValue: parsedResult['total'],
-              initialItems:
-              (parsedResult['items'] as List<dynamic>?)
-                  ?.map(
-                    (item) => {
-                  'name': item['name'] ?? '',
-                  'value': item['value'] ?? '',
-                },
-              )
+              initialItems: (parsedResult['items'] as List<dynamic>?)
+                  ?.map((item) => {'name': item['name'] ?? '', 'value': item['value'] ?? ''})
                   .toList() ??
                   [],
               initialCategoryId: categoryId,
-              initialNote: parsedResult['cnpj'] != null
-                  ? 'Invoice from CNPJ: ${parsedResult['cnpj']}'
-                  : '',
+              initialNote: parsedResult['cnpj'] != null ? 'Invoice from CNPJ: ${parsedResult['cnpj']}' : '',
             ),
           ).whenComplete(() {
             setState(() {
               _frozenFrame = null;
+              _scanController.repeat(reverse: true);
             });
           });
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Insufficient data extracted to prefill transaction'),
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Insufficient data extracted to prefill transaction')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("AI extraction error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("AI extraction error: $e")));
     } finally {
       setState(() {
         _loading = false;
@@ -288,19 +258,19 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
   @override
   void dispose() {
     _controller?.dispose();
+    _scanController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       body: SafeArea(
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (_controller != null && _frozenFrame == null)
+            if (_controller != null && !_isFrozen && _frozenFrame == null)
               FutureBuilder<void>(
                 future: _initializeControllerFuture,
                 builder: (context, snapshot) {
@@ -312,23 +282,26 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
                 },
               )
             else if (_frozenFrame != null)
-              Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.file(_frozenFrame!, fit: BoxFit.cover),
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                      child: Container(
-                        color: Colors.black.withOpacity(0.2),
-                      ),
-                    ),
-                  ),
-                ],
-              )
+              Image.file(_frozenFrame!, fit: BoxFit.cover)
             else
               Container(color: Colors.black),
-            if (_loading) const Center(child: CircularProgressIndicator()),
+            if (_frozenFrame != null && _scanController.isAnimating)
+              AnimatedBuilder(
+                animation: _scanAnimation,
+                builder: (context, child) {
+                  final t = _scanAnimation.value;
+                  return Positioned(
+                    top: MediaQuery.of(context).size.height * 0.15 +
+                        (MediaQuery.of(context).size.height * 0.6) * t,
+                    left: 0,
+                    right: 0,
+                    child: IgnorePointer(
+                      child: Container(height: 3, color: theme.primaryColor),
+                    ),
+                  );
+                },
+              ),
+            //if (_loading) const Center(child: CircularProgressIndicator()),
             Positioned(
               top: 10,
               left: 5,
@@ -336,30 +309,14 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios),
-                  ),
+                  IconButton(onPressed: _isFrozen ? null : () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios)),
                   Column(
                     children: [
-                      Text(
-                        "Scan the Invoice",
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "and register your expense",
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                      ),
+                      Text("Scan the Invoice", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text("and register your expense", style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
                     ],
                   ),
-                  IconButton(
-                    onPressed: _toggleFlash,
-                    icon: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off),
-                  ),
+                  IconButton(onPressed: _isFrozen ? null : _toggleFlash, icon: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off)),
                 ],
               ),
             ),
@@ -370,23 +327,9 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.photo_library),
-                    color: Colors.green,
-                    onPressed: _pickFromGallery,
-                  ),
-                  FloatingActionButton(
-                    onPressed: _captureImage,
-                    backgroundColor: Colors.green,
-                    child: const Icon(Icons.camera, color: Colors.white),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.flip_camera_android,
-                      color: Colors.green,
-                    ),
-                    onPressed: _flipCamera,
-                  ),
+                  IconButton(icon: const Icon(Icons.photo_library), color: Colors.green, onPressed: _isFrozen ? null : _pickFromGallery),
+                  FloatingActionButton(onPressed: _isFrozen ? null : _captureImage, backgroundColor: Colors.green, child: const Icon(Icons.camera, color: Colors.white)),
+                  IconButton(icon: const Icon(Icons.flip_camera_android, color: Colors.green), onPressed: _isFrozen ? null : _flipCamera),
                 ],
               ),
             ),
@@ -394,14 +337,8 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> {
               alignment: Alignment.bottomCenter,
               child: Container(
                 margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   'Scan the invoice provided by the cashier, click on the flash on the top right corner to use the flash',
                   style: theme.textTheme.bodyMedium,

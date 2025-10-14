@@ -62,102 +62,16 @@ class _CategoriesPageState extends State<CategoriesPage> {
               Expanded(
                 child: ListView(
                   children: [
-                    Text(
-                      "Revenues",
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    _buildCategorySection(
+                      title: "Revenues",
+                      type: "revenue",
+                      color: Colors.green,
                     ),
-                    const SizedBox(height: 10),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(uid)
-                          .collection('categories')
-                          .where('type', isEqualTo: 'revenue')
-                          .orderBy('createdAt', descending: true)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        final categories = snapshot.data!.docs;
-                        return Column(
-                          children: ListTile.divideTiles(
-                            context: context,
-                            tiles: categories.map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              return ListTile(
-                                title: Text(
-                                  data['name'],
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: Colors.green,
-                                  ),
-                                ),
-                                onTap: () {
-                                  showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-                                      builder: (context) => EditCategoryPage(categoryId: doc.id, initialName: data['name'], initialType: data['type'])
-                                  );
-                                }
-                                );
-                            }),
-                          ).toList(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Expenses",
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(uid)
-                          .collection('categories')
-                          .where('type', isEqualTo: 'expense')
-                          .orderBy('createdAt', descending: true)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        final categories = snapshot.data!.docs;
-                        return Column(
-                          children: ListTile.divideTiles(
-                            context: context,
-                            tiles: categories.map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
-                              return ListTile(
-                                  title: Text(
-                                    data['name'],
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-                                        builder: (context) => EditCategoryPage(categoryId: doc.id, initialName: data['name'], initialType: data['type'])
-                                    );
-                                  }
-                              );
-                            }),
-                          ).toList(),
-                        );
-                      },
+                    const SizedBox(height: 20),
+                    _buildCategorySection(
+                      title: "Expenses",
+                      type: "expense",
+                      color: Colors.red,
                     ),
                   ],
                 ),
@@ -166,6 +80,103 @@ class _CategoriesPageState extends State<CategoriesPage> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Método auxiliar para renderizar seções de categorias
+  Widget _buildCategorySection({
+    required String title,
+    required String type,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('categories')
+              .where('type', isEqualTo: type)
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  "No $title yet",
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white54,
+                  ),
+                ),
+              );
+            }
+
+            final categories = snapshot.data!.docs;
+
+            return Column(
+              children: categories.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  color: theme.cardColor,
+                  child: ListTile(
+                    leading: Icon(
+                      type == 'revenue'
+                          ? Icons.arrow_upward_rounded
+                          : Icons.arrow_downward_rounded,
+                      color: color,
+                    ),
+                    title: Text(
+                      data['name'],
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.grey),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(25),
+                            ),
+                          ),
+                          builder: (context) => EditCategoryPage(
+                            categoryId: doc.id,
+                            initialName: data['name'],
+                            initialType: data['type'],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
     );
   }
 }

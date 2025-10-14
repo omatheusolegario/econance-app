@@ -19,14 +19,13 @@ class GraphsPage extends StatefulWidget {
 
 class _GraphsPageState extends State<GraphsPage> {
   late Future<Map<String, dynamic>> _dataFuture;
+  late final uid = widget.uid;
 
   @override
   void initState() {
     super.initState();
     _dataFuture = _fetchData();
   }
-
-  late final uid = widget.uid;
 
   Future<Map<String, dynamic>> _fetchData() async {
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -54,6 +53,22 @@ class _GraphsPageState extends State<GraphsPage> {
     if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
     if (value >= 1e3) return "${(value / 1e3).toStringAsFixed(1)}K";
     return value.toStringAsFixed(1);
+  }
+
+  Widget _sensitivePlaceholder(BuildContext context, {String? message}) {
+    final theme = Theme.of(context);
+    return Container(
+      height: 150,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white10.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        message ?? 'Sensitive data hidden',
+        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white54),
+      ),
+    );
   }
 
   @override
@@ -121,24 +136,30 @@ class _GraphsPageState extends State<GraphsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.hideSensitive ? 'The balance is R\$•••••' : 'The balance is R\$${balanceString}',
+                                widget.hideSensitive
+                                    ? 'The balance is R\$•••••'
+                                    : 'The balance is R\$${balanceString}',
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   color: theme.textTheme.bodyLarge?.color,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              hasExpenses || hasRevenue
-                                  ? BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive)
-                                  : const Text(
-                                'Nenhum dado de balance disponível.',
-                                style: TextStyle(color: Colors.white70),
-                              ),
+                              if (widget.hideSensitive)
+                                _sensitivePlaceholder(context)
+                              else if (hasExpenses || hasRevenue)
+                                BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive)
+                              else
+                                const Text(
+                                  'Nenhum dado de balance disponível.',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
+
                       Card(
                         color: Colors.white10.withOpacity(.04),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -158,7 +179,9 @@ class _GraphsPageState extends State<GraphsPage> {
                               SizedBox(
                                 width: 100,
                                 child: ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: widget.hideSensitive
+                                      ? null
+                                      : () {
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
@@ -172,20 +195,46 @@ class _GraphsPageState extends State<GraphsPage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              hasExpenses
-                                  ? CategoryBreakdownChart(type: "expense", uid: uid)
-                                  : const Text('Nenhuma despesa registrada.', style: TextStyle(color: Colors.white70)),
+                              if (widget.hideSensitive)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _sensitivePlaceholder(context, message: "Sensitive data hidden"),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      "Data temporarily hidden for privacy",
+                                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                                    ),
+                                  ],
+                                )
+                              else ...[
+                                hasExpenses
+                                    ? CategoryBreakdownChart(type: "expense", uid: uid)
+                                    : const Text('Nenhuma despesa registrada.', style: TextStyle(color: Colors.white70)),
+                                const SizedBox(height: 20),
+                                hasRevenue
+                                    ? CategoryBreakdownChart(type: "revenue", uid: uid)
+                                    : const Text('Nenhuma receita registrada.', style: TextStyle(color: Colors.white70)),
+                              ],
                               const SizedBox(height: 20),
-                              hasRevenue
-                                  ? CategoryBreakdownChart(type: "revenue", uid: uid)
-                                  : const Text('Nenhuma receita registrada.', style: TextStyle(color: Colors.white70)),
+                              if (widget.hideSensitive)
+                                _sensitivePlaceholder(context)
+                              else ...[
+                                hasExpenses
+                                    ? CategoryBreakdownChart(type: "expense", uid: uid)
+                                    : const Text('Nenhuma despesa registrada.', style: TextStyle(color: Colors.white70)),
+                                const SizedBox(height: 20),
+                                hasRevenue
+                                    ? CategoryBreakdownChart(type: "revenue", uid: uid)
+                                    : const Text('Nenhuma receita registrada.', style: TextStyle(color: Colors.white70)),
+                              ],
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      InvestmentBreakdownChart(uid: uid),
-                      const SizedBox(height: 20),
+
+
                       Card(
                         color: Colors.white10.withOpacity(.04),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -194,12 +243,15 @@ class _GraphsPageState extends State<GraphsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Manage your categories', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                              Text('Manage your categories',
+                                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 15),
                               SizedBox(
                                 width: 100,
                                 child: ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: widget.hideSensitive
+                                      ? null
+                                      : () {
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
@@ -212,13 +264,27 @@ class _GraphsPageState extends State<GraphsPage> {
                                   child: const Text("Manage"),
                                 ),
                               ),
+                              if (widget.hideSensitive)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Text(
+                                    'Sensitive data hidden',
+                                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      InvestmentBreakdownChart(uid: uid),
+
+                      if (widget.hideSensitive)
+                        _sensitivePlaceholder(context)
+                      else
+                        InvestmentBreakdownChart(uid: uid),
+
                       const SizedBox(height: 20),
+
                       Card(
                         color: Colors.white10.withOpacity(.04),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -227,12 +293,15 @@ class _GraphsPageState extends State<GraphsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Manage your investments', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                              Text('Manage your investments',
+                                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 15),
                               SizedBox(
                                 width: 100,
                                 child: ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: widget.hideSensitive
+                                      ? null
+                                      : () {
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
@@ -245,11 +314,20 @@ class _GraphsPageState extends State<GraphsPage> {
                                   child: const Text("Manage"),
                                 ),
                               ),
+                              if (widget.hideSensitive)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Text(
+                                    'Sensitive data hidden',
+                                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
+
                       Card(
                         color: Colors.white10.withOpacity(.04),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -258,12 +336,15 @@ class _GraphsPageState extends State<GraphsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Manage your investments types', style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                              Text('Manage your investments types',
+                                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 15),
                               SizedBox(
                                 width: 100,
                                 child: ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: widget.hideSensitive
+                                      ? null
+                                      : () {
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
@@ -276,6 +357,14 @@ class _GraphsPageState extends State<GraphsPage> {
                                   child: const Text("Manage"),
                                 ),
                               ),
+                              if (widget.hideSensitive)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Text(
+                                    'Sensitive data hidden',
+                                    style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                                  ),
+                                ),
                             ],
                           ),
                         ),

@@ -62,7 +62,7 @@ class _InvoicePageState extends State<InvoicePage> {
                 label: Text("Add Bill"),
                 icon: Icon(Icons.add),
                 iconAlignment: IconAlignment.start,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                style: ElevatedButton.styleFrom(backgroundColor: theme.primaryColor),
               ),
             ),
           ],
