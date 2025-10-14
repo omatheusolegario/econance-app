@@ -18,7 +18,20 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
   final uid = FirebaseAuth.instance.currentUser!.uid;
   late String? _familyId = widget.familyId;
   late String? _role = widget.role?.toLowerCase();
+  late String? _photoUrl;
   final _fs = FamilyService();
+
+  Future<void> _loadPhoto() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final data = doc.data()?['personalInfo'];
+
+    setState(() {
+      _photoUrl = data?['photoUrl'] ?? user.photoURL ?? '';
+    });
+  }
 
   Future<Map<String, dynamic>> _getUserInfo(String memberUid) async {
     final doc = await FirebaseFirestore.instance.collection('users').doc(memberUid).get();
@@ -64,6 +77,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+
     final theme = Theme.of(context);
 
     print("Current user role: $_role");
@@ -103,6 +117,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
                           'role': (m['role'] ?? 'member').toLowerCase(),
                           'displayName': userInfo['fullName'],
                           'email': userInfo['email'],
+                          'photoUrl': userInfo['photoUrl'],
                         };
                       }),
                     ),
@@ -126,6 +141,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
                             displayName: member['displayName'],
                             email: member['email'],
                             role: member['role'],
+                            photoUrl: member['photoUrl'],
                             isAdminView: _role == "admin" || _role == "creator",
                             currentUserUid: uid,
                             currentUserRole: _role ?? 'member',

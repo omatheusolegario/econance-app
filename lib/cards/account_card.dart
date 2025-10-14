@@ -6,10 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:econance/features/config/config.dart';
 
 class AccountCard extends StatelessWidget {
-  const AccountCard({super.key});
+  final String? photoUrl;
+  const AccountCard({super.key, required this.photoUrl});
 
   Future<Map<String, dynamic>> _fetchUserData() async {
     try {
+
+
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
@@ -116,11 +119,10 @@ class AccountCard extends StatelessWidget {
         CircleAvatar(
           radius: 24,
           backgroundColor: theme.primaryColor,
-          child: const Icon(
-            Icons.account_circle,
-            size: 36,
-            color: Colors.white,
-          ),
+        backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
+            ? NetworkImage(photoUrl!)
+            : const AssetImage('assets/images/default_avatar.png')
+        as ImageProvider,
         ),
         const SizedBox(width: 12),
         Expanded(

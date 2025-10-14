@@ -19,11 +19,15 @@ class FamilyService {
       'createdByUid': uid,
       'createdAt': FieldValue.serverTimestamp(),
     });
+    final doc = await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+    final data = doc.data()?['personalInfo'];
+     String? _photoUrl = data?['photoUrl'] ?? FirebaseAuth.instance.currentUser!.photoURL ?? '';
 
     await famRef.collection('members').doc(uid).set({
       'role': 'creator',
       'joinedAt': FieldValue.serverTimestamp(),
       'displayName': FirebaseAuth.instance.currentUser!.displayName ?? '',
+      'photoUrl': _photoUrl,
       'email': FirebaseAuth.instance.currentUser!.email ?? '',
     });
 
@@ -116,6 +120,10 @@ class FamilyService {
     final inviteSnap = await inviteRef.get();
     if (!inviteSnap.exists) return;
 
+    final doc = await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+    final data = doc.data()?['personalInfo'];
+    String? _photoUrl = data?['photoUrl'] ?? FirebaseAuth.instance.currentUser!.photoURL ?? '';
+
     if (accept) {
       await _db
           .collection('families')
@@ -126,6 +134,7 @@ class FamilyService {
             'role': 'member',
             'joinedAt': FieldValue.serverTimestamp(),
             'displayName': currentUser.displayName ?? '',
+            'photoUrl': _photoUrl,
             'email': currentUser.email ?? '',
           });
 

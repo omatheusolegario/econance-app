@@ -12,6 +12,7 @@ class MemberCard extends StatelessWidget {
   final String currentUserUid;
   final String currentUserRole;
   final VoidCallback? onRemoved;
+  final String? photoUrl;
 
   const MemberCard({
     super.key,
@@ -20,6 +21,7 @@ class MemberCard extends StatelessWidget {
     required this.displayName,
     required this.email,
     required this.role,
+    required this.photoUrl,
     this.isAdminView = false,
     required this.currentUserUid,
     required this.currentUserRole,
@@ -54,7 +56,13 @@ class MemberCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return ListTile(
-      leading: CircleAvatar(child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : '?')),
+      leading: CircleAvatar( radius: 24,
+        backgroundColor: theme.primaryColor,
+        backgroundImage: photoUrl != null && photoUrl!.isNotEmpty
+            ? NetworkImage(photoUrl!)
+            : const AssetImage('assets/images/default_avatar.png')
+        as ImageProvider,
+      ),
       title: Text(displayName.isNotEmpty ? displayName : email, style: theme.textTheme.bodyLarge),
       subtitle: Text("$email\n${role.toUpperCase()}"),
       trailing: canShowGear

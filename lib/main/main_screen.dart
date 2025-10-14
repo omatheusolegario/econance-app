@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:econance/features/ai/pages/ai_insights_page.dart';
 import 'package:econance/features/graphs/pages/graphs_page.dart';
 import 'package:econance/features/categories/add_category.dart';
@@ -22,6 +23,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  String? _photoUrl;
+
   bool _hideSensitive = true;
   int _currentIndex = 0;
   final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -55,6 +61,18 @@ class _MainScreenState extends State<MainScreen> {
       default:
         return HomePage(hideSensitive: _hideSensitive);
     }
+  }
+
+  Future<void> _loadPhoto() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+    final data = doc.data()?['personalInfo'];
+
+    setState(() {
+      _photoUrl = data?['photoUrl'] ?? user.photoURL ?? '';
+    });
   }
 
   void _onTabTap(int index) {
@@ -160,6 +178,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _loadPhoto();
     final theme = Theme.of(context);
     const double bottomHeight = 80;
 
@@ -206,17 +225,20 @@ class _MainScreenState extends State<MainScreen> {
                     backgroundColor: Colors.transparent,
                     isScrollControlled: true,
                     builder: (context) {
-                      return const FractionallySizedBox(
+                      return FractionallySizedBox(
                         heightFactor: 0.8,
-                        child: AccountCard(),
+                        child: AccountCard(photoUrl: _photoUrl,),
                       );
                     },
                   );
                 },
-                icon: const Icon(
-                  Icons.account_circle_outlined,
-                  size: 32,
-                ),
+                icon: CircleAvatar(
+                  backgroundColor: theme.primaryColor,
+                  backgroundImage: _photoUrl != null && _photoUrl!.isNotEmpty
+                      ? NetworkImage(_photoUrl!)
+                      : const AssetImage('assets/images/default_avatar.png')
+                  as ImageProvider,
+                )
               ),
               IconButton(
                 onPressed: _toggleHide,

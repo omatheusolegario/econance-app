@@ -433,7 +433,7 @@ class _ConfigState extends State<Config> {
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
     final theme = Theme.of(context);
-    final divider = Divider(color: theme.dividerColor, thickness: 1, height: 1);
+    final divider = Divider(color: theme.dividerColor, thickness: .2, height: 1);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
