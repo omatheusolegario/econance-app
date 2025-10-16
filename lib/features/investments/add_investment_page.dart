@@ -20,7 +20,7 @@ class StepHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: theme.textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -140,127 +140,135 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     return InputDecoration(
       hintText: hint,
       suffixIcon: suffixIcon,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
     );
   }
 
   Widget _stepGeneralInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepHeader(
-          title: "Investment Info",
-          description: "Enter the basic information of your investment.",
-        ),
-        Text("Name", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _name,
-          validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration("e.g. Bitcoin"),
-        ),
-        const SizedBox(height: 20),
-        Text("Type", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _type,
-          readOnly: true,
-          onTap: _pickType,
-          validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration(
-            "Select type",
-            suffixIcon: const Icon(Icons.arrow_drop_down),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const StepHeader(
+            title: "Investment Info",
+            description: "Enter the basic information of your investment.",
           ),
-        ),
-      ],
+          Text("Name", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _name,
+            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration("e.g. Bitcoin"),
+          ),
+          const SizedBox(height: 20),
+          Text("Type", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _type,
+            readOnly: true,
+            onTap: _pickType,
+            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration(
+              "Select type",
+              suffixIcon: const Icon(Icons.arrow_drop_down),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _stepFinancials() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepHeader(
-          title: "Financial Info",
-          description: "Enter investment value, target and rate.",
-        ),
-        Text("Invested Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _value,
-          keyboardType: TextInputType.number,
-          validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration("1000"),
-        ),
-        const SizedBox(height: 20),
-        Text("Target Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _targetValue,
-          keyboardType: TextInputType.number,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration("3000"),
-        ),
-        const SizedBox(height: 20),
-        Text("Rate (%)", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _rate,
-          keyboardType: TextInputType.number,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration("0.0021"),
-        ),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const StepHeader(
+            title: "Financial Info",
+            description: "Enter investment value, target and rate.",
+          ),
+          Text("Invested Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _value,
+            keyboardType: TextInputType.number,
+            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration("1000"),
+          ),
+          const SizedBox(height: 20),
+          Text("Target Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _targetValue,
+            keyboardType: TextInputType.number,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration("3000"),
+          ),
+          const SizedBox(height: 20),
+          Text("Rate (%)", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _rate,
+            keyboardType: TextInputType.number,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration("0.0021"),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _stepStatusNotes() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const StepHeader(
-          title: "Status & Notes",
-          description: "Select status, date and add optional notes.",
-        ),
-        Text("Status", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        DropdownButtonFormField<String>(
-          value: _status,
-          validator: (v) => v == null ? "Required" : null,
-          items: const [
-            DropdownMenuItem(value: "active", child: Text("Active")),
-            DropdownMenuItem(value: "closed", child: Text("Closed")),
-          ],
-          onChanged: (v) => setState(() => _status = v),
-          decoration: _textFieldDecoration("Select status"),
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 20),
-        Text("Date", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _date,
-          readOnly: true,
-          onTap: _pickDate,
-          validator: (v) => v == null || v.isEmpty ? "Required" : null,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration(
-            "Select date",
-            suffixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const StepHeader(
+            title: "Status & Notes",
+            description: "Select status, date and add optional notes.",
           ),
-        ),
-        const SizedBox(height: 20),
-        Text("Notes", style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 5),
-        TextFormField(
-          controller: _notes,
-          maxLines: 2,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: _textFieldDecoration("Optional observations"),
-        ),
-      ],
+          Text("Status", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          DropdownButtonFormField<String>(
+            value: _status,
+            validator: (v) => v == null ? "Required" : null,
+            items: const [
+              DropdownMenuItem(value: "active", child: Text("Active")),
+              DropdownMenuItem(value: "closed", child: Text("Closed")),
+            ],
+            onChanged: (v) => setState(() => _status = v),
+            decoration: _textFieldDecoration("Select status"),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 20),
+          Text("Date", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _date,
+            readOnly: true,
+            onTap: _pickDate,
+            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration(
+              "Select date",
+              suffixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text("Notes", style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _notes,
+            maxLines: 2,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: _textFieldDecoration("Optional observations"),
+          ),
+        ],
+      ),
     );
   }
 
@@ -327,53 +335,68 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: 20,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                LinearProgressIndicator(
-                  value: (_currentStep + 1) / 4,
-                  backgroundColor: Colors.grey.shade300,
-                  color: theme.primaryColor,
-                  minHeight: 4,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth;
+            final isPortrait = constraints.maxHeight > constraints.maxWidth;
+
+            return Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                maxWidth: isPortrait ? double.infinity : 400,
+              ),
+              margin: EdgeInsets.symmetric(
+                horizontal: isPortrait ? 0 : (maxWidth - 400) / 2,
+              ),
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: 20,
+                  left: 20,
+                  right: 20,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 20,
                 ),
-                const SizedBox(height: 20),
-                Expanded(child: _getCurrentStep()),
-                const SizedBox(height: 20),
-                if (_currentStep < 3)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
                     children: [
-                      if (_currentStep > 0)
-                        FloatingActionButton(
-                          heroTag: "backBtn",
-                          onPressed: _prevStep,
-                          backgroundColor: Colors.grey,
-                          mini: true,
-                          child: const Icon(Icons.arrow_back_ios),
-                        )
-                      else
-                        const SizedBox(width: 40),
-                      FloatingActionButton(
-                        onPressed: _nextStep,
-                        backgroundColor: theme.primaryColor,
-                        mini: true,
-                        child: const Icon(Icons.arrow_forward_ios),
+                      LinearProgressIndicator(
+                        value: (_currentStep + 1) / 4,
+                        backgroundColor: Colors.grey.shade300,
+                        color: theme.primaryColor,
+                        minHeight: 4,
                       ),
+                      const SizedBox(height: 20),
+                      Expanded(child: _getCurrentStep()),
+                      const SizedBox(height: 20),
+                      if (_currentStep < 3)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (_currentStep > 0)
+                              FloatingActionButton(
+                                heroTag: "backBtn",
+                                onPressed: _prevStep,
+                                backgroundColor: Colors.grey,
+                                child: const Icon(Icons.arrow_back_ios),
+                              )
+                            else
+                              const SizedBox(width: 40),
+                            FloatingActionButton(
+                              onPressed: _nextStep,
+                              backgroundColor: theme.primaryColor,
+                              child: const Icon(Icons.arrow_forward_ios),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
-              ],
-            ),
-          ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

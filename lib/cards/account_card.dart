@@ -135,7 +135,7 @@ class AccountCard extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.settings, color: Colors.white),
+          icon: Icon(Icons.settings, color: Colors.white),
           onPressed: () => _navigateToConfig(context),
         ),
       ],

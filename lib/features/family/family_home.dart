@@ -117,7 +117,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
                           'role': (m['role'] ?? 'member').toLowerCase(),
                           'displayName': userInfo['fullName'],
                           'email': userInfo['email'],
-                          'photoUrl': userInfo['photoUrl'],
+                          'photoUrl': m['photoUrl'],
                         };
                       }),
                     ),

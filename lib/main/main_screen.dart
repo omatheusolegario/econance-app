@@ -177,8 +177,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     _loadPhoto();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
     final theme = Theme.of(context);
     const double bottomHeight = 80;
 

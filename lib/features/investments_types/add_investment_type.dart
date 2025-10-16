@@ -101,12 +101,7 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(
-                top: 26,
-                left: 20,
-                right: 20,
-                bottom: 6,
-              ),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               child: LinearProgressIndicator(
                 value: (_currentStep + 1) / 2,
                 backgroundColor: Colors.grey.shade300,

@@ -73,7 +73,7 @@ class FamilyInvitesList extends StatelessWidget {
                       "$invitedName",
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    trailing: role == 'admin'
+                    trailing: role == 'admin' || role == 'creator'
                         ? IconButton(
                             onPressed: () async {
                               ScaffoldMessenger.of(context).showSnackBar(
