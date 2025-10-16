@@ -46,17 +46,17 @@ class _HomePageState extends State<HomePage> {
 
     double totalRevenueThisMonth = revenuesSnapThisMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double totalRevenueLastMonth = revenuesSnapLastMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double revenueChange = totalRevenueLastMonth == 0
         ? 0
         : ((totalRevenueThisMonth - totalRevenueLastMonth) /
-                  totalRevenueLastMonth) *
-              100;
+        totalRevenueLastMonth) *
+        100;
 
     final expensesSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
@@ -75,17 +75,17 @@ class _HomePageState extends State<HomePage> {
 
     double totalExpensesThisMonth = expensesSnapThisMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double totalExpensesLastMonth = expensesSnapLastMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double expensesChange = totalExpensesLastMonth == 0
         ? 0
         : ((totalExpensesThisMonth - totalExpensesLastMonth) /
-                  totalExpensesLastMonth) *
-              100;
+        totalExpensesLastMonth) *
+        100;
 
     final investmentsSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
@@ -109,8 +109,8 @@ class _HomePageState extends State<HomePage> {
     double investmentsChange = totalInvestmentsLastMonth == 0
         ? 0
         : ((totalInvestmentsThisMonth - totalInvestmentsLastMonth) /
-                  totalInvestmentsLastMonth) *
-              100;
+        totalInvestmentsLastMonth) *
+        100;
 
     final balanceThisMonth = totalRevenueThisMonth - totalExpensesThisMonth;
     final balanceLastMonth = totalRevenueLastMonth - totalExpensesLastMonth;
@@ -130,11 +130,20 @@ class _HomePageState extends State<HomePage> {
     };
   }
 
-  Color _getChangeColor(double change) {
-    if (change > 0) return Colors.green;
-    if (change < 0) return Colors.red;
+  Color _getChangeColor(String title, double change) {
+    if (change == 0) return Colors.grey;
+    final lowerTitle = title.toLowerCase();
+    if (lowerTitle.contains('expense')) {
+      return change > 0 ? Colors.red : Colors.green;
+    }
+    if (lowerTitle.contains('revenue') ||
+        lowerTitle.contains('investment') ||
+        lowerTitle.contains('balance')) {
+      return change > 0 ? Colors.green : Colors.red;
+    }
     return Colors.grey;
   }
+
   String formatNumber(double value) {
     if (value >= 1e9) return "${(value / 1e9).toStringAsFixed(1)}B";
     if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
@@ -226,12 +235,12 @@ class _HomePageState extends State<HomePage> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          childAspectRatio: 1.4,
-                        ),
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1.4,
+                    ),
                     itemBuilder: (context, index) {
                       final card = cards[index];
                       final valueKey = card['value'] as String;
@@ -249,7 +258,8 @@ class _HomePageState extends State<HomePage> {
                             : "${changeValue > 0 ? '+' : ''}${changeValue.toStringAsFixed(1)}% VS Last Month",
                         icon: card['icon'] as IconData?,
                         iconColor: card['iconColor'] as Color?,
-                        subtitleColor: _getChangeColor(changeValue),
+                        subtitleColor:
+                        _getChangeColor(card['title'] as String, changeValue),
                         isSelected: selectedIndex == index,
                         onTap: () {
                           setState(() {
@@ -257,7 +267,6 @@ class _HomePageState extends State<HomePage> {
                           });
                         },
                       );
-
                     },
                   );
                 },
