@@ -58,9 +58,14 @@ class BalanceChartCard extends StatelessWidget {
   }
 
   String formatNumber(double value) {
+    if (value >= 1e12) return "${(value / 1e12).toStringAsFixed(1)}T";
     if (value >= 1e9) return "${(value / 1e9).toStringAsFixed(1)}B";
     if (value >= 1e6) return "${(value / 1e6).toStringAsFixed(1)}M";
     if (value >= 1e3) return "${(value / 1e3).toStringAsFixed(1)}K";
+    if (value <= -1e12) return "-${(-value / 1e12).toStringAsFixed(1)}T";
+    if (value <= -1e9) return "-${(-value / 1e9).toStringAsFixed(1)}B";
+    if (value <= -1e6) return "-${(-value / 1e6).toStringAsFixed(1)}M";
+    if (value <= -1e3) return "-${(-value / 1e3).toStringAsFixed(1)}K";
     return value.toStringAsFixed(0);
   }
 
@@ -97,11 +102,33 @@ class BalanceChartCard extends StatelessWidget {
           investmentPoints.add(FlSpot(i.toDouble(), investment));
         }
 
+        final maxOther = [
+          ...revenuePoints.map((e) => e.y),
+          ...expensePoints.map((e) => e.y),
+          ...investmentPoints.map((e) => e.y),
+        ].reduce((a, b) => a > b ? a : b);
+
+        final normalizedBalancePoints = balancePoints.map((e) {
+          double y = e.y;
+          if (maxOther > 0) {
+            if (y > maxOther * 10) y = maxOther * 10;
+            if (y < -maxOther * 10) y = -maxOther * 10;
+          }
+          return FlSpot(e.x, y);
+        }).toList();
+
+        final minY = [
+          ...revenuePoints.map((e) => e.y),
+          ...expensePoints.map((e) => e.y),
+          ...investmentPoints.map((e) => e.y),
+          ...normalizedBalancePoints.map((e) => e.y),
+        ].reduce((a, b) => a < b ? a : b);
+
         final maxY = [
           ...revenuePoints.map((e) => e.y),
           ...expensePoints.map((e) => e.y),
-          ...balancePoints.map((e) => e.y),
           ...investmentPoints.map((e) => e.y),
+          ...normalizedBalancePoints.map((e) => e.y),
         ].reduce((a, b) => a > b ? a : b);
 
         return Card(
@@ -119,7 +146,7 @@ class BalanceChartCard extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 15.0),
                     child: LineChart(
                       LineChartData(
-                        minY: 0,
+                        minY: minY * 1.1,
                         maxY: maxY * 1.1,
                         gridData: const FlGridData(show: false),
                         borderData: FlBorderData(show: false),
@@ -153,7 +180,6 @@ class BalanceChartCard extends StatelessWidget {
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
                                 if (value == meta.max) return const SizedBox.shrink();
-
                                 if (hideSensitive) {
                                   return Padding(
                                     padding: const EdgeInsets.only(left: 25),
@@ -199,7 +225,7 @@ class BalanceChartCard extends StatelessWidget {
                             dotData: FlDotData(show: !hideSensitive),
                           ),
                           LineChartBarData(
-                            spots: balancePoints,
+                            spots: normalizedBalancePoints,
                             isCurved: true,
                             color: hideSensitive ? Colors.grey[400] : Colors.blueAccent,
                             barWidth: 2,

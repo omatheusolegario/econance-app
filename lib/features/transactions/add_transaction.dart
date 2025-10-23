@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../categories/category_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:econance/services/transaction_service.dart';
 
 class AddTransactionPage extends StatefulWidget {
   final String type;
@@ -69,12 +70,12 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           .doc(selectedCategoryId)
           .get()
           .then((doc) {
-            if (doc.exists) {
-              setState(() {
-                selectedCategoryName = doc['name'];
-              });
-            }
+        if (doc.exists) {
+          setState(() {
+            selectedCategoryName = doc['name'];
           });
+        }
+      });
     }
   }
 
@@ -93,9 +94,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             .doc(result)
             .get()
             .then((doc) {
-              selectedCategoryName = doc['name'];
-              setState(() {});
-            });
+          selectedCategoryName = doc['name'];
+          setState(() {});
+        });
       });
     }
   }
@@ -117,27 +118,18 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   Future<void> _saveTransaction() async {
-    final data = {
-      'type': widget.type,
-      'value': double.tryParse(_value.text.trim()) ?? 0,
-      'note': _note.text.trim(),
-      'categoryId': selectedCategoryId,
-      'isRecurrent': _isRecurrent,
-      'date': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : null,
-      'createdAt': FieldValue.serverTimestamp(),
-    };
+    final service = TransactionService();
 
-    if (widget.isInvoice) {
-      data['items'] = _items.map(
-        (item) => {'name': item['name'], 'value': item['value']},
-      );
-    }
-
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection(widget.type == "expense" ? "expenses" : "revenues")
-        .add(data);
+    await service.saveTransaction(
+      type: widget.type,
+      value: double.tryParse(_value.text.trim()) ?? 0,
+      note: _note.text.trim(),
+      categoryId: selectedCategoryId,
+      isRecurrent: _isRecurrent,
+      selectedDate: _selectedDate,
+      isInvoice: widget.isInvoice,
+      items: _items,
+    );
 
     _pageController.animateToPage(
       _currentStep,
@@ -153,7 +145,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         _currentStep++;
       });
     } else if (_currentStep == 1) {
-      if (_selectedDate == null || selectedCategoryId == null || selectedCategoryId == '') {
+      if (_selectedDate == null ||
+          selectedCategoryId == null ||
+          selectedCategoryId == '') {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please fill all fields first")),
         );
@@ -164,8 +158,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           _currentStep++;
           _saveTransaction();
         });
-      }
-      if (widget.isInvoice) {
+      } else {
         setState(() {
           _currentStep++;
         });
@@ -202,41 +195,34 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Lottie.asset(
-              "assets/animations/success.json",
-              width: 150,
-              repeat: false,
-            ),
+            Lottie.asset("assets/animations/success.json",
+                width: 150, repeat: false),
             const SizedBox(height: 20),
             Text(
-              "${capitalize(widget.type)} added succesfully!",
+              "${capitalize(widget.type)} added successfully!",
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
               ),
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              child: widget.isInvoice == false
-                  ? ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _currentStep = 0;
-                          _value.text = '';
-                          _date.text = '';
-                          selectedCategoryId = '';
-                          selectedCategoryName = "Select Category";
-                          _selectedDate = null;
-                          _note.text = '';
-                          _getCurrentPage();
-                        });
-                      },
-                      child: Text(
-                        "   Add another ${capitalize(widget.type)}   ",
-                      ),
-                    )
-                  : null,
-            ),
+            if (!widget.isInvoice)
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _currentStep = 0;
+                    _value.text = '';
+                    _date.text = '';
+                    selectedCategoryId = '';
+                    selectedCategoryName = "Select Category";
+                    _selectedDate = null;
+                    _note.text = '';
+                    _items.clear();
+                    _getCurrentPage();
+                  });
+                },
+                child: Text("   Add another ${capitalize(widget.type)}   "),
+              ),
           ],
         ),
       );
@@ -247,7 +233,6 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         return Padding(
           key: ValueKey(_currentStep),
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-
           child: Form(
             key: _formKey,
             child: Column(
@@ -283,31 +268,26 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                   decoration: InputDecoration(
                     hintText: "500,00",
                     prefixIcon: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 14,
-                        top: 14,
-                        bottom: 14,
-                      ),
+                      padding:
+                      const EdgeInsets.only(left: 14, top: 14, bottom: 14),
                       child: Text(
                         "R\$",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    prefixIconConstraints: const BoxConstraints(
-                      minWidth: 0,
-                      minHeight: 0,
-                    ),
+                    prefixIconConstraints:
+                    const BoxConstraints(minWidth: 0, minHeight: 0),
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _note,
                   style: theme.textTheme.bodyMedium,
-                  decoration: const InputDecoration(
-                    hintText: "Optional commentary",
-                  ),
+                  decoration:
+                  const InputDecoration(hintText: "Optional commentary"),
                 ),
               ],
             ),
@@ -323,9 +303,8 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             children: [
               Text(
                 "Details",
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style:
+                theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -334,10 +313,8 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               ),
               const SizedBox(height: 30),
               ListTile(
-                title: Text(
-                  selectedCategoryName ?? "Select Category",
-                  style: theme.textTheme.bodyMedium,
-                ),
+                title: Text(selectedCategoryName ?? "Select Category",
+                    style: theme.textTheme.bodyMedium),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _pickCategory(context),
               ),
@@ -361,12 +338,14 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                       setState(() => _isRecurrent = val ?? false);
                     },
                   ),
-                  Text("Is this recurrent?", style: theme.textTheme.bodyMedium),
+                  Text("Is this recurrent?",
+                      style: theme.textTheme.bodyMedium),
                 ],
               ),
             ],
           ),
         );
+
       case 2:
         return Padding(
           key: ValueKey(_currentStep),
@@ -377,13 +356,12 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 const SizedBox(height: 20),
                 Text(
                   "Items",
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style:
+                  theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 ..._items.map(
-                  (item) => ListTile(
+                      (item) => ListTile(
                     title: Text(item['name'] ?? ''),
                     trailing: Text('R\$ ${item['value'] ?? ''}'),
                   ),
@@ -401,16 +379,13 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               TextField(
-                                controller: nameCtrl,
-                                decoration: const InputDecoration(
-                                  hintText: "Name",
-                                ),
-                              ),
+                                  controller: nameCtrl,
+                                  decoration: const InputDecoration(
+                                      hintText: "Name")),
                               TextField(
                                 controller: valueCtrl,
                                 decoration: const InputDecoration(
-                                  hintText: "Value",
-                                ),
+                                    hintText: "Value"),
                                 keyboardType: TextInputType.number,
                               ),
                             ],
@@ -442,6 +417,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             ],
           ),
         );
+
       default:
         return const SizedBox.shrink();
     }
@@ -475,15 +451,12 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 400),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: const Offset(0.0, 0.0),
-                  ).animate(animation),
-                  child: child,
-                );
-              },
+              transitionBuilder: (child, animation) => SlideTransition(
+                position: Tween<Offset>(
+                    begin: const Offset(1.0, 0.0), end: Offset.zero)
+                    .animate(animation),
+                child: child,
+              ),
               child: _getCurrentPage(),
             ),
             const SizedBox(height: 10),

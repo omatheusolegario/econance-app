@@ -6,8 +6,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-
+import 'package:shimmer/shimmer.dart';
 
 class AiInsightsPage extends StatefulWidget {
   const AiInsightsPage({super.key});
@@ -98,16 +97,44 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       };
     }).toList();
 
+    final investmentSnap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('investments')
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .get();
+
+    final investments = investmentSnap.docs.map((doc) {
+      final data = doc.data();
+      return {
+        "type": "investment",
+        "name": data["name"],
+        "status": data["status"],
+        "investmentType": data["type"],
+        "value": data["value"],
+        "targetValue": data["targetValue"],
+        "rate": data["rate"],
+        "notes": data["notes"],
+        "createdAt": (data["createdAt"] as Timestamp?)
+            ?.toDate()
+            .toIso8601String(),
+        "updatedAt": (data["updatedAt"] as Timestamp?)
+            ?.toDate()
+            .toIso8601String(),
+        "date": (data["date"] as Timestamp?)?.toDate().toIso8601String(),
+      };
+    }).toList();
+
     final transactions = [...revenues, ...expenses];
-    final summaryJson = jsonEncode({"transactions": transactions});
+    final summaryJson = jsonEncode({"transactions": transactions, "investments": investments});
 
     final model = GenerativeModel(
       model: 'gemini-2.5-flash',
       apiKey: dotenv.env['GEMINI_API_KEY']!,
     );
 
-    final prompt =
-    """
+    final prompt = """
 You are a financial assistant. Analyze this user's financial data:
 $summaryJson
 Write a concise financial insights report with these sections:
@@ -115,6 +142,7 @@ Write a concise financial insights report with these sections:
 - Spending by Category
 - Recurrent Expenses
 - Suggestions
+- Investment Overview (analyze user's investments, showing total value, goals, rate, and suggestions)
 Keep it clear, structured and actionable.
 Format it nicely, and put really nice spaces between areas that need(it's a flutter app).
 Currency is R\$ (BRL)
@@ -138,6 +166,55 @@ Currency is R\$ (BRL)
   void initState() {
     super.initState();
     _fetchInsights();
+  }
+
+  Widget _buildShimmerLoading(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade800,
+      highlightColor: Colors.grey.shade600,
+      child: ListView(
+        children: [
+          Container(
+            height: 28,
+            width: 200,
+            color: Colors.white,
+            margin: const EdgeInsets.symmetric(vertical: 10),
+          ),
+          const SizedBox(height: 10),
+          _buildShimmerSection(),
+          const SizedBox(height: 20),
+          _buildShimmerSection(),
+          const SizedBox(height: 20),
+          _buildShimmerSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 18,
+          width: 120,
+          color: Colors.white,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+        ),
+        ...List.generate(
+          4,
+              (i) => Container(
+            height: 12,
+            width: i == 3 ? 180 : double.infinity,
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -180,7 +257,7 @@ Currency is R\$ (BRL)
             const SizedBox(height: 7),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _buildShimmerLoading(context)
                   : _insights == null
                   ? const Text("No insights available")
                   : Markdown(

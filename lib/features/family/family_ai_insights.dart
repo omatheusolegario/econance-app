@@ -49,7 +49,8 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
 
     if (!forceNew) {
       final docSnap = await docRef.get();
-      if (docSnap.exists && widget.role != 'creator' && widget.role != 'admin') {
+      if (docSnap.exists && widget.role != 'creator' &&
+          widget.role != 'admin') {
         setState(() {
           _insights = docSnap['text'];
           _loading = false;
@@ -99,6 +100,14 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
           .orderBy('date', descending: true)
           .limit(50)
           .get();
+      final investmentSnap = await db
+          .collection('users')
+          .doc(memberUid)
+          .collection('investments')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
 
       summary[memberUid] = {
         'displayName': m['displayName'] ?? '',
@@ -124,14 +133,35 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
             "note": data["note"],
           };
         }).toList(),
-      };
-    }
 
+        'investments': investmentSnap.docs.map((doc) {
+          final data = doc.data();
+          return {
+            "type": "investment",
+            "name": data["name"],
+            "status": data["status"],
+            "investmentType": data["type"],
+            "value": data["value"],
+            "targetValue": data["targetValue"],
+            "rate": data["rate"],
+            "notes": data["notes"],
+            "createdAt": (data["createdAt"] as Timestamp?)
+                ?.toDate()
+                .toIso8601String(),
+            "updatedAt": (data["updatedAt"] as Timestamp?)
+                ?.toDate()
+                .toIso8601String(),
+            "date": (data["date"] as Timestamp?)?.toDate().toIso8601String(),
+          };
+        }).toList(),
+    };
+  }
     final prompt = """
 Family financial summary. For each member provide:
 - short balance overview,
 - top 3 categories for spending,
 - any recurring items noticed,
+- short investments overview,
 Then provide a short family-level summary and 3 actionable suggestions
 Data:
 ${jsonEncode(summary)}

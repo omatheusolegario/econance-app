@@ -39,40 +39,63 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
   String? selectedCategoryName;
   DateTime? _selectedDate;
   bool _isRecurrent = false;
+  bool _isLoading = true;
   List<Map<String, dynamic>> _items = [];
 
   @override
   void initState() {
     super.initState();
-    _value.text = widget.initialValue ?? '';
-    _note.text = widget.initialNote ?? '';
+    _loadTransactionData();
+  }
 
-    if (widget.initialDate != null && widget.initialDate!.isNotEmpty) {
-      try {
-        _selectedDate = DateFormat('dd/MM/yyyy').parse(widget.initialDate!);
-        _date.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-      } catch (e) {}
-    }
-
-    selectedCategoryId = widget.initialCategoryId;
-    _items = widget.initialItems ?? [];
-    _isRecurrent = false;
-
-    if (selectedCategoryId != null) {
-      FirebaseFirestore.instance
+  Future<void> _loadTransactionData() async {
+    try {
+      final doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.uid)
-          .collection('categories')
-          .doc(selectedCategoryId)
-          .get()
-          .then((doc) {
-        if (doc.exists) {
-          setState(() {
-            selectedCategoryName = doc['name'];
-          });
+          .collection(widget.type == "expense" ? "expenses" : "revenues")
+          .doc(widget.transactionId)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        setState(() {
+          _value.text = (data['value'] ?? '').toString();
+          _note.text = data['note'] ?? '';
+          _isRecurrent = data['isRecurrent'] ?? false;
+
+          if (data['date'] != null) {
+            final ts = data['date'] as Timestamp;
+            _selectedDate = ts.toDate();
+            _date.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+          }
+
+          selectedCategoryId = data['categoryId'];
+          if (data['items'] != null && data['items'] is List) {
+            _items = List<Map<String, dynamic>>.from(data['items']);
+          }
+        });
+
+        if (selectedCategoryId != null) {
+          final catDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.uid)
+              .collection('categories')
+              .doc(selectedCategoryId)
+              .get();
+
+          if (catDoc.exists) {
+            setState(() {
+              selectedCategoryName = catDoc['name'];
+            });
+          }
         }
-      });
+      }
+    } catch (e) {
+      debugPrint('Erro ao carregar transação: $e');
     }
+
+    setState(() => _isLoading = false);
   }
 
   Future<void> _pickCategory(BuildContext context) async {
@@ -83,17 +106,20 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     if (result != null) {
       setState(() {
         selectedCategoryId = result;
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.uid)
-            .collection('categories')
-            .doc(result)
-            .get()
-            .then((doc) {
-          selectedCategoryName = doc['name'];
-          setState(() {});
-        });
       });
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.uid)
+          .collection('categories')
+          .doc(result)
+          .get();
+
+      if (doc.exists) {
+        setState(() {
+          selectedCategoryName = doc['name'];
+        });
+      }
     }
   }
 
@@ -144,6 +170,10 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.only(
@@ -181,20 +211,18 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 keyboardType: TextInputType.number,
                 style: theme.textTheme.bodyMedium,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty)
+                  if (value == null || value.trim().isEmpty) {
                     return "Please enter a value";
-                  if (double.tryParse(value.replaceAll(',', '.')) == null)
+                  }
+                  if (double.tryParse(value.replaceAll(',', '.')) == null) {
                     return "Enter a valid number";
+                  }
                   return null;
                 },
                 decoration: InputDecoration(
                   hintText: "500,00",
                   prefixIcon: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 14,
-                      top: 14,
-                      bottom: 14,
-                    ),
+                    padding: const EdgeInsets.only(left: 14, top: 14, bottom: 14),
                     child: Text(
                       "R\$",
                       style: theme.textTheme.bodyMedium?.copyWith(

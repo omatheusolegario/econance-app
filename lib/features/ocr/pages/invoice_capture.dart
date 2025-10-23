@@ -39,18 +39,14 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       model: 'gemini-2.5-flash',
       apiKey: dotenv.env['GEMINI_API_KEY']!,
     );
+
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
+
     _scanAnimation = CurvedAnimation(parent: _scanController, curve: Curves.easeInOut);
-    _scanController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() {
-          _frozenFrame = null;
-        });
-      }
-    });
+
     _initializeCamera();
   }
 
@@ -87,8 +83,7 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
   }
 
   Future<void> _flipCamera() async {
-    if (_isFrozen) return;
-    if (_cameras.length < 2) return;
+    if (_isFrozen || _cameras.length < 2) return;
     _currentCameraIndex = (_currentCameraIndex + 1) % _cameras.length;
     await _controller?.dispose();
     _controller = CameraController(_cameras[_currentCameraIndex], ResolutionPreset.high);
@@ -97,12 +92,10 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
   }
 
   Future<void> _toggleFlash() async {
-    if (_isFrozen) return;
-    if (_controller != null && _controller!.value.isInitialized) {
-      _isFlashOn = !_isFlashOn;
-      await _controller!.setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
-      setState(() {});
-    }
+    if (_isFrozen || _controller == null || !_controller!.value.isInitialized) return;
+    _isFlashOn = !_isFlashOn;
+    await _controller!.setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
+    setState(() {});
   }
 
   Future<void> _captureImage() async {
@@ -123,16 +116,15 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       if (_frozenFrame != null) {
         await _performOCR(_frozenFrame!);
       }
-      setState(() {
-        _isFrozen = false;
-        _loading = false;
-      });
     } catch (e) {
-      setState(() {
-        _isFrozen = false;
-        _loading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error capturing image: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFrozen = false;
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -148,10 +140,6 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       });
       await Future.delayed(const Duration(milliseconds: 100));
       await _performOCR(_frozenFrame!);
-      setState(() {
-        _isFrozen = false;
-        _loading = false;
-      });
     }
   }
 
@@ -179,32 +167,35 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
   }
 
   Future<void> _performOCR(File file) async {
+    if (!mounted) return;
     setState(() {
       _loading = true;
+      _isFrozen = true;
     });
+
     try {
       final bytes = await file.readAsBytes();
       final categories = await _fetchExpenseCategories();
       final categoriesJson = jsonEncode(categories);
+
       final content = [
         Content.multi([
           TextPart(
-            'Extract the following from this Brazilian invoice image as JSON:'
-                '{"date": "DD/MM/YYYY", "total": "XX.XX", "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]}'
-                'For number use "." to represent decimal values'
-                'Be accurate with formats. If missing, use "".'
-                'Focus on the main purchase details; ignore headers/footers if irrelevant.'
-                '\nExisting expense categories (id:name):$categoriesJson.'
-                'Based on the items or store, match to the closest category if reasonable (e.g., food items to "Groceries").'
-                'Include "categoryId": "matching_id" in JSON if match found'
-                'If no good match, include "suggestedCategoryName":"logical new name" (e.g., "Supermarket" for general purchases).'
-                'Be careful to not send wrongly, it could crash the Flutter App',
+              'Extract the following from this Brazilian invoice image as JSON:'
+                  '{"date": "DD/MM/YYYY", "total": "XX.XX", "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]}'
+                  'Use "." for decimals. Be accurate with formats. If missing, use "".'
+                  'Focus on main purchase details; ignore irrelevant headers/footers.'
+                  '\nExisting expense categories (id:name):$categoriesJson.'
+                  'Match items/store to closest category if reasonable.'
+                  'Include "categoryId" if matched, else "suggestedCategoryName".'
           ),
           DataPart('image/png', bytes),
         ]),
       ];
+
       final response = await _model.generateContent(content);
       final jsonText = response.text?.replaceAll('```json', '').replaceAll('```', '').trim() ?? '{}';
+
       Map<String, dynamic> parsedResult;
       try {
         final decoded = jsonDecode(jsonText);
@@ -212,46 +203,57 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       } catch (_) {
         parsedResult = {};
       }
+
       String? categoryId = parsedResult['categoryId'] as String?;
       if (categoryId == null && parsedResult['suggestedCategoryName'] != null) {
         categoryId = await _createNewCategory(parsedResult['suggestedCategoryName'] as String);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Created new category: ${parsedResult['suggestedCategoryName']}")));
-      }
-      if (parsedResult['total'] != null && parsedResult['total'].isNotEmpty) {
-        if (context.mounted) {
-          _scanController.stop();
-          await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-            builder: (context) => AddTransactionPage(
-              type: 'expense',
-              isInvoice: true,
-              initialDate: parsedResult['date'],
-              initialValue: parsedResult['total'],
-              initialItems: (parsedResult['items'] as List<dynamic>?)
-                  ?.map((item) => {'name': item['name'] ?? '', 'value': item['value'] ?? ''})
-                  .toList() ??
-                  [],
-              initialCategoryId: categoryId,
-              initialNote: parsedResult['cnpj'] != null ? 'Invoice from CNPJ: ${parsedResult['cnpj']}' : '',
-            ),
-          ).whenComplete(() {
-            setState(() {
-              _frozenFrame = null;
-              _scanController.repeat(reverse: true);
-            });
-          });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Created new category: ${parsedResult['suggestedCategoryName']}"))
+          );
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Insufficient data extracted to prefill transaction')));
+      }
+
+      final total = parsedResult['total'];
+      if (total is String && total.isNotEmpty && mounted) {
+        _scanController.stop();
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+          builder: (context) => AddTransactionPage(
+            type: 'expense',
+            isInvoice: true,
+            initialDate: parsedResult['date'] ?? '',
+            initialValue: total,
+            initialItems: (parsedResult['items'] as List<dynamic>?)
+                ?.map((item) => {'name': item['name'] ?? '', 'value': item['value'] ?? ''})
+                .toList() ??
+                [],
+            initialCategoryId: categoryId,
+            initialNote: parsedResult['cnpj'] != null ? 'Invoice from CNPJ: ${parsedResult['cnpj']}' : '',
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Insufficient data extracted to prefill transaction'))
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("AI extraction error: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("AI extraction error: $e"))
+        );
+      }
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _frozenFrame = null;
+          _isFrozen = false;
+          _loading = false;
+          _scanController.repeat(reverse: true);
+        });
+      }
     }
   }
 
@@ -301,7 +303,6 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
                   );
                 },
               ),
-            //if (_loading) const Center(child: CircularProgressIndicator()),
             Positioned(
               top: 10,
               left: 5,

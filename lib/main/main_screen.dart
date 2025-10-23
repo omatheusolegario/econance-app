@@ -14,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:econance/cards/account_card.dart';
 import 'package:econance/features/investments/add_investment_page.dart';
 import 'package:econance/features/investments_types/add_investment_type.dart';
+import 'package:econance/services/transaction_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -180,6 +181,8 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _loadPhoto();
+    final service = TransactionService();
+    service.checkAndGenerateRecurringTransactions();
   }
 
   @override
