@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../cards/home_card.dart';
 import '../graphs/widgets/revenue_line_chart.dart';
+
 class HomePage extends StatefulWidget {
   final bool hideSensitive;
   const HomePage({super.key, required this.hideSensitive});
@@ -45,17 +47,17 @@ class _HomePageState extends State<HomePage> {
 
     double totalRevenueThisMonth = revenuesSnapThisMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double totalRevenueLastMonth = revenuesSnapLastMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double revenueChange = totalRevenueLastMonth == 0
         ? 0
         : ((totalRevenueThisMonth - totalRevenueLastMonth) /
-                  totalRevenueLastMonth) *
-              100;
+        totalRevenueLastMonth) *
+        100;
 
     final expensesSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
@@ -74,17 +76,17 @@ class _HomePageState extends State<HomePage> {
 
     double totalExpensesThisMonth = expensesSnapThisMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double totalExpensesLastMonth = expensesSnapLastMonth.docs.fold<double>(
       0,
-      (sum, doc) => sum + (doc['value'] as num).toDouble(),
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
     );
     double expensesChange = totalExpensesLastMonth == 0
         ? 0
         : ((totalExpensesThisMonth - totalExpensesLastMonth) /
-                  totalExpensesLastMonth) *
-              100;
+        totalExpensesLastMonth) *
+        100;
 
     final investmentsSnapThisMonth = await FirebaseFirestore.instance
         .collection('users')
@@ -101,15 +103,19 @@ class _HomePageState extends State<HomePage> {
         .where('date', isLessThan: firstDayThisMonth)
         .get();
 
-    double totalInvestmentsThisMonth = investmentsSnapThisMonth.docs
-        .fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
-    double totalInvestmentsLastMonth = investmentsSnapLastMonth.docs
-        .fold<double>(0, (sum, doc) => sum + (doc['value'] as num).toDouble());
+    double totalInvestmentsThisMonth = investmentsSnapThisMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
+    double totalInvestmentsLastMonth = investmentsSnapLastMonth.docs.fold<double>(
+      0,
+          (sum, doc) => sum + (doc['value'] as num).toDouble(),
+    );
     double investmentsChange = totalInvestmentsLastMonth == 0
         ? 0
         : ((totalInvestmentsThisMonth - totalInvestmentsLastMonth) /
-                  totalInvestmentsLastMonth) *
-              100;
+        totalInvestmentsLastMonth) *
+        100;
 
     final balanceThisMonth = totalRevenueThisMonth - totalExpensesThisMonth;
     final balanceLastMonth = totalRevenueLastMonth - totalExpensesLastMonth;
@@ -142,9 +148,57 @@ class _HomePageState extends State<HomePage> {
     return value.toStringAsFixed(1);
   }
 
+  Widget _buildShimmer(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(width: 100, height: 16, color: baseColor),
+          const SizedBox(height: 8),
+          Container(width: 180, height: 22, color: baseColor),
+          const SizedBox(height: 30),
+          GridView.builder(
+            itemCount: 4,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1.4,
+            ),
+            itemBuilder: (_, __) => Container(
+              decoration: BoxDecoration(
+                color: baseColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
@@ -165,10 +219,15 @@ class _HomePageState extends State<HomePage> {
                     .doc(uid)
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData)
-                    return const CircularProgressIndicator();
-                  final data =
-                      snapshot.data!.data() as Map<String, dynamic>? ?? {};
+                  if (!snapshot.hasData) {
+                    final isDark = theme.brightness == Brightness.dark;
+                    return Container(
+                      width: 120,
+                      height: 20,
+                      color: isDark ? Colors.grey[800] : Colors.grey[300],
+                    );
+                  }
+                  final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
                   final personalInfo =
                       data['personalInfo'] as Map<String, dynamic>? ?? {};
                   final name = personalInfo['fullName'] ?? 'User';
@@ -185,11 +244,12 @@ class _HomePageState extends State<HomePage> {
                 future: _dataFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return _buildShimmer(context);
                   }
                   if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
+
                   final data = snapshot.data!;
                   final cards = [
                     {
@@ -221,50 +281,55 @@ class _HomePageState extends State<HomePage> {
                       'iconColor': Colors.purple,
                     },
                   ];
-                  return GridView.builder(
-                    itemCount: cards.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
+
+                  return Column(
+                    children: [
+                      GridView.builder(
+                        itemCount: cards.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
                           childAspectRatio: 1.4,
                         ),
-                    itemBuilder: (context, index) {
-                      final card = cards[index];
-                      final valueKey = card['value'] as String;
-                      final changeKey = card['change'] as String;
-                      final double realValue = data[valueKey] as double;
-                      final double changeValue = data[changeKey] as double;
+                        itemBuilder: (context, index) {
+                          final card = cards[index];
+                          final valueKey = card['value'] as String;
+                          final changeKey = card['change'] as String;
+                          final double realValue = data[valueKey] as double;
+                          final double changeValue = data[changeKey] as double;
 
-                      return DashboardCard(
-                        title: card['title'] as String,
-                        value: widget.hideSensitive
-                            ? "•••••"
-                            : formatNumber(realValue),
-                        subtitle: widget.hideSensitive
-                            ? "••••• VS Last Month"
-                            : "${changeValue > 0 ? '+' : ''}${changeValue.toStringAsFixed(1)}% VS Last Month",
-                        icon: card['icon'] as IconData?,
-                        iconColor: card['iconColor'] as Color?,
-                        subtitleColor: _getChangeColor(changeValue),
-                        isSelected: selectedIndex == index,
-                        onTap: () {
-                          setState(() {
-                            selectedIndex = index;
-                          });
+                          return DashboardCard(
+                            title: card['title'] as String,
+                            value: widget.hideSensitive
+                                ? "•••••"
+                                : formatNumber(realValue),
+                            subtitle: widget.hideSensitive
+                                ? "••••• VS Last Month"
+                                : "${changeValue > 0 ? '+' : ''}${changeValue.toStringAsFixed(1)}% VS Last Month",
+                            icon: card['icon'] as IconData?,
+                            iconColor: card['iconColor'] as Color?,
+                            subtitleColor: _getChangeColor(changeValue),
+                            isSelected: selectedIndex == index,
+                            onTap: () {
+                              setState(() {
+                                selectedIndex = index;
+                              });
+                            },
+                          );
                         },
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 30),
+                      RevenueLineChart(
+                        selectedCardIndex: selectedIndex,
+                        hideSensitive: widget.hideSensitive,
+                      ),
+                    ],
                   );
                 },
-              ),
-              const SizedBox(height: 30),
-              RevenueLineChart(
-                selectedCardIndex: selectedIndex,
-                hideSensitive: widget.hideSensitive,
               ),
             ],
           ),

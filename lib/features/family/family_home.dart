@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../services/family_service.dart';
 import 'member_card.dart';
 
@@ -18,20 +19,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
   final uid = FirebaseAuth.instance.currentUser!.uid;
   late String? _familyId = widget.familyId;
   late String? _role = widget.role?.toLowerCase();
-  late String? _photoUrl;
   final _fs = FamilyService();
-
-  Future<void> _loadPhoto() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-    final data = doc.data()?['personalInfo'];
-
-    setState(() {
-      _photoUrl = data?['photoUrl'] ?? user.photoURL ?? '';
-    });
-  }
 
   Future<Map<String, dynamic>> _getUserInfo(String memberUid) async {
     final doc = await FirebaseFirestore.instance.collection('users').doc(memberUid).get();
@@ -75,12 +63,31 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
     return [...currentUser, ...creator, ...admins, ...regularMembers];
   }
 
+  Widget _buildShimmerList(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: ListView.separated(
+        itemCount: 6,
+        separatorBuilder: (_, __) => const Divider(),
+        itemBuilder: (_, __) => ListTile(
+          leading: CircleAvatar(backgroundColor: baseColor, radius: 24),
+          title: Container(height: 16, width: 120, color: baseColor, margin: const EdgeInsets.symmetric(vertical: 4)),
+          subtitle: Container(height: 14, width: 180, color: baseColor, margin: const EdgeInsets.symmetric(vertical: 2)),
+          trailing: Container(height: 20, width: 50, color: baseColor),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     final theme = Theme.of(context);
-
-    print("Current user role: $_role");
 
     return Scaffold(
       body: Padding(
@@ -94,8 +101,8 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
             ),
             Text(
               "Family members",
-              style: theme.textTheme.headlineLarge
-                  ?.copyWith(color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold),
+              style: theme.textTheme.headlineLarge?.copyWith(
+                  color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -103,7 +110,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
                 stream: _fs.membersStream(_familyId!),
                 builder: (context, snap) {
                   if (!snap.hasData) {
-                    return const Center(child: CircularProgressIndicator());
+                    return _buildShimmerList(context);
                   }
 
                   final membersDocs = snap.data!.docs;
@@ -123,7 +130,7 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
                     ),
                     builder: (context, membersSnap) {
                       if (!membersSnap.hasData) {
-                        return const Center(child: CircularProgressIndicator());
+                        return _buildShimmerList(context);
                       }
 
                       final membersList = membersSnap.data!;

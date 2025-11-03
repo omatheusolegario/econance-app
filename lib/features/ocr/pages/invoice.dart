@@ -1,5 +1,6 @@
 import 'package:econance/features/ocr/pages/invoice_capture.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class InvoicePage extends StatefulWidget {
   const InvoicePage({super.key});
@@ -9,14 +10,75 @@ class InvoicePage extends StatefulWidget {
 }
 
 class _InvoicePageState extends State<InvoicePage> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Simula um carregamento de 800ms para efeito de shimmer
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  Widget _buildShimmer(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(width: 180, height: 16, color: baseColor),
+              const SizedBox(height: 8),
+              Container(width: 220, height: 28, color: baseColor),
+            ],
+          ),
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width / 1.8,
+              height: MediaQuery.of(context).size.width / 1.8,
+              decoration: BoxDecoration(
+                color: baseColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            height: 48,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-        child: Column(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+        child: _isLoading
+            ? _buildShimmer(context)
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -36,17 +98,15 @@ class _InvoicePageState extends State<InvoicePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
               ],
             ),
-
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
                   'assets/images/invoice.png',
                   fit: BoxFit.contain,
-                  width: MediaQuery.widthOf(context)/1.8,
+                  width: MediaQuery.of(context).size.width / 1.8,
                 ),
               ),
             ),
@@ -59,10 +119,12 @@ class _InvoicePageState extends State<InvoicePage> {
                     builder: (context) => const InvoiceCapturePage(),
                   ),
                 ),
-                label: Text("Add Bill"),
-                icon: Icon(Icons.add),
+                label: const Text("Add Bill"),
+                icon: const Icon(Icons.add),
                 iconAlignment: IconAlignment.start,
-                style: ElevatedButton.styleFrom(backgroundColor: theme.primaryColor),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.primaryColor,
+                ),
               ),
             ),
           ],

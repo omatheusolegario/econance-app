@@ -18,6 +18,15 @@ class AiInsightsPage extends StatefulWidget {
 class _AiInsightsPageState extends State<AiInsightsPage> {
   String? _insights;
   bool _loading = true;
+  int _currentPhraseIndex = 0;
+
+  final List<String> _phrases = [
+    "Analisando suas finanças...",
+    "Gerando relatório inteligente...",
+    "Avaliando investimentos...",
+    "Calculando tendências de gastos...",
+    "Preparando insights personalizados..."
+  ];
 
   Future<void> _fetchInsights({bool forceNew = false}) async {
     setState(() => _loading = true);
@@ -116,18 +125,17 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
         "targetValue": data["targetValue"],
         "rate": data["rate"],
         "notes": data["notes"],
-        "createdAt": (data["createdAt"] as Timestamp?)
-            ?.toDate()
-            .toIso8601String(),
-        "updatedAt": (data["updatedAt"] as Timestamp?)
-            ?.toDate()
-            .toIso8601String(),
+        "createdAt":
+        (data["createdAt"] as Timestamp?)?.toDate().toIso8601String(),
+        "updatedAt":
+        (data["updatedAt"] as Timestamp?)?.toDate().toIso8601String(),
         "date": (data["date"] as Timestamp?)?.toDate().toIso8601String(),
       };
     }).toList();
 
     final transactions = [...revenues, ...expenses];
-    final summaryJson = jsonEncode({"transactions": transactions, "investments": investments});
+    final summaryJson =
+    jsonEncode({"transactions": transactions, "investments": investments});
 
     final model = GenerativeModel(
       model: 'gemini-2.5-flash',
@@ -166,54 +174,34 @@ Currency is R\$ (BRL)
   void initState() {
     super.initState();
     _fetchInsights();
+
+    Future.doWhile(() async {
+      if (!_loading) return false;
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted && _loading) {
+        setState(() {
+          _currentPhraseIndex = (_currentPhraseIndex + 1) % _phrases.length;
+        });
+      }
+      return _loading;
+    });
   }
 
   Widget _buildShimmerLoading(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade800,
-      highlightColor: Colors.grey.shade600,
-      child: ListView(
-        children: [
-          Container(
-            height: 28,
-            width: 200,
+    return Center(
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade800,
+        highlightColor: Colors.grey.shade500,
+        child: Text(
+          _phrases[_currentPhraseIndex],
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
             color: Colors.white,
-            margin: const EdgeInsets.symmetric(vertical: 10),
           ),
-          const SizedBox(height: 10),
-          _buildShimmerSection(),
-          const SizedBox(height: 20),
-          _buildShimmerSection(),
-          const SizedBox(height: 20),
-          _buildShimmerSection(),
-        ],
+          textAlign: TextAlign.center,
+        ),
       ),
-    );
-  }
-
-  Widget _buildShimmerSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          height: 18,
-          width: 120,
-          color: Colors.white,
-          margin: const EdgeInsets.symmetric(vertical: 6),
-        ),
-        ...List.generate(
-          4,
-              (i) => Container(
-            height: 12,
-            width: i == 3 ? 180 : double.infinity,
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -232,29 +220,34 @@ Currency is R\$ (BRL)
                 color: Colors.white60,
               ),
             ),
-            Text(
-              "AI Insights",
-              style: theme.textTheme.headlineLarge?.copyWith(
-                color: theme.textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 7),
-            ElevatedButton.icon(
-              onPressed: _loading ? null : () => _fetchInsights(forceNew: true),
-              icon: _loading
-                  ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    "AI Insights",
+                    style: theme.textTheme.headlineLarge?.copyWith(
+                      color: theme.textTheme.bodyLarge?.color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              )
-                  : const Icon(Icons.refresh),
-              label: const Text("Gerar Novamente   "),
+                IconButton(
+                  onPressed:
+                  _loading ? null : () => _fetchInsights(forceNew: true),
+                  icon: _loading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : Icon(Icons.refresh, color: theme.primaryColor),
+                ),
+              ],
             ),
-            const SizedBox(height: 7),
+            const SizedBox(height: 12),
             Expanded(
               child: _loading
                   ? _buildShimmerLoading(context)
@@ -263,7 +256,8 @@ Currency is R\$ (BRL)
                   : Markdown(
                 data: _insights ?? "",
                 shrinkWrap: true,
-                styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                styleSheet: MarkdownStyleSheet.fromTheme(theme)
+                    .copyWith(
                   p: theme.textTheme.bodyMedium,
                   h3: TextStyle(color: theme.primaryColor),
                   blockSpacing: 12,

@@ -17,7 +17,8 @@ class InvoiceCapturePage extends StatefulWidget {
   State<InvoiceCapturePage> createState() => _InvoiceCapturePageState();
 }
 
-class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTickerProviderStateMixin {
+class _InvoiceCapturePageState extends State<InvoiceCapturePage>
+    with SingleTickerProviderStateMixin {
   File? _image;
   bool _loading = false;
   final picker = ImagePicker();
@@ -45,7 +46,8 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
 
-    _scanAnimation = CurvedAnimation(parent: _scanController, curve: Curves.easeInOut);
+    _scanAnimation =
+        CurvedAnimation(parent: _scanController, curve: Curves.easeInOut);
 
     _initializeCamera();
   }
@@ -56,29 +58,41 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       final allCameras = await availableCameras();
       CameraDescription? backCamera;
       CameraDescription? frontCamera;
+
       for (final cam in allCameras) {
-        if (cam.lensDirection == CameraLensDirection.back && backCamera == null) {
+        if (cam.lensDirection == CameraLensDirection.back &&
+            backCamera == null) {
           backCamera = cam;
-        } else if (cam.lensDirection == CameraLensDirection.front && frontCamera == null) {
+        } else if (cam.lensDirection == CameraLensDirection.front &&
+            frontCamera == null) {
           frontCamera = cam;
         }
       }
+
       _cameras = [
         if (backCamera != null) backCamera,
         if (frontCamera != null) frontCamera,
       ];
+
       if (_cameras.isNotEmpty) {
         _currentCameraIndex = 0;
-        _controller = CameraController(_cameras[_currentCameraIndex], ResolutionPreset.high);
+        _controller = CameraController(
+          _cameras[_currentCameraIndex],
+          ResolutionPreset.high,
+        );
         _initializeControllerFuture = _controller!.initialize();
         setState(() {});
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Nenhuma câmera compatível encontrada.")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Nenhuma câmera compatível encontrada.")),
+        );
       }
     } else if (status.isPermanentlyDenied) {
       await openAppSettings();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Permissão da câmera é necessária.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Permissão da câmera é necessária.")),
+      );
     }
   }
 
@@ -86,13 +100,18 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
     if (_isFrozen || _cameras.length < 2) return;
     _currentCameraIndex = (_currentCameraIndex + 1) % _cameras.length;
     await _controller?.dispose();
-    _controller = CameraController(_cameras[_currentCameraIndex], ResolutionPreset.high);
+    _controller = CameraController(
+      _cameras[_currentCameraIndex],
+      ResolutionPreset.high,
+    );
     _initializeControllerFuture = _controller!.initialize();
     setState(() {});
   }
 
   Future<void> _toggleFlash() async {
-    if (_isFrozen || _controller == null || !_controller!.value.isInitialized) return;
+    if (_isFrozen || _controller == null || !_controller!.value.isInitialized) {
+      return;
+    }
     _isFlashOn = !_isFlashOn;
     await _controller!.setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
     setState(() {});
@@ -106,18 +125,21 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
         _isFrozen = true;
         _loading = false;
       });
+
       final image = await _controller!.takePicture();
       _frozenFrame = File(image.path);
       setState(() {});
       await Future.delayed(const Duration(milliseconds: 100));
-      setState(() {
-        _loading = true;
-      });
+
+      setState(() => _loading = true);
+
       if (_frozenFrame != null) {
         await _performOCR(_frozenFrame!);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error capturing image: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao capturar imagem: $e')),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -145,20 +167,26 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
 
   Future<Map<String, String>> _fetchExpenseCategories() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception("User not logged in");
+    if (uid == null) throw Exception("Usuário não autenticado");
     final categoriesSnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .collection('categories')
         .where('type', isEqualTo: 'expense')
         .get();
-    return {for (final doc in categoriesSnapshot.docs) doc.id: doc['name'] as String};
+    return {
+      for (final doc in categoriesSnapshot.docs) doc.id: doc['name'] as String
+    };
   }
 
   Future<String?> _createNewCategory(String suggestedName) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
-    final newDocRef = await FirebaseFirestore.instance.collection('users').doc(uid).collection('categories').add({
+    final newDocRef = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('categories')
+        .add({
       'type': 'expense',
       'name': suggestedName,
       'createdAt': FieldValue.serverTimestamp(),
@@ -181,20 +209,25 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
       final content = [
         Content.multi([
           TextPart(
-              'Extract the following from this Brazilian invoice image as JSON:'
-                  '{"date": "DD/MM/YYYY", "total": "XX.XX", "cnpj": "XX.XXX.XXX/XXXX-XX", "items":[{"name": "full description", "value": "XX.XX"}]}'
-                  'Use "." for decimals. Be accurate with formats. If missing, use "".'
-                  'Focus on main purchase details; ignore irrelevant headers/footers.'
-                  '\nExisting expense categories (id:name):$categoriesJson.'
-                  'Match items/store to closest category if reasonable.'
-                  'Include "categoryId" if matched, else "suggestedCategoryName".'
+            'Extract the following from this Brazilian invoice image as JSON:'
+                '{"date": "DD/MM/YYYY", "total": "XX.XX", "cnpj": "XX.XXX.XXX/XXXX-XX", '
+                '"items":[{"name": "full description", "value": "XX.XX"}]} '
+                'Use "." for decimals. Be accurate with formats. If missing, use "".'
+                'Focus on main purchase details; ignore irrelevant headers/footers.'
+                '\nExisting expense categories (id:name):$categoriesJson.'
+                'Match items/store to closest category if reasonable.'
+                'Include "categoryId" if matched, else "suggestedCategoryName".',
           ),
           DataPart('image/png', bytes),
         ]),
       ];
 
       final response = await _model.generateContent(content);
-      final jsonText = response.text?.replaceAll('```json', '').replaceAll('```', '').trim() ?? '{}';
+      final jsonText = response.text
+          ?.replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim() ??
+          '{}';
 
       Map<String, dynamic> parsedResult;
       try {
@@ -206,10 +239,14 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
 
       String? categoryId = parsedResult['categoryId'] as String?;
       if (categoryId == null && parsedResult['suggestedCategoryName'] != null) {
-        categoryId = await _createNewCategory(parsedResult['suggestedCategoryName'] as String);
+        categoryId = await _createNewCategory(
+            parsedResult['suggestedCategoryName'] as String);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Created new category: ${parsedResult['suggestedCategoryName']}"))
+            SnackBar(
+              content: Text(
+                  "Nova categoria criada: ${parsedResult['suggestedCategoryName']}"),
+            ),
           );
         }
       }
@@ -220,29 +257,36 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
         await showModalBottomSheet(
           context: context,
           isScrollControlled: true,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
           builder: (context) => AddTransactionPage(
             type: 'expense',
             isInvoice: true,
             initialDate: parsedResult['date'] ?? '',
             initialValue: total,
             initialItems: (parsedResult['items'] as List<dynamic>?)
-                ?.map((item) => {'name': item['name'] ?? '', 'value': item['value'] ?? ''})
+                ?.map((item) => {
+              'name': item['name'] ?? '',
+              'value': item['value'] ?? '',
+            })
                 .toList() ??
                 [],
             initialCategoryId: categoryId,
-            initialNote: parsedResult['cnpj'] != null ? 'Invoice from CNPJ: ${parsedResult['cnpj']}' : '',
+            initialNote: parsedResult['cnpj'] != null
+                ? 'Invoice from CNPJ: ${parsedResult['cnpj']}'
+                : '',
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Insufficient data extracted to prefill transaction'))
+          const SnackBar(
+              content: Text('Não foi possível extrair dados suficientes.')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("AI extraction error: $e"))
+          SnackBar(content: Text("Erro ao extrair dados: $e")),
         );
       }
     } finally {
@@ -310,14 +354,26 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(onPressed: _isFrozen ? null : () => Navigator.pop(context), icon: const Icon(Icons.arrow_back_ios)),
+                  IconButton(
+                      onPressed:
+                      _isFrozen ? null : () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios)),
                   Column(
                     children: [
-                      Text("Scan the Invoice", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-                      Text("and register your expense", style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                      Text("Scan the Invoice",
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text("and register your expense",
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey)),
                     ],
                   ),
-                  IconButton(onPressed: _isFrozen ? null : _toggleFlash, icon: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off)),
+                  IconButton(
+                    onPressed: _isFrozen ? null : _toggleFlash,
+                    icon: Icon(
+                        _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                        color: Colors.white),
+                  ),
                 ],
               ),
             ),
@@ -328,9 +384,22 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(icon: const Icon(Icons.photo_library), color: Colors.green, onPressed: _isFrozen ? null : _pickFromGallery),
-                  FloatingActionButton(onPressed: _isFrozen ? null : _captureImage, backgroundColor: Colors.green, child: const Icon(Icons.camera, color: Colors.white)),
-                  IconButton(icon: const Icon(Icons.flip_camera_android, color: Colors.green), onPressed: _isFrozen ? null : _flipCamera),
+                  IconButton(
+                    icon: const Icon(Icons.photo_library),
+                    color: Colors.green,
+                    onPressed: _isFrozen ? null : _pickFromGallery,
+                  ),
+                  FloatingActionButton(
+                    onPressed: _isFrozen ? null : _captureImage,
+                    backgroundColor: Colors.green,
+                    child:
+                    const Icon(Icons.camera_alt, color: Colors.white),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.flip_camera_android,
+                        color: Colors.green),
+                    onPressed: _isFrozen ? null : _flipCamera,
+                  ),
                 ],
               ),
             ),
@@ -338,11 +407,17 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage> with SingleTick
               alignment: Alignment.bottomCenter,
               child: Container(
                 margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(20)),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 child: Text(
-                  'Scan the invoice provided by the cashier, click on the flash on the top right corner to use the flash',
-                  style: theme.textTheme.bodyMedium,
+                  'Posicione a nota fiscal e pressione o botão de captura. '
+                      'Use o flash se necessário (canto superior direito).',
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
               ),

@@ -5,12 +5,16 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:shimmer/shimmer.dart';
 
 class FamilyAIInsightsPage extends StatefulWidget {
   final String familyId;
   final String role;
-  const FamilyAIInsightsPage({required this.familyId, required this.role, super.key});
+  const FamilyAIInsightsPage({
+    required this.familyId,
+    required this.role,
+    super.key,
+  });
 
   @override
   State<FamilyAIInsightsPage> createState() => _FamilyAIInsightsPageState();
@@ -19,15 +23,36 @@ class FamilyAIInsightsPage extends StatefulWidget {
 class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
   bool _loading = true;
   String? _insights;
+  int _currentPhraseIndex = 0;
+
   final _model = GenerativeModel(
     model: 'gemini-2.5-flash',
     apiKey: dotenv.env['GEMINI_API_KEY']!,
   );
 
+  final List<String> _phrases = [
+    "Analisando finanças da família...",
+    "Gerando relatório familiar inteligente...",
+    "Comparando rendas e despesas...",
+    "Avaliando investimentos de todos...",
+    "Preparando insights personalizados da família..."
+  ];
+
   @override
   void initState() {
     super.initState();
     _fetchAndAnalyse();
+
+    Future.doWhile(() async {
+      if (!_loading) return false;
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted && _loading) {
+        setState(() {
+          _currentPhraseIndex = (_currentPhraseIndex + 1) % _phrases.length;
+        });
+      }
+      return _loading;
+    });
   }
 
   Future<void> _fetchAndAnalyse({bool forceNew = false}) async {
@@ -49,8 +74,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
 
     if (!forceNew) {
       final docSnap = await docRef.get();
-      if (docSnap.exists && widget.role != 'creator' &&
-          widget.role != 'admin') {
+      if (docSnap.exists && widget.role != 'creator' && widget.role != 'admin') {
         setState(() {
           _insights = docSnap['text'];
           _loading = false;
@@ -58,7 +82,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
         return;
       } else if (widget.role == 'member') {
         setState(() {
-          _insights = "Wait for your admin to generate it first.";
+          _insights = "Aguarde o administrador gerar os insights primeiro.";
           _loading = false;
         });
         return;
@@ -75,11 +99,8 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
     for (final m in membersSnap.docs) {
       final memberUid = m.id;
 
-      final categoriesSnap = await db
-          .collection('users')
-          .doc(memberUid)
-          .collection('categories')
-          .get();
+      final categoriesSnap =
+      await db.collection('users').doc(memberUid).collection('categories').get();
       final Map<String, String> categoryMap = {};
       for (var doc in categoriesSnap.docs) {
         final data = doc.data();
@@ -108,7 +129,6 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
           .limit(50)
           .get();
 
-
       summary[memberUid] = {
         'displayName': m['displayName'] ?? '',
         'revenues': revenuesSnap.docs.map((doc) {
@@ -133,7 +153,6 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
             "note": data["note"],
           };
         }).toList(),
-
         'investments': investmentSnap.docs.map((doc) {
           final data = doc.data();
           return {
@@ -145,17 +164,16 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
             "targetValue": data["targetValue"],
             "rate": data["rate"],
             "notes": data["notes"],
-            "createdAt": (data["createdAt"] as Timestamp?)
-                ?.toDate()
-                .toIso8601String(),
-            "updatedAt": (data["updatedAt"] as Timestamp?)
-                ?.toDate()
-                .toIso8601String(),
+            "createdAt":
+            (data["createdAt"] as Timestamp?)?.toDate().toIso8601String(),
+            "updatedAt":
+            (data["updatedAt"] as Timestamp?)?.toDate().toIso8601String(),
             "date": (data["date"] as Timestamp?)?.toDate().toIso8601String(),
           };
         }).toList(),
-    };
-  }
+      };
+    }
+
     final prompt = """
 Family financial summary. For each member provide:
 - short balance overview,
@@ -183,12 +201,30 @@ Currency is R\$ (BRL)
     });
   }
 
+  Widget _buildShimmerLoading(BuildContext context) {
+    return Center(
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade800,
+        highlightColor: Colors.grey.shade500,
+        child: Text(
+          _phrases[_currentPhraseIndex],
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 30.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -198,43 +234,48 @@ Currency is R\$ (BRL)
                 color: Colors.white60,
               ),
             ),
-            Text(
-              "Family AI Insights",
-              style: theme.textTheme.headlineLarge?.copyWith(
-                color: theme.textTheme.bodyLarge?.color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 7),
-            if (widget.role == 'creator' || widget.role == 'admin')
-              ElevatedButton.icon(
-                onPressed: _loading ? null : () => _fetchAndAnalyse(forceNew: true),
-                icon: _loading
-                    ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    "Family AI Insights",
+                    style: theme.textTheme.headlineLarge?.copyWith(
+                      color: theme.textTheme.bodyLarge?.color,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                )
-                    : const Icon(Icons.refresh),
-                label: const Text("Gerar Novamente   "),
-              ),
-            const SizedBox(height: 7),
+                ),
+                if (widget.role == 'creator' || widget.role == 'admin')
+                  IconButton(
+                    onPressed:
+                    _loading ? null : () => _fetchAndAnalyse(forceNew: true),
+                    icon: _loading
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : Icon(Icons.refresh, color: theme.primaryColor),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _buildShimmerLoading(context)
                   : _insights == null
                   ? const Text("No insights available")
                   : Markdown(
                 data: _insights ?? "",
                 shrinkWrap: true,
-                styleSheet: MarkdownStyleSheet.fromTheme(theme)
-                    .copyWith(
-                    p: theme.textTheme.bodyMedium,
-                    h3: TextStyle(color: theme.primaryColor),
-                    blockSpacing: 12),
+                styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                  p: theme.textTheme.bodyMedium,
+                  h3: TextStyle(color: theme.primaryColor),
+                  blockSpacing: 12,
+                ),
               ),
             ),
           ],

@@ -187,9 +187,57 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     final theme = Theme.of(context);
     const double bottomHeight = 80;
+
+    Future<bool> _confirmExit() async {
+      return (await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: theme.primaryColor, width: 1),
+          ),
+          title: Text(
+            'Sair do app?',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+          ),
+          content: Text(
+            'Tem certeza que deseja sair do Econance?',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Sair'),
+            ),
+          ],
+        ),
+      )) ??
+          false;
+    }
 
     Widget buildNavButton(IconData icon, int index) {
       final bool isSelected = _currentIndex == index;
@@ -215,86 +263,90 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        elevation: 0,
-        titleSpacing: 0,
-        automaticallyImplyLeading: false,
-        iconTheme: IconThemeData(color: theme.primaryColor),
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    isScrollControlled: true,
-                    builder: (context) {
-                      return FractionallySizedBox(
-                        heightFactor: 0.8,
-                        child: AccountCard(photoUrl: _photoUrl,),
+    return WillPopScope(
+      onWillPop: _confirmExit,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: theme.scaffoldBackgroundColor,
+          elevation: 0,
+          titleSpacing: 0,
+          automaticallyImplyLeading: false,
+          iconTheme: IconThemeData(color: theme.primaryColor),
+          title: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) {
+                          return FractionallySizedBox(
+                            heightFactor: 0.8,
+                            child: AccountCard(photoUrl: _photoUrl),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-                icon: CircleAvatar(
-                  backgroundColor: theme.primaryColor,
-                  backgroundImage: _photoUrl != null && _photoUrl!.isNotEmpty
-                      ? NetworkImage(_photoUrl!)
-                      : const AssetImage('assets/images/default_avatar.png')
-                  as ImageProvider,
-                )
-              ),
-              IconButton(
-                onPressed: _toggleHide,
-                icon: Icon(
-                  _hideSensitive
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: _getPage(_currentIndex),
-      bottomNavigationBar: SafeArea(
-        child: GestureDetector(
-          onTap: () {},
-          behavior: HitTestBehavior.translucent,
-          child: AnimatedContainer(
-            margin: const EdgeInsets.only(bottom: 16, left: 12, right: 12),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            height: bottomHeight,
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(31),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                buildNavButton(Icons.dashboard, 0),
-                buildNavButton(Icons.qr_code_scanner, 8),
-                GestureDetector(
-                  onTap: () => _openAddModal(context),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: theme.primaryColor,
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 30),
+                    icon: CircleAvatar(
+                      backgroundColor: theme.primaryColor,
+                      backgroundImage: _photoUrl != null && _photoUrl!.isNotEmpty
+                          ? NetworkImage(_photoUrl!)
+                          : const AssetImage(
+                          'assets/images/default_avatar.png')
+                      as ImageProvider,
+                    )),
+                IconButton(
+                  onPressed: _toggleHide,
+                  icon: Icon(
+                    _hideSensitive
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                   ),
                 ),
-                buildNavButton(Icons.bar_chart_sharp, 7),
-                buildNavButton(Icons.pie_chart_sharp, 9),
               ],
+            ),
+          ),
+        ),
+        body: _getPage(_currentIndex),
+        bottomNavigationBar: SafeArea(
+          child: GestureDetector(
+            onTap: () {},
+            behavior: HitTestBehavior.translucent,
+            child: AnimatedContainer(
+              margin: const EdgeInsets.only(bottom: 16, left: 12, right: 12),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: bottomHeight,
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(31),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  buildNavButton(Icons.dashboard, 0),
+                  buildNavButton(Icons.qr_code_scanner, 8),
+                  GestureDetector(
+                    onTap: () => _openAddModal(context),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: theme.primaryColor,
+                      ),
+                      child:
+                      const Icon(Icons.add, color: Colors.white, size: 30),
+                    ),
+                  ),
+                  buildNavButton(Icons.bar_chart_sharp, 7),
+                  buildNavButton(Icons.pie_chart_sharp, 9),
+                ],
+              ),
             ),
           ),
         ),
