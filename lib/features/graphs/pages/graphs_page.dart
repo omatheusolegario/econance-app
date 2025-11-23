@@ -5,6 +5,8 @@ import 'package:econance/features/graphs/widgets/balance_chart_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:econance/l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import '../../investments/investment_breakdown_chart.dart';
 import '../../investments/investments_page.dart';
 import '../../investments_types/investment_type.dart';
@@ -75,9 +77,8 @@ class _GraphsPageState extends State<GraphsPage> {
 
   Widget _buildShimmer(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+    final baseColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 800 : 300);
+    final highlightColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 600 : 100);
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -110,12 +111,12 @@ class _GraphsPageState extends State<GraphsPage> {
       height: 150,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white10.withOpacity(0.05),
+        color: ResponsiveColors.whiteOpacity(theme, 0.05),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
-        message ?? 'Sensitive data hidden',
-        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white54),
+        message ?? AppLocalizations.of(context)!.sensitiveDataHidden,
+        style: theme.textTheme.bodyMedium?.copyWith(color: ResponsiveColors.whiteOpacity(theme, 0.54)),
       ),
     );
   }
@@ -131,17 +132,17 @@ class _GraphsPageState extends State<GraphsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Here you'll manage",
-                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
-              ),
-              Text(
-                "Finances",
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  color: theme.textTheme.bodyLarge?.color,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  AppLocalizations.of(context)!.graphsManageIntro,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: ResponsiveColors.whiteOpacity(theme, 0.6)),
                 ),
-              ),
+                Text(
+                  AppLocalizations.of(context)!.finances,
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: theme.textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               const SizedBox(height: 20),
               FutureBuilder<Map<String, dynamic>>(
                 future: _dataFuture,
@@ -153,18 +154,18 @@ class _GraphsPageState extends State<GraphsPage> {
                   if (snapshot.hasError) {
                     return Center(
                       child: Text(
-                        'Ocorreu um erro ao carregar os dados.\n${snapshot.error}',
-                        style: const TextStyle(color: Colors.white70),
+                        '${AppLocalizations.of(context)!.errorLoadingData}\n${snapshot.error}',
+                                style: TextStyle(color: ResponsiveColors.whiteOpacity(theme, 0.7)),
                         textAlign: TextAlign.center,
                       ),
                     );
                   }
 
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        'Nenhuma informação disponível no momento.',
-                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                        AppLocalizations.of(context)!.noInformationAvailable,
+                        style: TextStyle(color: ResponsiveColors.whiteOpacity(theme, 0.7), fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
                     );
@@ -182,7 +183,7 @@ class _GraphsPageState extends State<GraphsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Card(
-                          color: Colors.white10.withOpacity(.04),
+                          color: ResponsiveColors.whiteOpacity(theme, .04),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -191,8 +192,8 @@ class _GraphsPageState extends State<GraphsPage> {
                               children: [
                                 Text(
                                   widget.hideSensitive
-                                      ? 'The balance is R\$•••••'
-                                      : 'The balance is R\$${balanceString}',
+                                      ? AppLocalizations.of(context)!.balanceHidden
+                                      : '${AppLocalizations.of(context)!.balanceIs} R\$${balanceString}',
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: theme.textTheme.bodyLarge?.color,
                                     fontWeight: FontWeight.bold,
@@ -202,9 +203,9 @@ class _GraphsPageState extends State<GraphsPage> {
                                 if (!widget.hideSensitive && (hasExpenses || hasRevenue))
                                   BalanceChartCard(uid: uid, hideSensitive: widget.hideSensitive)
                                 else if (!hasExpenses && !hasRevenue)
-                                  const Text(
-                                    'Nenhum dado de balance disponível.',
-                                    style: TextStyle(color: Colors.white70),
+                                  Text(
+                                    AppLocalizations.of(context)!.noInformationAvailable,
+                                    style: const TextStyle(color: Colors.white70),
                                   ),
                               ],
                             ),
@@ -221,7 +222,7 @@ class _GraphsPageState extends State<GraphsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Want to check on revenues/expenses?',
+                                  AppLocalizations.of(context)!.checkRevenuesExpenses,
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: theme.textTheme.bodyLarge?.color,
                                     fontWeight: FontWeight.bold,
@@ -243,7 +244,7 @@ class _GraphsPageState extends State<GraphsPage> {
                                         builder: (context) => RevenuesExpensesPage(uid: uid),
                                       );
                                     },
-                                    child: const Text("Check"),
+                                    child: Text(AppLocalizations.of(context)!.check),
                                   ),
                                 ),
                                 const SizedBox(height: 20),
@@ -251,14 +252,14 @@ class _GraphsPageState extends State<GraphsPage> {
                                   _sensitivePlaceholder(context)
                                 else ...[
                                   hasExpenses
-                                      ? CategoryBreakdownChart(type: "expense", uid: uid)
-                                      : const Text('Nenhuma despesa registrada.',
-                                      style: TextStyle(color: Colors.white70)),
+                                        ? CategoryBreakdownChart(type: "expense", uid: uid)
+                                          : Text(AppLocalizations.of(context)!.noExpensesRecorded,
+                                          style: TextStyle(color: ResponsiveColors.whiteOpacity(theme, 0.7))),
                                   const SizedBox(height: 20),
                                   hasRevenue
                                       ? CategoryBreakdownChart(type: "revenue", uid: uid)
-                                      : const Text('Nenhuma receita registrada.',
-                                      style: TextStyle(color: Colors.white70)),
+                                      : Text(AppLocalizations.of(context)!.noRevenueRecorded,
+                                      style: TextStyle(color: ResponsiveColors.whiteOpacity(theme, 0.7))),
                                 ],
                               ],
                             ),
@@ -274,8 +275,8 @@ class _GraphsPageState extends State<GraphsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Manage your categories',
-                                    style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.manageYourCategories,
+                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 15),
                                 SizedBox(
                                   width: 100,
@@ -292,14 +293,14 @@ class _GraphsPageState extends State<GraphsPage> {
                                         builder: (context) => CategoriesPage(uid: uid),
                                       );
                                     },
-                                    child: const Text("Manage"),
+                                    child: Text(AppLocalizations.of(context)!.manage),
                                   ),
                                 ),
                                 if (widget.hideSensitive)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 10),
                                     child: Text(
-                                      'Sensitive data hidden',
+                                      AppLocalizations.of(context)!.sensitiveDataHidden,
                                       style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
                                     ),
                                   ),
@@ -322,8 +323,8 @@ class _GraphsPageState extends State<GraphsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Manage your investments',
-                                    style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.manageYourInvestments,
+                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 15),
                                 SizedBox(
                                   width: 100,
@@ -340,14 +341,14 @@ class _GraphsPageState extends State<GraphsPage> {
                                         builder: (_) => InvestmentsPage(uid: uid),
                                       );
                                     },
-                                    child: const Text("Manage"),
+                                    child: Text(AppLocalizations.of(context)!.manage),
                                   ),
                                 ),
                                 if (widget.hideSensitive)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 10),
                                     child: Text(
-                                      'Sensitive data hidden',
+                                      AppLocalizations.of(context)!.sensitiveDataHidden,
                                       style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
                                     ),
                                   ),
@@ -365,8 +366,8 @@ class _GraphsPageState extends State<GraphsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Manage your investment types',
-                                    style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.manageYourInvestmentTypes,
+                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 15),
                                 SizedBox(
                                   width: 100,
@@ -383,14 +384,14 @@ class _GraphsPageState extends State<GraphsPage> {
                                         builder: (_) => InvestmentTypesPage(uid: uid),
                                       );
                                     },
-                                    child: const Text("Manage"),
+                                    child: Text(AppLocalizations.of(context)!.manage),
                                   ),
                                 ),
                                 if (widget.hideSensitive)
                                   Padding(
                                     padding: const EdgeInsets.only(top: 10),
                                     child: Text(
-                                      'Sensitive data hidden',
+                                      AppLocalizations.of(context)!.sensitiveDataHidden,
                                       style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
                                     ),
                                   ),

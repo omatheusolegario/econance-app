@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:econance/services/family_service.dart';
 import 'package:flutter/material.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 import 'family_main_screen.dart';
 
@@ -15,11 +17,12 @@ class UserInvitesList extends StatelessWidget {
       stream: _familyService.streamMyInvites(),
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          final theme = Theme.of(context);
+          return Center(child: CircularProgressIndicator(color: ResponsiveColors.whiteOpacity(theme, 1.0)));
         }
 
         if (!snap.hasData || snap.data!.docs.isEmpty) {
-          return Center(child: Text("No pending invites"));
+          return Center(child: Text(AppLocalizations.of(context)!.noPendingInvites));
         }
 
         final invites = snap.data!.docs;
@@ -44,7 +47,7 @@ class UserInvitesList extends StatelessWidget {
                 final familyName = familySnap.data?['name'] ?? 'a family';
 
                 return Card(
-                  color: Colors.grey.shade900,
+                  color: Theme.of(context).cardColor,
                   margin: const EdgeInsets.only(
                     bottom: 4,
                     top: 4,
@@ -77,7 +80,7 @@ class UserInvitesList extends StatelessWidget {
                               );
                             }
                           },
-                          icon: const Icon(Icons.check, color: Colors.green),
+                          icon: Icon(Icons.check, color: ResponsiveColors.success(Theme.of(context))),
                         ),
                         IconButton(
                           onPressed: () async {
@@ -87,11 +90,11 @@ class UserInvitesList extends StatelessWidget {
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Invite declined")),
+                                SnackBar(content: Text(AppLocalizations.of(context)!.declinedInvite)),
                               );
                             }
                           },
-                          icon: const Icon(Icons.close, color: Colors.red),
+                          icon: Icon(Icons.close, color: ResponsiveColors.error(Theme.of(context))),
                         ),
                       ],
                     ),

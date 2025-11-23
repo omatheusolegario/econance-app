@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class EditInvestmentTypePage extends StatefulWidget {
   final String typeId;
@@ -37,8 +38,9 @@ class _EditInvestmentTypePageState extends State<EditInvestmentTypePage> {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Type updated")),
+      SnackBar(content: Text(AppLocalizations.of(context)!.typeUpdated)),
     );
     Navigator.pop(context);
   }
@@ -51,8 +53,9 @@ class _EditInvestmentTypePageState extends State<EditInvestmentTypePage> {
         .doc(widget.typeId)
         .delete();
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Type deleted")),
+      SnackBar(content: Text(AppLocalizations.of(context)!.typeDeleted)),
     );
     Navigator.pop(context);
   }
@@ -81,7 +84,7 @@ class _EditInvestmentTypePageState extends State<EditInvestmentTypePage> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: ResponsiveColors.greyShade(theme, 400),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -91,12 +94,12 @@ class _EditInvestmentTypePageState extends State<EditInvestmentTypePage> {
                 ),
               ],
             ),
-            Text("Name", style: theme.textTheme.bodySmall),
+            Text(AppLocalizations.of(context)!.nameLabel, style: theme.textTheme.bodySmall),
             const SizedBox(height: 7),
             TextField(
               controller: _nameController,
               style: theme.textTheme.bodyMedium,
-              decoration: const InputDecoration(hintText: "e.g. Stocks"),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context)!.exampleStocksHint),
             ),
             const SizedBox(height: 30),
             Row(
@@ -105,17 +108,17 @@ class _EditInvestmentTypePageState extends State<EditInvestmentTypePage> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _updateType,
-                    child: const Text('Save'),
+                    child: Text(AppLocalizations.of(context)!.save),
                   ),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: ResponsiveColors.error(theme),
                     ),
                     onPressed: _deleteType,
-                    child: const Text('Delete'),
+                    child: Text(AppLocalizations.of(context)!.delete),
                   ),
                 ),
               ],

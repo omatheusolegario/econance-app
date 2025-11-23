@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:econance/features/investments_types/investment_type_picker.dart';
+import '../../l10n/app_localizations.dart';
 
 class EditInvestmentPage extends StatefulWidget {
   final String uid;
@@ -141,23 +142,23 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label("Name", context),
+        _label(AppLocalizations.of(context)!.nameLabel, context),
         TextFormField(
           controller: _name,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "e.g. Bitcoin"),
-          validator: (v) => v == null || v.isEmpty ? "Required" : null,
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.exampleBitcoinHint),
+          validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.required : null,
         ),
         const SizedBox(height: 20),
-        _label("Type", context),
+        _label(AppLocalizations.of(context)!.typeLabel, context),
         TextFormField(
           controller: _type,
           readOnly: true,
           onTap: _pickType,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(
-            hintText: "Select type",
-            suffixIcon: Icon(Icons.arrow_drop_down),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.selectType,
+            suffixIcon: const Icon(Icons.arrow_drop_down),
           ),
           validator: (v) => v == null || v.isEmpty ? "Required" : null,
         ),
@@ -170,29 +171,29 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label("Invested Value (R\$)", context),
+  _label(AppLocalizations.of(context)!.investedValueLabel, context),
         TextFormField(
           controller: _value,
           keyboardType: TextInputType.number,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "1000"),
-          validator: (v) => v == null || v.isEmpty ? "Required" : null,
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.investedValueExample),
+          validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.required : null,
         ),
         const SizedBox(height: 20),
-        _label("Target Value (R\$)", context),
+        _label(AppLocalizations.of(context)!.targetValueLabel, context),
         TextFormField(
           controller: _targetValue,
           keyboardType: TextInputType.number,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "3000"),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.targetValueExample),
         ),
         const SizedBox(height: 20),
-        _label("Rate (%)", context),
+        _label(AppLocalizations.of(context)!.rateLabel, context),
         TextFormField(
           controller: _rate,
           keyboardType: TextInputType.number,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "0.0021"),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.rateExample),
         ),
       ],
     );
@@ -203,36 +204,36 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label("Status", context),
+        _label(AppLocalizations.of(context)!.statusLabel, context),
         DropdownButtonFormField<String>(
           value: _status,
           style: theme.textTheme.bodyMedium,
-          items: const [
-            DropdownMenuItem(value: "active", child: Text("Active")),
-            DropdownMenuItem(value: "closed", child: Text("Closed")),
+          items: [
+            DropdownMenuItem(value: "active", child: Text(AppLocalizations.of(context)!.active)),
+            DropdownMenuItem(value: "closed", child: Text(AppLocalizations.of(context)!.closed)),
           ],
           onChanged: (v) => setState(() => _status = v),
-          decoration: const InputDecoration(hintText: "Select status"),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.selectStatus),
         ),
         const SizedBox(height: 20),
-        _label("Date", context),
+        _label(AppLocalizations.of(context)!.dateLabel, context),
         TextField(
           controller: _date,
           readOnly: true,
           onTap: _pickDate,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(
-            hintText: "Select date",
-            suffixIcon: Icon(Icons.calendar_today),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.selectDate,
+            suffixIcon: const Icon(Icons.calendar_today),
           ),
         ),
         const SizedBox(height: 20),
-        _label("Notes", context),
+        _label(AppLocalizations.of(context)!.notesLabel, context),
         TextField(
           controller: _notes,
           maxLines: 2,
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "Optional observations"),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.optionalObservations),
         ),
       ],
     );
@@ -263,7 +264,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final steps = ["General", "Financials", "Status & Notes"];
+  final steps = [AppLocalizations.of(context)!.general, AppLocalizations.of(context)!.financials, AppLocalizations.of(context)!.statusAndNotes];
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
@@ -304,7 +305,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
             ),
             const SizedBox(height: 2),
             Text(
-              "Edit Investment",
+              AppLocalizations.of(context)!.editInvestmentTitle,
               style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -353,7 +354,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
                       foregroundColor: Colors.black,
                       minimumSize: const Size(120, 45),
                     ),
-                    child: const Text("← Back"),
+                    child: Text('← ${AppLocalizations.of(context)!.back}'),
                   )
                 else
                   const SizedBox(width: 120),
@@ -364,7 +365,7 @@ class _EditInvestmentPageState extends State<EditInvestmentPage> {
                     foregroundColor: Colors.white,
                     minimumSize: const Size(120, 45),
                   ),
-                  child: Text(_currentPage == 2 ? "Save" : "Next →"),
+                  child: Text(_currentPage == 2 ? AppLocalizations.of(context)!.save : '${AppLocalizations.of(context)!.next} →'),
                 ),
               ],
             ),

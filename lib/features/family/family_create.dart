@@ -1,6 +1,7 @@
 import 'package:econance/features/family/family_main_screen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:econance/theme/responsive_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/family_service.dart';
 
 class FamilyCreatePage extends StatefulWidget {
@@ -18,8 +19,7 @@ class FamilyCreatePage extends StatefulWidget {
 }
 
 class _FamilyCreatePageState extends State<FamilyCreatePage> {
-  late String? _familyId = widget.familyId;
-  late String? _role = widget.role;
+
 
   final _fs = FamilyService();
 
@@ -28,50 +28,50 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
-        title: Text(
-          "Create Family",
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        content: TextField(
-          controller: controller,
-          style: Theme.of(context).textTheme.bodyMedium,
-          decoration: InputDecoration(hintText: "Family name"),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              "Cancel",
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.red),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return AlertDialog(
+          backgroundColor: theme.cardColor,
+          title: Text(
+            AppLocalizations.of(context)!.createFamilyTitle,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          content: TextField(
+            controller: controller,
+            style: Theme.of(context).textTheme.bodyMedium,
+            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.familyNameHint),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: ResponsiveColors.error(theme)),
+              ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Create"),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(AppLocalizations.of(context)!.create),
+            ),
+          ],
+        );
+      },
     );
 
     if (ok == true && controller.text.trim() != '') {
-      final fId = await _fs.createFamily(name: controller.text.trim());
-      setState(() {
-        _familyId = fId;
-        _role = "creator";
-      });
-      Navigator.pushReplacement(context,MaterialPageRoute(builder: (ctx) => FamilyMainScreenPage()));
+  await _fs.createFamily(name: controller.text.trim());
+  setState(() {});
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => FamilyMainScreenPage()));
 
     } else if (ok == true && controller.text.trim() == ''){
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Family name can't be empty")));
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.familyNameCantBeEmpty)));
     }
   }
 
@@ -87,7 +87,7 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
             Text(
               "Create or manage your own",
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white60,
+                color: ResponsiveColors.whiteOpacity(theme, 0.6),
               ),
             ),
             Text(
@@ -121,7 +121,7 @@ class _FamilyCreatePageState extends State<FamilyCreatePage> {
                       child: ElevatedButton.icon(
                         onPressed: _createFamilyFlow,
                         icon: const Icon(Icons.group_add),
-                        label: const Text("Create family"),
+                        label: Text(AppLocalizations.of(context)!.create),
                       ),
                     ),
                   ],

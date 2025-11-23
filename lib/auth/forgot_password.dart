@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../l10n/app_localizations.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -21,23 +22,26 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: _emailController.text.trim(),
       );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Password reset link sent! Check your email")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.passwordResetSent)),
       );
 
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
-      String message = "An error ocurred";
+      String message = AppLocalizations.of(context)!.errorOccurred;
       if (e.code == 'user-not-found') {
-        message = "No user found for that email";
+        message = AppLocalizations.of(context)!.noUserFoundForEmail;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -46,7 +50,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Forgot Password")),
+  appBar: AppBar(title: Text(AppLocalizations.of(context)!.forgotPasswordAppBar)),
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(50),
@@ -54,7 +58,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Forgot Password?",
+              AppLocalizations.of(context)!.forgotPasswordTitle,
               style: theme.textTheme.headlineLarge?.copyWith(
                 color: theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.bold,
@@ -62,21 +66,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
             const SizedBox(height: 7),
             Text(
-              "Recover access to your account",
+              AppLocalizations.of(context)!.recoverAccessSubtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.textTheme.bodyMedium?.color,
               ),
             ),
             const SizedBox(height: 150),
             Text(
-              "Enter your email and we'll send you a link to reset your password",
+              AppLocalizations.of(context)!.resetInstruction,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 10),
             TextField(
               style: theme.textTheme.bodyMedium,
               controller: _emailController,
-              decoration: const InputDecoration(hintText: "someone@gmail.com"),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context)!.templateemail),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 40),
@@ -86,7 +90,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _resetPassword,
-                      child: Text("Send reset link"),
+                      child: Text(AppLocalizations.of(context)!.sendResetLink),
                     ),
                   ),
           ],

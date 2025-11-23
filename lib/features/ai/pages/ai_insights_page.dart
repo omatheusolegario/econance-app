@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class AiInsightsPage extends StatefulWidget {
   const AiInsightsPage({super.key});
@@ -20,13 +22,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   bool _loading = true;
   int _currentPhraseIndex = 0;
 
-  final List<String> _phrases = [
-    "Analisando suas finanças...",
-    "Gerando relatório inteligente...",
-    "Avaliando investimentos...",
-    "Calculando tendências de gastos...",
-    "Preparando insights personalizados..."
-  ];
+  late List<String> _phrases = [];
 
   Future<void> _fetchInsights({bool forceNew = false}) async {
     setState(() => _loading = true);
@@ -175,12 +171,28 @@ Currency is R\$ (BRL)
     super.initState();
     _fetchInsights();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _phrases = [
+          AppLocalizations.of(context)!.aiPhrase1,
+          AppLocalizations.of(context)!.aiPhrase2,
+          AppLocalizations.of(context)!.aiPhrase3,
+          AppLocalizations.of(context)!.aiPhrase4,
+          AppLocalizations.of(context)!.aiPhrase5,
+        ];
+      });
+    });
+
     Future.doWhile(() async {
       if (!_loading) return false;
       await Future.delayed(const Duration(seconds: 2));
       if (mounted && _loading) {
         setState(() {
-          _currentPhraseIndex = (_currentPhraseIndex + 1) % _phrases.length;
+          if (_phrases.isNotEmpty) {
+            _currentPhraseIndex = (_currentPhraseIndex + 1) % _phrases.length;
+          } else {
+            _currentPhraseIndex = 0;
+          }
         });
       }
       return _loading;
@@ -188,16 +200,19 @@ Currency is R\$ (BRL)
   }
 
   Widget _buildShimmerLoading(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade800,
-        highlightColor: Colors.grey.shade500,
+        baseColor: ResponsiveColors.greyShade(theme, 800),
+        highlightColor: ResponsiveColors.greyShade(theme, 500),
         child: Text(
-          _phrases[_currentPhraseIndex],
-          style: const TextStyle(
+          (_phrases.isNotEmpty
+              ? _phrases[_currentPhraseIndex % _phrases.length]
+              : AppLocalizations.of(context)!.aiPhrase1),
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: ResponsiveColors.whiteOpacity(theme, 1.0),
           ),
           textAlign: TextAlign.center,
         ),
@@ -215,16 +230,16 @@ Currency is R\$ (BRL)
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Here you'll get,",
+              AppLocalizations.of(context)!.aiIntro,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white60,
+                color: ResponsiveColors.whiteOpacity(theme, 0.6),
               ),
             ),
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    "AI Insights",
+                    AppLocalizations.of(context)!.aiInsightsTitle,
                     style: theme.textTheme.headlineLarge?.copyWith(
                       color: theme.textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.bold,
@@ -235,12 +250,12 @@ Currency is R\$ (BRL)
                   onPressed:
                   _loading ? null : () => _fetchInsights(forceNew: true),
                   icon: _loading
-                      ? const SizedBox(
+                      ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: ResponsiveColors.whiteOpacity(theme, 1.0),
                     ),
                   )
                       : Icon(Icons.refresh, color: theme.primaryColor),
@@ -249,10 +264,10 @@ Currency is R\$ (BRL)
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _loading
+                  child: _loading
                   ? _buildShimmerLoading(context)
                   : _insights == null
-                  ? const Text("No insights available")
+                  ? Text(AppLocalizations.of(context)!.noInsightsAvailable)
                   : Markdown(
                 data: _insights ?? "",
                 shrinkWrap: true,

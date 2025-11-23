@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/l10n/app_localizations.dart';
 
 class InvestmentBreakdownChart extends StatefulWidget {
   final String uid;
@@ -49,7 +50,7 @@ class _InvestmentBreakdownChartState extends State<InvestmentBreakdownChart> {
 
         final data = snapshot.data!;
         if (data.isEmpty) {
-          return const Center(child: Text("No investments found"));
+          return Center(child: Text(AppLocalizations.of(context)!.noInvestmentsFound));
         }
 
         final total = data.values.fold<double>(0, (sum, v) => sum + v);
@@ -214,7 +215,7 @@ class _InvestmentBreakdownChartState extends State<InvestmentBreakdownChart> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Investments by Type",
+                          AppLocalizations.of(context)!.investmentsByType,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

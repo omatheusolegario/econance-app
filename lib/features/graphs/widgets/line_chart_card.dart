@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class LineChartCard extends StatelessWidget {
   final String title;
@@ -7,10 +8,12 @@ class LineChartCard extends StatelessWidget {
   final String total;
   final List<String> labels;
   final bool hideSensitive;
+  final String? kind;
 
   const LineChartCard({
     super.key,
     required this.title,
+    this.kind,
     required this.points,
     required this.total,
     required this.labels,
@@ -28,22 +31,21 @@ class LineChartCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final Color lineColor = title.toLowerCase().contains('expense')
-        ? Colors.red
-        : title.toLowerCase().contains('revenue')
-        ? Colors.green
-        : title.toLowerCase().contains('balance')
-        ? Colors.blueAccent
-        : title.toLowerCase().contains('investment')
-        ? Colors.purple
-        : theme.primaryColor;
+  final String kindLower = (kind ?? title).toLowerCase();
+  final Color lineColor = kindLower.contains('expense')
+    ? ResponsiveColors.chartExpense(theme)
+    : kindLower.contains('revenue')
+    ? ResponsiveColors.chartRevenue(theme)
+    : kindLower.contains('balance')
+    ? ResponsiveColors.chartBalance(theme)
+    : ResponsiveColors.chartInvestment(theme);
 
     final maxY = points.isNotEmpty
         ? points.map((p) => p.y).reduce((a, b) => a > b ? a : b)
         : 0;
 
     return Card(
-      color: Colors.white10.withValues(alpha: .04),
+  color: ResponsiveColors.whiteOpacity(theme, .04),
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
@@ -116,7 +118,7 @@ class LineChartCard extends StatelessWidget {
                                 child: Icon(
                                   Icons.circle,
                                   size: 6,
-                                  color: Colors.grey[400],
+                                  color: ResponsiveColors.greyShade(theme, 400),
                                 ),
                               );
                             } else {
@@ -148,7 +150,7 @@ class LineChartCard extends StatelessWidget {
                       LineChartBarData(
                         spots: points,
                         isCurved: true,
-                        color: hideSensitive ? Colors.grey[400] : lineColor,
+                        color: hideSensitive ? ResponsiveColors.greyShade(theme, 400) : lineColor,
                         barWidth: 3,
                         dotData: FlDotData(show: !hideSensitive),
                       ),

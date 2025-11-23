@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:econance/features/family/family_main_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:econance/theme/responsive_colors.dart';
+import '../l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:econance/features/config/config.dart';
@@ -43,8 +45,8 @@ class AccountCard extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildBlurWrapper(
             theme,
-            child: const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+            child: Center(
+              child: CircularProgressIndicator(color: ResponsiveColors.whiteOpacity(theme, 1.0)),
             ),
           );
         }
@@ -55,7 +57,7 @@ class AccountCard extends StatelessWidget {
             child: Center(
               child: Text(
                 'Erro: ${snapshot.error ?? "Data not found"}',
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: ResponsiveColors.whiteOpacity(theme, 1.0)),
               ),
             ),
           );
@@ -81,7 +83,7 @@ class AccountCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -106,7 +108,7 @@ class AccountCard extends StatelessWidget {
       children: [
         _buildHeaderRow(theme, name, context),
         const SizedBox(height: 16),
-        const Divider(color: Colors.white54),
+        Divider(color: ResponsiveColors.whiteOpacity(theme, 0.54)),
         const SizedBox(height: 16),
         _buildFamilySpaceTile(context, theme),
       ],
@@ -130,12 +132,12 @@ class AccountCard extends StatelessWidget {
             name,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: ResponsiveColors.whiteOpacity(theme, 1.0),
             ),
           ),
         ),
         IconButton(
-          icon: Icon(Icons.settings, color: Colors.white),
+          icon: Icon(Icons.settings, color: ResponsiveColors.whiteOpacity(theme, 1.0)),
           onPressed: () => _navigateToConfig(context),
         ),
       ],
@@ -145,8 +147,8 @@ class AccountCard extends StatelessWidget {
   Widget _buildFamilySpaceTile( BuildContext ctx, ThemeData theme) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.family_restroom, color: Colors.white),
-      title: const Text("Family Space", style: TextStyle(color: Colors.white)),
+      leading: Icon(Icons.family_restroom, color: ResponsiveColors.whiteOpacity(theme, 1.0)),
+  title: Text(AppLocalizations.of(ctx)!.familySpace, style: TextStyle(color: ResponsiveColors.whiteOpacity(theme, 1.0))),
       onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (context) => FamilyMainScreenPage())),
     );
   }

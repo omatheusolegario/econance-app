@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:econance/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import 'edit_investment_type.dart';
 
 class InvestmentTypesPage extends StatefulWidget {
@@ -31,9 +33,9 @@ class _InvestmentTypesPageState extends State<InvestmentTypesPage> {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                        color: ResponsiveColors.greyShade(theme, 400),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -42,14 +44,14 @@ class _InvestmentTypesPageState extends State<InvestmentTypesPage> {
                 ],
               ),
               Text(
-                "Organize your investments by",
+                AppLocalizations.of(context)!.organizeYourInvestmentsBy,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white60,
+                  color: ResponsiveColors.whiteOpacity(theme, 0.6),
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                "Investment Types",
+                AppLocalizations.of(context)!.investmentTypes,
                 style: theme.textTheme.headlineLarge?.copyWith(
                   color: theme.textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.bold,
@@ -70,8 +72,8 @@ class _InvestmentTypesPageState extends State<InvestmentTypesPage> {
                     }
                     final types = snapshot.data!.docs;
                     if (types.isEmpty) {
-                      return const Center(
-                        child: Text("No investment types yet"),
+                      return Center(
+                        child: Text(AppLocalizations.of(context)!.noInvestmentTypesYet),
                       );
                     }
                     return ListView(

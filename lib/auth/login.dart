@@ -30,6 +30,7 @@ class _LoginState extends State<Login> {
       );
 
       final user = userCredential.user!;
+      if (!mounted) return;
       if (!user.emailVerified) {
         Navigator.push(
           context,
@@ -44,15 +45,17 @@ class _LoginState extends State<Login> {
         Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.message ?? AppLocalizations.of(context)!.snackloginError,
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.message ?? AppLocalizations.of(context)!.snackloginError,
+            ),
           ),
-        ),
-      );
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

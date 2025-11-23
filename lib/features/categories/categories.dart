@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'edit_category.dart';
 
@@ -44,14 +45,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 ],
               ),
               Text(
-                "Separate your expenses into",
+                AppLocalizations.of(context)!.separateExpensesInto,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.white60,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                "Categories",
+                AppLocalizations.of(context)!.categoriesTitle,
                 style: theme.textTheme.headlineLarge?.copyWith(
                   color: theme.textTheme.bodyLarge?.color,
                   fontWeight: FontWeight.bold,
@@ -63,13 +64,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 child: ListView(
                   children: [
                     _buildCategorySection(
-                      title: "Revenues",
+                      title: AppLocalizations.of(context)!.revenues,
                       type: "revenue",
                       color: Colors.green,
                     ),
                     const SizedBox(height: 20),
                     _buildCategorySection(
-                      title: "Expenses",
+                      title: AppLocalizations.of(context)!.expenses,
                       type: "expense",
                       color: Colors.red,
                     ),

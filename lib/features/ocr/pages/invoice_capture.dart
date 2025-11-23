@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:econance/features/transactions/add_transaction.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class InvoiceCapturePage extends StatefulWidget {
   const InvoiceCapturePage({super.key});
@@ -84,14 +86,14 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
         setState(() {});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Nenhuma câmera compatível encontrada.")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.cameraNotFound)),
         );
       }
     } else if (status.isPermanentlyDenied) {
       await openAppSettings();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Permissão da câmera é necessária.")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.cameraPermissionRequired)),
       );
     }
   }
@@ -138,7 +140,7 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao capturar imagem: $e')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.captureImageError}: $e')),
       );
     } finally {
       if (mounted) {
@@ -238,14 +240,13 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
       }
 
       String? categoryId = parsedResult['categoryId'] as String?;
-      if (categoryId == null && parsedResult['suggestedCategoryName'] != null) {
+          if (categoryId == null && parsedResult['suggestedCategoryName'] != null) {
         categoryId = await _createNewCategory(
             parsedResult['suggestedCategoryName'] as String);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  "Nova categoria criada: ${parsedResult['suggestedCategoryName']}"),
+              content: Text('${AppLocalizations.of(context)!.newCategoryCreatedPrefix}: ${parsedResult['suggestedCategoryName']}'),
             ),
           );
         }
@@ -279,14 +280,13 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Não foi possível extrair dados suficientes.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.couldNotExtractSufficientData)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erro ao extrair dados: $e")),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.ocrExtractionError}: $e')),
         );
       }
     } finally {
@@ -330,7 +330,7 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
             else if (_frozenFrame != null)
               Image.file(_frozenFrame!, fit: BoxFit.cover)
             else
-              Container(color: Colors.black),
+              Container(color: theme.scaffoldBackgroundColor),
             if (_frozenFrame != null && _scanController.isAnimating)
               AnimatedBuilder(
                 animation: _scanAnimation,
@@ -360,19 +360,19 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
                       icon: const Icon(Icons.arrow_back_ios)),
                   Column(
                     children: [
-                      Text("Scan the Invoice",
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.bold)),
-                      Text("and register your expense",
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: Colors.grey)),
+            Text(AppLocalizations.of(context)!.scanInvoiceTitle,
+              style: theme.textTheme.bodyMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(AppLocalizations.of(context)!.scanInvoiceSubtitle,
+              style: theme.textTheme.bodySmall
+                ?.copyWith(color: ResponsiveColors.hint(theme))),
                     ],
                   ),
                   IconButton(
                     onPressed: _isFrozen ? null : _toggleFlash,
                     icon: Icon(
                         _isFlashOn ? Icons.flash_on : Icons.flash_off,
-                        color: Colors.white),
+                        color: ResponsiveColors.onBackground(theme)),
                   ),
                 ],
               ),
@@ -385,19 +385,19 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.photo_library),
-                    color: Colors.green,
+                    icon: Icon(Icons.photo_library),
+                    color: ResponsiveColors.success(theme),
                     onPressed: _isFrozen ? null : _pickFromGallery,
                   ),
                   FloatingActionButton(
                     onPressed: _isFrozen ? null : _captureImage,
-                    backgroundColor: Colors.green,
+                    backgroundColor: ResponsiveColors.success(theme),
                     child:
-                    const Icon(Icons.camera_alt, color: Colors.white),
+                    Icon(Icons.camera_alt, color: ResponsiveColors.onPrimary(theme)),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.flip_camera_android,
-                        color: Colors.green),
+                    icon: Icon(Icons.flip_camera_android,
+                        color: ResponsiveColors.success(theme)),
                     onPressed: _isFrozen ? null : _flipCamera,
                   ),
                 ],
@@ -410,18 +410,24 @@ class _InvoiceCapturePageState extends State<InvoiceCapturePage>
                 padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.green,
+                  color: ResponsiveColors.success(theme),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Posicione a nota fiscal e pressione o botão de captura. '
-                      'Use o flash se necessário (canto superior direito).',
+                  AppLocalizations.of(context)!.invoiceInstructions,
                   style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: Colors.white),
+                      ?.copyWith(color: ResponsiveColors.onPrimary(theme)),
                   textAlign: TextAlign.center,
                 ),
               ),
             ),
+            if (_loading)
+              Positioned.fill(
+                child: Container(
+                  color: ResponsiveColors.onBackground(theme).withOpacity(0.45),
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+              ),
           ],
         ),
       ),

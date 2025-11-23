@@ -15,6 +15,8 @@ import 'package:econance/cards/account_card.dart';
 import 'package:econance/features/investments/add_investment_page.dart';
 import 'package:econance/features/investments_types/add_investment_type.dart';
 import 'package:econance/services/transaction_service.dart';
+import '../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -83,10 +85,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _openAddModal(BuildContext context) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: ResponsiveColors.onBackground(theme).withOpacity(0.3),
       isScrollControlled: true,
       clipBehavior: Clip.antiAlias,
       builder: (context) => ClipRRect(
@@ -104,14 +107,14 @@ class _MainScreenState extends State<MainScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
+                    color: ResponsiveColors.whiteOpacity(theme, 0.6),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 ListTile(
                   leading: const Icon(Icons.sell),
                   title: Text(
-                    "New Category",
+                    AppLocalizations.of(context)!.newCategory,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -122,7 +125,7 @@ class _MainScreenState extends State<MainScreen> {
                 ListTile(
                   leading: const Icon(Icons.attach_money),
                   title: Text(
-                    "New Expense",
+                    AppLocalizations.of(context)!.newExpense,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -133,7 +136,7 @@ class _MainScreenState extends State<MainScreen> {
                 ListTile(
                   leading: const Icon(Icons.wallet),
                   title: Text(
-                    "New Revenue",
+                    AppLocalizations.of(context)!.newRevenue,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -144,7 +147,7 @@ class _MainScreenState extends State<MainScreen> {
                 ListTile(
                   leading: const Icon(Icons.attach_money),
                   title: Text(
-                    "New Investments",
+                    AppLocalizations.of(context)!.newInvestments,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -155,7 +158,7 @@ class _MainScreenState extends State<MainScreen> {
                 ListTile(
                   leading: const Icon(Icons.add_chart),
                   title: Text(
-                    "New Investments Type",
+                    AppLocalizations.of(context)!.newInvestmentTypes,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onTap: () {
@@ -193,21 +196,21 @@ class _MainScreenState extends State<MainScreen> {
     Future<bool> _confirmExit() async {
       return (await showDialog<bool>(
         context: context,
-        builder: (_) => AlertDialog(
+          builder: (_) => AlertDialog(
           backgroundColor: theme.scaffoldBackgroundColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(color: theme.primaryColor, width: 1),
           ),
           title: Text(
-            'Sair do app?',
+            AppLocalizations.of(context)!.exitAppTitle,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           content: Text(
-            'Tem certeza que deseja sair do Econance?',
+            AppLocalizations.of(context)!.exitAppContent,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.textTheme.bodyLarge?.color,
             ),
@@ -216,7 +219,7 @@ class _MainScreenState extends State<MainScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: Text(
-                'Cancelar',
+                AppLocalizations.of(context)!.cancel,
                 style: TextStyle(
                   color: theme.primaryColor,
                   fontWeight: FontWeight.bold,
@@ -231,7 +234,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Sair'),
+              child: Text(AppLocalizations.of(context)!.exit),
             ),
           ],
         ),
@@ -340,7 +343,7 @@ class _MainScreenState extends State<MainScreen> {
                         color: theme.primaryColor,
                       ),
                       child:
-                      const Icon(Icons.add, color: Colors.white, size: 30),
+                      Icon(Icons.add, color: ResponsiveColors.onPrimary(theme), size: 30),
                     ),
                   ),
                   buildNavButton(Icons.bar_chart_sharp, 7),

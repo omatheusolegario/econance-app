@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
+import '../../l10n/app_localizations.dart';
 
 class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});
@@ -20,7 +21,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
     if (_currentStep == 0) {
       if (_nameController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Category name cannot be empty")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.giveYourCategoryAName)),
         );
         return;
       }
@@ -36,7 +37,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
       if (type == null) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text("Select a type first")));
+  ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.selectTypeFirst)));
         return;
       }
       setState(() {
@@ -141,8 +142,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildStepContent(
-                    title: "Add Category",
-                    subtitle: "Give your category a name",
+                    title: AppLocalizations.of(context)!.newCategory,
+                    subtitle: AppLocalizations.of(context)!.giveYourCategoryAName,
                     child: TextField(
                       controller: _nameController,
                       style: theme.textTheme.bodyMedium,
@@ -152,22 +153,22 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                     ),
                   ),
                   _buildStepContent(
-                    title: "Choose the type",
-                    subtitle: "Is your category an expense or a revenue?",
+                    title: AppLocalizations.of(context)!.chooseTheType,
+                    subtitle: AppLocalizations.of(context)!.isYourCategoryAnExpenseOrRevenue,
                     child: DropdownButtonFormField<String>(
                       style: theme.textTheme.bodyMedium,
-                      items: const [
+                          items: [
                         DropdownMenuItem(
                           value: "expense",
-                          child: Text("Expense"),
+                              child: Text(AppLocalizations.of(context)!.expense),
                         ),
                         DropdownMenuItem(
                           value: "revenue",
-                          child: Text("Revenue"),
+                              child: Text(AppLocalizations.of(context)!.revenue),
                         ),
                       ],
                       onChanged: (val) => setState(() => type = val),
-                      decoration: InputDecoration(hintText: "Select a type"),
+                      decoration: InputDecoration(hintText: AppLocalizations.of(context)!.selectCategoryType),
                     ),
                   ),
                   Center(
@@ -181,7 +182,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          "Category successfully added!",
+                          AppLocalizations.of(context)!.categorySuccessfullyAdded,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.green,
@@ -200,7 +201,7 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                               );
                             });
                           },
-                          child: Text("   Add another category   "),
+                          child: Text(AppLocalizations.of(context)!.addAnotherCategory),
                         ),
                       ],
                     ),

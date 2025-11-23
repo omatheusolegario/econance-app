@@ -50,7 +50,7 @@ class EconanceApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      locale: const Locale('pt'),
+      locale: themeManager.locale,
 
       debugShowCheckedModeBanner: false,
       themeMode: themeManager.themeMode,

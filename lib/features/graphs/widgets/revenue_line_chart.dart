@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -66,12 +67,14 @@ class RevenueLineChart extends StatelessWidget {
     };
 
     final titles = [
-      'Balance Over Time',
-      'Revenue Over Time',
-      'Expenses Over Time',
-      'Investments Over Time'
+      AppLocalizations.of(context)!.balanceOverTime,
+      AppLocalizations.of(context)!.revenueOverTime,
+      AppLocalizations.of(context)!.expensesOverTime,
+      AppLocalizations.of(context)!.investmentsOverTime,
     ];
+    final kinds = ['balance', 'revenue', 'expense', 'investment'];
     final title = titles[selectedCardIndex];
+    final kind = kinds[selectedCardIndex];
 
     return StreamBuilder<Map<String, double>>(
       stream: stream,
@@ -94,6 +97,7 @@ class RevenueLineChart extends StatelessWidget {
 
         return LineChartCard(
           title: title,
+          kind: kind,
           total: hideSensitive ? "•••••" : "R\$ $total",
           points: points,
           labels: months,

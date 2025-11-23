@@ -6,6 +6,8 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class FamilyAIInsightsPage extends StatefulWidget {
   final String familyId;
@@ -30,25 +32,36 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
     apiKey: dotenv.env['GEMINI_API_KEY']!,
   );
 
-  final List<String> _phrases = [
-    "Analisando finanças da família...",
-    "Gerando relatório familiar inteligente...",
-    "Comparando rendas e despesas...",
-    "Avaliando investimentos de todos...",
-    "Preparando insights personalizados da família..."
-  ];
+  late List<String> _phrases = [];
 
   @override
   void initState() {
     super.initState();
     _fetchAndAnalyse();
 
+    // populate localized phrases after first frame so AppLocalizations is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _phrases = [
+          AppLocalizations.of(context)!.aiPhrase1,
+          AppLocalizations.of(context)!.aiPhrase2,
+          AppLocalizations.of(context)!.aiPhrase3,
+          AppLocalizations.of(context)!.aiPhrase4,
+          AppLocalizations.of(context)!.aiPhrase5,
+        ];
+      });
+    });
+
     Future.doWhile(() async {
       if (!_loading) return false;
       await Future.delayed(const Duration(seconds: 2));
       if (mounted && _loading) {
         setState(() {
-          _currentPhraseIndex = (_currentPhraseIndex + 1) % _phrases.length;
+          if (_phrases.isNotEmpty) {
+            _currentPhraseIndex = (_currentPhraseIndex + 1) % _phrases.length;
+          } else {
+            _currentPhraseIndex = 0;
+          }
         });
       }
       return _loading;
@@ -82,7 +95,7 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
         return;
       } else if (widget.role == 'member') {
         setState(() {
-          _insights = "Aguarde o administrador gerar os insights primeiro.";
+          _insights = AppLocalizations.of(context)!.awaitingAdminInsights;
           _loading = false;
         });
         return;
@@ -202,16 +215,21 @@ Currency is R\$ (BRL)
   }
 
   Widget _buildShimmerLoading(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade800,
-        highlightColor: Colors.grey.shade500,
+        baseColor: ResponsiveColors.greyShade(theme, 800),
+        highlightColor: ResponsiveColors.greyShade(theme, 500),
         child: Text(
-          _phrases[_currentPhraseIndex],
-          style: const TextStyle(
+          // Guard against empty phrases list (can happen before
+          // AppLocalizations is available). Use a safe fallback.
+          (_phrases.isNotEmpty
+              ? _phrases[_currentPhraseIndex % _phrases.length]
+              : AppLocalizations.of(context)!.aiPhrase1),
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: ResponsiveColors.whiteOpacity(theme, 1.0),
           ),
           textAlign: TextAlign.center,
         ),
@@ -229,16 +247,16 @@ Currency is R\$ (BRL)
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Here you'll get,",
+              AppLocalizations.of(context)!.aiIntro,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white60,
+                color: ResponsiveColors.whiteOpacity(theme, 0.6),
               ),
             ),
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    "Family AI Insights",
+                    AppLocalizations.of(context)!.familyAiInsightsTitle,
                     style: theme.textTheme.headlineLarge?.copyWith(
                       color: theme.textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.bold,
@@ -250,25 +268,25 @@ Currency is R\$ (BRL)
                     onPressed:
                     _loading ? null : () => _fetchAndAnalyse(forceNew: true),
                     icon: _loading
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: ResponsiveColors.whiteOpacity(theme, 1.0),
+                            ),
+                          )
                         : Icon(Icons.refresh, color: theme.primaryColor),
                   ),
               ],
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _loading
-                  ? _buildShimmerLoading(context)
-                  : _insights == null
-                  ? const Text("No insights available")
-                  : Markdown(
+      child: _loading
+        ? _buildShimmerLoading(context)
+        : _insights == null
+        ? Text(AppLocalizations.of(context)!.noInsightsAvailable)
+        : Markdown(
                 data: _insights ?? "",
                 shrinkWrap: true,
                 styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(

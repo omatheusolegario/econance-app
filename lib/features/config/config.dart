@@ -6,6 +6,9 @@ import '/theme/theme_manager.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
+import 'about_page.dart';
 
 class Config extends StatefulWidget {
   const Config({super.key});
@@ -32,6 +35,50 @@ class _ConfigState extends State<Config> {
     _loadUserData();
   }
 
+  String _resolveLocalized(
+    Object? prop,
+    String value, {
+    String placeholder = '{field}',
+    String? defaultTemplate,
+  }) {
+    if (prop is String) {
+      return prop.replaceFirst(placeholder, value);
+    }
+    try {
+      return (prop as dynamic)(value) as String;
+    } catch (_) {}
+    if (defaultTemplate != null)
+      return defaultTemplate.replaceFirst(placeholder, value);
+    return value;
+  }
+
+  String _safeLanguage(AppLocalizations l10n) {
+    final dyn = l10n as dynamic;
+    try {
+      return dyn.language as String;
+    } catch (_) {
+      return 'Language';
+    }
+  }
+
+  String _safeEnglish(AppLocalizations l10n) {
+    final dyn = l10n as dynamic;
+    try {
+      return dyn.english as String;
+    } catch (_) {
+      return 'English';
+    }
+  }
+
+  String _safePortuguese(AppLocalizations l10n) {
+    final dyn = l10n as dynamic;
+    try {
+      return dyn.portuguese as String;
+    } catch (_) {
+      return 'Português';
+    }
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(
       context,
@@ -44,6 +91,7 @@ class _ConfigState extends State<Config> {
     Color? confirmColor,
   }) async {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return (await showDialog<bool>(
           context: context,
           builder: (_) => _buildDialog(
@@ -58,7 +106,7 @@ class _ConfigState extends State<Config> {
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  'Cancelar',
+                  l10n.cancel,
                   style: TextStyle(
                     color: theme.primaryColor,
                     fontWeight: FontWeight.bold,
@@ -73,9 +121,9 @@ class _ConfigState extends State<Config> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Confirmar',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: Text(
+                  l10n.confirm,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -125,12 +173,12 @@ class _ConfigState extends State<Config> {
       ),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+        hintStyle: theme.textTheme.bodyMedium?.copyWith(color: ResponsiveColors.hint(theme)),
         suffixIcon: toggleable
             ? IconButton(
                 icon: Icon(
                   obscure ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
+                  color: ResponsiveColors.hint(theme),
                 ),
                 onPressed: onToggle,
               )
@@ -194,13 +242,32 @@ class _ConfigState extends State<Config> {
     final user = _auth.currentUser;
     if (user == null) return;
 
+    final l10n = AppLocalizations.of(context)!;
+    String localizedFieldNoun;
+    switch (field) {
+      case 'name':
+        localizedFieldNoun = l10n.nameLabel;
+        break;
+      case 'email':
+        localizedFieldNoun = l10n.emailaddress;
+        break;
+      case 'phone':
+        localizedFieldNoun = l10n.phonenumber;
+        break;
+      case 'password':
+        localizedFieldNoun = l10n.password;
+        break;
+      default:
+        localizedFieldNoun = field;
+    }
+
     try {
       final doc = _firestore.collection('users').doc(user.uid);
 
       switch (field) {
         case 'password':
           if (password == null || password.isEmpty) {
-            throw 'Informe sua senha atual.';
+            throw l10n.enterCurrentPassword;
           }
           final cred = EmailAuthProvider.credential(
             email: user.email!,
@@ -222,18 +289,28 @@ class _ConfigState extends State<Config> {
           break;
       }
 
-      _showMessage('$field atualizado com sucesso!');
+      // Show localized success message using the {field} placeholder
+      final updateSuccessProp = l10n.updateSuccess;
+      final successMessage = _resolveLocalized(
+        updateSuccessProp,
+        localizedFieldNoun,
+        placeholder: '{field}',
+        defaultTemplate: '{field} updated successfully!',
+      );
+
+      _showMessage(successMessage);
     } catch (e) {
-      _showMessage('Erro ao atualizar $field: $e');
+      _showMessage('${l10n.errorOccurred}: $e');
     }
   }
 
   Future<void> _updateEmail(String newEmail, String password) async {
     final user = _auth.currentUser;
-    if (user == null) return _showMessage('Nenhum usuário logado.');
+    final l10n = AppLocalizations.of(context)!;
+    if (user == null) return _showMessage(l10n.noUserLoggedIn);
 
     if (!RegExp(r'^[\w-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(newEmail)) {
-      return _showMessage('Por favor, insira um email válido.');
+      return _showMessage(l10n.enterValidEmail);
     }
     try {
       final cred = EmailAuthProvider.credential(
@@ -250,30 +327,50 @@ class _ConfigState extends State<Config> {
         context: context,
         barrierDismissible: false,
         builder: (_) {
+          final l10n = AppLocalizations.of(context)!;
+          String emailDialogContent;
+          final emailContentProp = l10n.emailVerificationSentContent;
+          if (emailContentProp is String) {
+            emailDialogContent = (emailContentProp as String).replaceFirst(
+              '{email}',
+              newEmail,
+            );
+          } else {
+            try {
+              emailDialogContent =
+                  (emailContentProp as dynamic)(newEmail) as String;
+            } catch (_) {
+              emailDialogContent = _resolveLocalized(
+                emailContentProp,
+                newEmail,
+                placeholder: '{email}',
+                defaultTemplate:
+                    'An email verification was sent to {email}.\nClick the link to complete the update.',
+              );
+            }
+          }
+
           return AlertDialog(
-            title: const Text('Confirme seu email'),
-            content: Text(
-              'Um email de verificação foi enviado para $newEmail.\n'
-              'Clique no link para concluir a atualização.',
-            ),
+            title: Text(l10n.confirmYourEmail),
+            content: Text(emailDialogContent),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Fechar'),
+                child: Text(l10n.close),
               ),
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
                   await _attemptReLogin(newEmail, password);
                 },
-                child: const Text('Já confirmei, logar'),
+                child: Text(l10n.iHaveConfirmedLogin),
               ),
             ],
           );
         },
       );
     } catch (e) {
-      _showMessage('Erro ao atualizar email: $e');
+      _showMessage('${l10n.errorOccurred}: $e');
     }
   }
 
@@ -281,19 +378,20 @@ class _ConfigState extends State<Config> {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       await _loadUserData();
-      _showMessage('Email atualizado e sessão restabelecida.');
+      final l10n = AppLocalizations.of(context)!;
+      _showMessage(l10n.emailUpdatedAndReauthenticated);
     } catch (e) {
-      _showMessage(
-        'Não foi possível logar automaticamente. Faça login manualmente.',
-      );
+      final l10n = AppLocalizations.of(context)!;
+      _showMessage(l10n.reloginFailed);
     }
   }
 
   Future<void> _logout() async {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await _confirmDialog(
-      title: 'Sair da conta',
-      message: 'Tem certeza que deseja sair?',
+      title: l10n.logoutTitle,
+      message: l10n.logoutContent,
       confirmColor: theme.primaryColor,
     );
     if (!confirm) return;
@@ -304,35 +402,15 @@ class _ConfigState extends State<Config> {
     }
   }
 
-  Future<void> _deactivateAccount() async {
-    final user = _auth.currentUser;
-    final theme = Theme.of(context);
-    if (user == null) return;
-
-    final confirm = await _confirmDialog(
-      title: 'Desativar conta',
-      message: 'Deseja desativar temporariamente sua conta?',
-      confirmColor: theme.primaryColor,
-    );
-    if (!confirm) return;
-
-    await _firestore.collection('users').doc(user.uid).update({
-      'status': 'inactive',
-      'deactivatedAt': FieldValue.serverTimestamp(),
-    });
-
-    _showMessage('Conta desativada com sucesso.');
-    await _logout();
-  }
-
   Future<void> _deleteAccount() async {
     final user = _auth.currentUser;
     final theme = Theme.of(context);
     if (user == null) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final confirm = await _confirmDialog(
-      title: 'Excluir conta',
-      message: 'Essa ação é permanente. Deseja continuar?',
+      title: l10n.deleteAccountTitle,
+      message: l10n.deleteAccountContent,
       confirmColor: theme.primaryColor,
     );
     if (!confirm) return;
@@ -348,10 +426,10 @@ class _ConfigState extends State<Config> {
 
       await user.delete();
 
-      _showMessage('Conta excluída permanentemente.');
+      _showMessage(l10n.accountDeleted);
       Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
     } catch (e) {
-      _showMessage('Erro ao excluir conta: $e');
+      _showMessage('${l10n.errorOccurred}: $e');
     }
   }
 
@@ -370,9 +448,12 @@ class _ConfigState extends State<Config> {
       }
     }
   }
+
   Future<void> _pickAndUploadProfileImage() async {
     final user = _auth.currentUser;
     if (user == null) return;
+
+    final l10n = AppLocalizations.of(context)!;
 
     final picker = ImagePicker();
 
@@ -386,12 +467,12 @@ class _ConfigState extends State<Config> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Câmera'),
+              title: Text(AppLocalizations.of(context)!.camera),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Galeria'),
+              title: Text(AppLocalizations.of(context)!.gallery),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
           ],
@@ -422,10 +503,10 @@ class _ConfigState extends State<Config> {
         _isUploading = false;
       });
 
-      _showMessage('Imagem atualizada com sucesso!');
+      _showMessage(l10n.imageUpdatedSuccess);
     } catch (e) {
       setState(() => _isUploading = false);
-      _showMessage('Erro ao atualizar imagem: $e');
+      _showMessage('${l10n.imageUpdateError}: $e');
     }
   }
 
@@ -433,10 +514,15 @@ class _ConfigState extends State<Config> {
   Widget build(BuildContext context) {
     final themeManager = Provider.of<ThemeManager>(context);
     final theme = Theme.of(context);
-    final divider = Divider(color: theme.dividerColor, thickness: .2, height: 1);
+    final l10n = AppLocalizations.of(context)!;
+    final divider = Divider(
+      color: theme.dividerColor,
+      thickness: .2,
+      height: 1,
+    );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -449,10 +535,11 @@ class _ConfigState extends State<Config> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundImage: _photoUrl != null && _photoUrl!.isNotEmpty
+                      backgroundImage:
+                          _photoUrl != null && _photoUrl!.isNotEmpty
                           ? NetworkImage(_photoUrl!)
                           : const AssetImage('assets/images/default_avatar.png')
-                      as ImageProvider,
+                                as ImageProvider,
                     ),
                     if (_isUploading)
                       const Positioned.fill(
@@ -466,7 +553,10 @@ class _ConfigState extends State<Config> {
                         child: CircleAvatar(
                           radius: 18,
                           backgroundColor: theme.primaryColor,
-                          child: const Icon(Icons.camera_alt, color: Colors.white),
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: ResponsiveColors.onPrimary(theme),
+                          ),
                         ),
                       ),
                     ),
@@ -475,8 +565,9 @@ class _ConfigState extends State<Config> {
                 const SizedBox(height: 12),
                 Text(
                   _name ?? '',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -484,63 +575,92 @@ class _ConfigState extends State<Config> {
           ),
           _buildListTile(
             icon: Icons.brightness_6,
-            title: 'Theme',
-            subtitle: themeManager.isDark ? 'Dark mode' : 'Light mode',
+            title: l10n.theme,
+            subtitle: themeManager.isDark ? l10n.darkMode : l10n.lightMode,
             onTap: () => themeManager.toggleTheme(),
           ),
           divider,
           _buildListTile(
             icon: Icons.person,
-            title: 'Change Name',
+            title: l10n.changeName,
             subtitle: _name,
             onTap: () => _showUpdateDialog('name'),
           ),
           divider,
           _buildListTile(
             icon: Icons.email,
-            title: 'Change Email',
+            title: l10n.changeEmail,
             subtitle: _email,
             onTap: () => _showUpdateDialog('email'),
           ),
           divider,
           _buildListTile(
             icon: Icons.phone,
-            title: 'Change Phone',
+            title: l10n.changePhone,
             subtitle: _phone,
             onTap: () => _showUpdateDialog('phone'),
           ),
           divider,
           _buildListTile(
             icon: Icons.lock,
-            title: 'Change Password',
+            title: l10n.changePassword,
             onTap: () => _showUpdateDialog('password'),
           ),
           divider,
           _buildListTile(
             icon: Icons.info,
-            title: 'About us',
-            subtitle: 'Learn more about Econance',
-            onTap: () {},
+            title: l10n.aboutUs,
+            subtitle: l10n.aboutUsSubtitle,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AboutPage()),
+            ),
           ),
           divider,
           _buildListTile(
-            icon: Icons.pause_circle_filled,
-            title: 'Deactivate Account',
-            color: Colors.orange,
-            onTap: _deactivateAccount,
+            icon: Icons.language,
+            title: _safeLanguage(l10n),
+            subtitle: themeManager.locale.languageCode == 'pt'
+                ? _safePortuguese(l10n)
+                : _safeEnglish(l10n),
+            onTap: () async {
+              final selected = await showDialog<String>(
+                context: context,
+                builder: (_) => SimpleDialog(
+                  title: Text(_safeLanguage(l10n)),
+                  children: [
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(context, 'pt'),
+                      child: Text(_safePortuguese(l10n)),
+                    ),
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(context, 'en'),
+                      child: Text(_safeEnglish(l10n)),
+                    ),
+                  ],
+                ),
+              );
+
+              if (selected != null) {
+                themeManager.setLocale(Locale(selected));
+                _showMessage(selected == 'pt'
+                    ? _safePortuguese(l10n)
+                    : _safeEnglish(l10n));
+              }
+            },
           ),
           divider,
           _buildListTile(
             icon: Icons.delete_forever,
-            title: 'Delete Account',
-            color: Colors.red,
+            title: l10n.deleteAccountTitle,
+            color: ResponsiveColors.error(theme),
             onTap: _deleteAccount,
           ),
           divider,
           _buildListTile(
             icon: Icons.logout,
-            title: 'Logout',
-            color: Colors.red,
+            title: l10n.logoutTitle,
+            color: ResponsiveColors.error(theme),
             onTap: _logout,
           ),
         ],
@@ -562,8 +682,47 @@ class _ConfigState extends State<Config> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (_, setDialogState) {
+          final l10n = AppLocalizations.of(context)!;
+
+          // Use the localized noun for the field (Name, Email, Phone, Password)
+          String localizedFieldNoun;
+          switch (field) {
+            case 'name':
+              localizedFieldNoun = l10n.nameLabel;
+              break;
+            case 'email':
+              localizedFieldNoun = l10n.emailaddress;
+              break;
+            case 'phone':
+              localizedFieldNoun = l10n.phonenumber;
+              break;
+            case 'password':
+              localizedFieldNoun = l10n.password;
+              break;
+            default:
+              localizedFieldNoun = field;
+          }
+
+          // Resolve title which may be a String with placeholder or a generated method.
+          final titleProp = l10n.updateField;
+          final resolvedTitle = _resolveLocalized(
+            titleProp,
+            localizedFieldNoun,
+            placeholder: '{field}',
+            defaultTemplate: 'Update {field}',
+          );
+
+          // Resolve new field hint similarly using the noun label.
+          final newFieldProp = l10n.newField;
+          final resolvedNewFieldHint = _resolveLocalized(
+            newFieldProp,
+            localizedFieldNoun,
+            placeholder: '{field}',
+            defaultTemplate: 'New {field}',
+          );
+
           return _buildDialog(
-            title: 'Update $field',
+            title: resolvedTitle,
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -572,7 +731,7 @@ class _ConfigState extends State<Config> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _buildTextField(
                       controller: passwordController,
-                      hint: 'Current password',
+                      hint: l10n.currentPassword,
                       obscure: obscure,
                       toggleable: true,
                       onToggle: () => setDialogState(() => obscure = !obscure),
@@ -580,7 +739,7 @@ class _ConfigState extends State<Config> {
                   ),
                 _buildTextField(
                   controller: controller,
-                  hint: 'New $field',
+                  hint: resolvedNewFieldHint,
                   obscure: field == 'password' && obscure,
                   toggleable: field == 'password',
                   onToggle: field == 'password'
@@ -593,7 +752,7 @@ class _ConfigState extends State<Config> {
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'Cancel',
+                  l10n.cancel,
                   style: TextStyle(color: theme.primaryColor),
                 ),
               ),
@@ -620,7 +779,7 @@ class _ConfigState extends State<Config> {
                     Navigator.pop(context);
                   }
                 },
-                child: const Text('Update'),
+                child: Text(AppLocalizations.of(context)!.update),
               ),
             ],
           );

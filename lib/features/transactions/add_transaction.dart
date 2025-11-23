@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../categories/category_picker.dart';
@@ -160,7 +162,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     } else if (_currentStep == 1) {
       if (_selectedDate == null || selectedCategoryId == null || selectedCategoryId == '') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill all fields first")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.pleaseFillAllFields)),
         );
         return;
       }
@@ -222,9 +224,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 Row(
                   children: [
                     Text(
-                      existingItem == null ? "Add Item" : "Edit Item",
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
+                          existingItem == null ? AppLocalizations.of(context)!.addItemTitle : AppLocalizations.of(context)!.editItemTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -235,26 +237,26 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: "Item name",
-                    hintText: "e.g. Laptop charger",
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.itemNameLabel,
+                    hintText: AppLocalizations.of(context)!.exampleItemHint,
+                    border: const OutlineInputBorder(),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? "Please enter a name" : null,
+                  validator: (v) => v == null || v.trim().isEmpty ? AppLocalizations.of(context)!.pleaseEnterName : null,
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
                   controller: valueCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                    labelText: "Value",
-                    hintText: "e.g. 120.50",
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.valueLabel,
+                    hintText: AppLocalizations.of(context)!.valueExampleHint,
                     prefixText: "R\$ ",
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return "Please enter a value";
-                    if (double.tryParse(v.replaceAll(',', '.')) == null) return "Enter a valid number";
+                    if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.pleaseEnterValue;
+                    if (double.tryParse(v.replaceAll(',', '.')) == null) return AppLocalizations.of(context)!.enterValidNumber;
                     return null;
                   },
                 ),
@@ -271,16 +273,16 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                           });
                           Navigator.pop(context);
                         },
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        label: const Text("Remove", style: TextStyle(color: Colors.red)),
+                        icon: Icon(Icons.delete, color: ResponsiveColors.error(theme)),
+                        label: Text(AppLocalizations.of(context)!.remove, style: TextStyle(color: ResponsiveColors.error(theme))),
                       ),
                     const Spacer(),
                     ElevatedButton.icon(
                       icon: Icon(existingItem == null ? Icons.add : Icons.save),
-                      label: Text(existingItem == null ? "Add" : "Save"),
+                        label: Text(existingItem == null ? AppLocalizations.of(context)!.add : AppLocalizations.of(context)!.save),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.primaryColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: ResponsiveColors.onPrimary(theme),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -313,7 +315,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
   Widget _getCurrentPage() {
     final theme = Theme.of(context);
-    String capitalize(String s) => s.isNotEmpty ? s[0].toUpperCase() + s.substring(1) : s;
+    // localized type labels used instead of raw english 'type' strings
     final int successIndex = widget.isInvoice ? 3 : 2;
 
     if (_currentStep == successIndex) {
@@ -322,25 +324,25 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset("assets/animations/success.json", width: 150, repeat: false),
+      Lottie.asset("assets/animations/success.json", width: 150, repeat: false),
             const SizedBox(height: 20),
-            Text("${capitalize(widget.type)} added successfully!",
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.green)),
+      Text(AppLocalizations.of(context)!.transactionAddedSuccessfully,
+        style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: ResponsiveColors.success(theme))),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                setState(() {
+                  setState(() {
                   _currentStep = 0;
                   _value.text = '';
                   _date.text = '';
                   selectedCategoryId = '';
-                  selectedCategoryName = "Select Category";
+                  selectedCategoryName = AppLocalizations.of(context)!.selectCategory;
                   _selectedDate = null;
                   _note.text = '';
                   _items.clear();
                 });
               },
-              child: Text("Add another ${capitalize(widget.type)}"),
+                  child: Text(AppLocalizations.of(context)!.addAnotherTransaction),
             ),
           ],
         ),
@@ -357,24 +359,42 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Add ${capitalize(widget.type)}", style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                // Resolve addTransactionTitle which may be a String with placeholder or a generated method
+                Builder(builder: (ctx) {
+                  final l10n = AppLocalizations.of(ctx)!;
+                  // pick localized noun for the type (singular)
+                  final localizedType = widget.type == 'revenue' ? l10n.revenue : l10n.expense;
+
+                  final titleProp = l10n.addTransactionTitle;
+                  String resolvedTitle;
+                  if (titleProp is String) {
+                    resolvedTitle = (titleProp as String).replaceFirst('{type}', localizedType);
+                  } else {
+                    try {
+                      resolvedTitle = (titleProp as dynamic)(localizedType) as String;
+                    } catch (_) {
+                      resolvedTitle = 'Add $localizedType';
+                    }
+                  }
+                  return Text(resolvedTitle, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold));
+                }),
                 const SizedBox(height: 8),
                 Text(
-                  "First insert the value of the transaction, then a short commentary if you want to",
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  AppLocalizations.of(context)!.addTransactionSubtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(color: ResponsiveColors.hint(theme)),
                 ),
                 const SizedBox(height: 30),
                 TextFormField(
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) return "Please enter a value";
-                    if (double.tryParse(value.replaceAll(',', '.')) == null) return "Enter a valid number";
+                    if (value == null || value.trim().isEmpty) return AppLocalizations.of(context)!.pleaseEnterValue;
+                    if (double.tryParse(value.replaceAll(',', '.')) == null) return AppLocalizations.of(context)!.enterValidNumber;
                     return null;
                   },
                   controller: _value,
                   keyboardType: TextInputType.number,
                   style: theme.textTheme.bodyMedium,
                   decoration: InputDecoration(
-                    hintText: "500,00",
+                    hintText: AppLocalizations.of(context)!.valueHint,
                     prefixIcon: Padding(
                       padding: const EdgeInsets.only(left: 14, top: 14, bottom: 14),
                       child: Text("R\$", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -383,7 +403,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                TextField(controller: _note, style: theme.textTheme.bodyMedium, decoration: const InputDecoration(hintText: "Optional commentary")),
+                TextField(controller: _note, style: theme.textTheme.bodyMedium, decoration: InputDecoration(hintText: AppLocalizations.of(context)!.optionalCommentary)),
               ],
             ),
           ),
@@ -396,12 +416,12 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Details", style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context)!.details, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text("Choose category, date and recurrence", style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                Text(AppLocalizations.of(context)!.chooseCategoryDateRecurrence, style: theme.textTheme.bodySmall?.copyWith(color: ResponsiveColors.hint(theme))),
               const SizedBox(height: 30),
               ListTile(
-                title: Text(selectedCategoryName ?? "Select Category", style: theme.textTheme.bodyMedium),
+                title: Text(selectedCategoryName ?? AppLocalizations.of(context)!.selectCategory, style: theme.textTheme.bodyMedium),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _pickCategory(context),
               ),
@@ -411,7 +431,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 readOnly: true,
                 onTap: _pickDate,
                 style: theme.textTheme.bodyMedium,
-                decoration: const InputDecoration(hintText: "Date", suffixIcon: Icon(Icons.calendar_today)),
+                decoration: InputDecoration(hintText: AppLocalizations.of(context)!.selectDate, suffixIcon: const Icon(Icons.calendar_today)),
               ),
               const SizedBox(height: 20),
               Row(
@@ -420,7 +440,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                     value: _isRecurrent,
                     onChanged: (val) => setState(() => _isRecurrent = val ?? false),
                   ),
-                  Text("Is this recurrent?", style: theme.textTheme.bodyMedium),
+                    Text(AppLocalizations.of(context)!.isThisRecurrent, style: theme.textTheme.bodyMedium),
                 ],
               ),
             ],
@@ -437,7 +457,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               if (widget.isInvoice) ...[
                 const SizedBox(height: 20),
                 Text(
-                  "Items",
+                  AppLocalizations.of(context)!.itemsLabel,
                   style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
@@ -449,7 +469,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                       leading: const Icon(Icons.shopping_cart_outlined),
                       title: Text(item['name'] ?? ''),
                       subtitle: Text("R\$ ${item['value'] ?? ''}"),
-                      trailing: const Icon(Icons.edit, color: Colors.grey),
+                      trailing: Icon(Icons.edit, color: ResponsiveColors.hint(theme)),
                       onTap: () => _addOrEditItem(existingItem: item),
                     ),
                   ),
@@ -458,8 +478,8 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 Center(
                   child: ElevatedButton.icon(
                     onPressed: () => _addOrEditItem(),
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text("Add New Item", style: TextStyle(color: Colors.white)),
+                    icon: Icon(Icons.add, color: ResponsiveColors.onPrimary(theme)),
+                        label: Text(AppLocalizations.of(context)!.addNewItem, style: TextStyle(color: ResponsiveColors.onPrimary(theme))),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.primaryColor,
                       shape: RoundedRectangleBorder(
@@ -498,9 +518,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              child: LinearProgressIndicator(
+                child: LinearProgressIndicator(
                 value: (_currentStep + 1) / numPages,
-                backgroundColor: Colors.grey.shade300,
+                backgroundColor: ResponsiveColors.greyShade(theme, 300),
                 color: theme.primaryColor,
                 minHeight: 4,
               ),
@@ -522,7 +542,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                     FloatingActionButton(
                       heroTag: "backBtn",
                       onPressed: _previousStep,
-                      backgroundColor: Colors.grey,
+                      backgroundColor: ResponsiveColors.greyShade(theme, 300),
                       child: const Icon(Icons.arrow_back_ios),
                     ),
                   const Spacer(),

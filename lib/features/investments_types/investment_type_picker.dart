@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:econance/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class InvestmentTypePickerPage extends StatefulWidget {
   final String uid;
@@ -18,15 +19,14 @@ class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+  final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: TextField(
           style: theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(
-            hintText: "Search investment types...",
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.searchInvestmentTypesHint,
             border: InputBorder.none,
           ),
           onChanged: (value) {
@@ -60,7 +60,7 @@ class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
           }).toList();
 
           if (types.isEmpty) {
-            return const Center(child: Text("No types found. Add one first!"));
+            return Center(child: Text(AppLocalizations.of(context)!.noTypesFoundAddOne));
           }
 
           return ListView.builder(
@@ -73,7 +73,7 @@ class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
               return ListTile(
                 title: Text(data['name'], style: theme.textTheme.bodyMedium),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: Colors.green)
+                    ? Icon(Icons.check, color: ResponsiveColors.success(theme))
                     : null,
                 onTap: () {
                   setState(() {
@@ -100,11 +100,12 @@ class _InvestmentTypePickerPageState extends State<InvestmentTypePickerPage> {
 
                   if (doc.exists) {
                     final name = doc['name'];
+                    if (!mounted) return;
                     Navigator.pop(context, name);
                   }
                 },
           icon: const Icon(Icons.arrow_forward),
-          label: const Text("Select"),
+          label: Text(AppLocalizations.of(context)!.select),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(45),
           ),

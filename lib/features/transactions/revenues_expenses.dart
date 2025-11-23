@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'edit_transaction.dart';
@@ -121,8 +123,8 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                   width: 40,
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                      color: Colors.grey[400],
+                      decoration: BoxDecoration(
+                      color: ResponsiveColors.greyShade(theme, 400),
                       borderRadius: BorderRadius.circular(2)),
                 ),
                 IconButton(
@@ -132,12 +134,12 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
               ],
             ),
             Text(
-              "Here, you will manage",
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
+              AppLocalizations.of(context)!.manageTransactionsIntro,
+              style: theme.textTheme.bodyMedium?.copyWith(color: ResponsiveColors.whiteOpacity(theme, 0.6)),
             ),
             const SizedBox(height: 7),
             Text(
-              "Revenues & Expenses",
+              AppLocalizations.of(context)!.revenuesExpensesTitle,
               style: theme.textTheme.headlineLarge?.copyWith(
                 color: theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.bold,
@@ -152,7 +154,7 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text("No data yet"));
+                    return Center(child: Text(AppLocalizations.of(context)!.noDataYet));
                   }
 
                   final transactions = snapshot.data!;
@@ -170,13 +172,13 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                         child: ListTile(
                           leading: Icon(
                             isExpense ? Icons.remove_circle : Icons.add_circle,
-                            color: isExpense ? Colors.red : Colors.green,
+                            color: isExpense ? ResponsiveColors.error(theme) : ResponsiveColors.success(theme),
                           ),
                           title: Text(
                             "${isExpense ? "-" : "+"} R\$ ${amount.toStringAsFixed(2)}",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: isExpense ? Colors.red : Colors.green,
+                              color: isExpense ? ResponsiveColors.error(theme) : ResponsiveColors.success(theme),
                             ),
                           ),
                           subtitle: Text("${date.day}/${date.month}/${date.year}"),
@@ -184,11 +186,11 @@ class _RevenuesExpensesPageState extends State<RevenuesExpensesPage> with RouteA
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.grey),
+                                icon: Icon(Icons.edit, color: ResponsiveColors.hint(theme)),
                                 onPressed: () => _openEditModal(t, amount, date),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.grey),
+                                icon: Icon(Icons.delete, color: ResponsiveColors.hint(theme)),
                                 onPressed: () async {
                                   await FirebaseFirestore.instance
                                       .collection('users')

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditCategoryPage extends StatefulWidget {
@@ -32,8 +32,6 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
   }
 
   Future<void> _updateCategory() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
     await FirebaseFirestore.instance
         .collection('users')
         .doc(widget.uid)
@@ -44,24 +42,20 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
           'type': _type,
           'createdAt': FieldValue.serverTimestamp(),
         });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Category updated")));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.categoryUpdated)));
     Navigator.pop(context);
   }
 
   Future<void> _deleteCategory() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
     await FirebaseFirestore.instance
         .collection('users')
         .doc(widget.uid)
         .collection('categories')
         .doc(widget.categoryId)
         .delete();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("Category deleted")));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.categoryDeleted)));
     Navigator.pop(context);
   }
 
@@ -94,23 +88,23 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                     )
                   ],
                 ),
-                Text("Name", style: theme.textTheme.bodySmall),
+                Text(AppLocalizations.of(context)!.nameLabel, style: theme.textTheme.bodySmall),
                 const SizedBox(height: 7),
                 TextField(
                   style: theme.textTheme.bodyMedium,
                   controller: _nameController,
-                  decoration: InputDecoration(hintText: "Ex: Food"),
+                  decoration: InputDecoration(hintText: AppLocalizations.of(context)!.exampleFoodHint),
                 ),
                 const SizedBox(height: 15),
-                Text("Type", style: theme.textTheme.bodySmall),
+                Text(AppLocalizations.of(context)!.typeLabel, style: theme.textTheme.bodySmall),
                 const SizedBox(height: 7),
                 DropdownButtonFormField(
                   initialValue: _type,
                   style: theme.textTheme.bodyMedium,
-                  decoration: InputDecoration(hintText: "Select a category type"),
+                  decoration: InputDecoration(hintText: AppLocalizations.of(context)!.selectCategoryType),
                   items: [
-                    DropdownMenuItem(value: "expense", child: Text("Expense")),
-                    DropdownMenuItem(value: "revenue", child: Text("Revenue")),
+                    DropdownMenuItem(value: "expense", child: Text(AppLocalizations.of(context)!.expense)),
+                    DropdownMenuItem(value: "revenue", child: Text(AppLocalizations.of(context)!.revenue)),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -126,7 +120,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _updateCategory,
-                        child: const Text('Save'),
+                        child: Text(AppLocalizations.of(context)!.save),
                       ),
                     ),
                     const SizedBox(width: 20,),
@@ -134,7 +128,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                         onPressed: _deleteCategory,
-                        child: const Text('Delete'),
+                        child: Text(AppLocalizations.of(context)!.delete),
                       ),
                     ),
                   ],

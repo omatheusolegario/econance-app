@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class AddInvestmentTypePage extends StatefulWidget {
   const AddInvestmentTypePage({super.key});
@@ -16,10 +18,10 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
   int _currentStep = 0;
 
   void _nextStep() {
-    if (_currentStep == 0) {
+      if (_currentStep == 0) {
       if (_nameController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Type name cannot be empty")),
+          SnackBar(content: Text(AppLocalizations.of(context)!.typeNameCannotBeEmpty)),
         );
         return;
       }
@@ -83,7 +85,7 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white60),
+            style: theme.textTheme.bodySmall?.copyWith(color: ResponsiveColors.whiteOpacity(theme, 0.6)),
           ),
           const SizedBox(height: 30),
           child,
@@ -104,7 +106,7 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               child: LinearProgressIndicator(
                 value: (_currentStep + 1) / 2,
-                backgroundColor: Colors.grey.shade300,
+                backgroundColor: ResponsiveColors.greyShade(theme, 300),
                 color: theme.primaryColor,
               ),
             ),
@@ -114,14 +116,13 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildStepContent(
-                    title: "Add Investment Type",
-                    subtitle:
-                    "Give your type a name (e.g. Crypto, Stocks, Real Estate)",
+                    title: AppLocalizations.of(context)!.addInvestmentTypeTitle,
+                    subtitle: AppLocalizations.of(context)!.addInvestmentTypeSubtitle,
                     child: TextField(
                       controller: _nameController,
                       style: theme.textTheme.bodyMedium,
-                      decoration: const InputDecoration(
-                        hintText: "e.g. Crypto",
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.exampleInvestmentTypeHint,
                       ),
                     ),
                   ),
@@ -136,10 +137,10 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          "Type successfully added!",
+                          AppLocalizations.of(context)!.typeSuccessfullyAdded,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: ResponsiveColors.success(theme),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -155,7 +156,7 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
                               curve: Curves.easeInOut,
                             );
                           },
-                          child: const Text("Add another type"),
+                          child: Text(AppLocalizations.of(context)!.addAnotherType),
                         ),
                       ],
                     ),
@@ -179,7 +180,7 @@ class _AddInvestmentTypePageState extends State<AddInvestmentTypePage> {
                 FloatingActionButton(
                   heroTag: "backBtn",
                   onPressed: _previousStep,
-                  backgroundColor: Colors.grey,
+                  backgroundColor: ResponsiveColors.greyShade(theme, 400),
                   child: const Icon(Icons.arrow_back_ios),
                 ),
               const Spacer(),

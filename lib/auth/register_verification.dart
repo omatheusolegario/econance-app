@@ -23,7 +23,7 @@ class _VerificationPageState extends State<VerificationPage> {
     setState(() => _isLoading = true);
 
     bool emailOk = await checkEmailVerified();
-
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (emailOk) {
@@ -39,6 +39,7 @@ class _VerificationPageState extends State<VerificationPage> {
 
   Future<void> resendEmailVerification() async {
     await widget.user.sendEmailVerification();
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(AppLocalizations.of(context)!.resendwarning)),
     );

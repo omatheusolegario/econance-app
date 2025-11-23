@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:econance/theme/responsive_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/family_service.dart';
 import 'member_card.dart';
 
@@ -65,9 +67,8 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
 
   Widget _buildShimmerList(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+    final baseColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 800 : 300);
+    final highlightColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 600 : 100);
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -96,11 +97,11 @@ class _FamilyHomePageState extends State<FamilyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Here you can manage",
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white60),
+              AppLocalizations.of(context)!.familyManageIntro,
+              style: theme.textTheme.bodyMedium?.copyWith(color: ResponsiveColors.whiteOpacity(theme, 0.6)),
             ),
             Text(
-              "Family members",
+              AppLocalizations.of(context)!.familyMembersTitle,
               style: theme.textTheme.headlineLarge?.copyWith(
                   color: theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold),
             ),

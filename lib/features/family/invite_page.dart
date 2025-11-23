@@ -3,6 +3,8 @@ import 'package:econance/features/family/family_invites_list.dart';
 import 'package:econance/features/family/user_invites_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 import '../../services/family_service.dart';
 
@@ -25,10 +27,10 @@ class _InvitePageState extends State<InvitePage> {
     final emailCtl = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
+  builder: (ctx) => AlertDialog(
+  backgroundColor: Theme.of(context).cardColor,
         title: Text(
-          "Invite member",
+          AppLocalizations.of(context)!.inviteMemberTitle,
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -36,12 +38,12 @@ class _InvitePageState extends State<InvitePage> {
         content: TextField(
           controller: emailCtl,
           style: Theme.of(context).textTheme.bodyMedium,
-          decoration: const InputDecoration(hintText: "member@example.com"),
+          decoration: InputDecoration(hintText: AppLocalizations.of(context)!.memberEmailHint),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Cancel", style: TextStyle(color: Colors.red.shade500)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: ResponsiveColors.error(Theme.of(context)))),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -54,7 +56,7 @@ class _InvitePageState extends State<InvitePage> {
                     .get();
                 if (snap.docs.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No user found with this email")),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.noUserFoundWithThisEmail)),
                   );
                   return;
                 }
@@ -62,22 +64,22 @@ class _InvitePageState extends State<InvitePage> {
                 final invited = await _fs.inviteByUid(
                   invitedUid: invitedUid,
                   familyId: _familyId!,
-                  inviterName: _auth.currentUser?.displayName ?? "Unknown",
+                  inviterName: _auth.currentUser?.displayName ?? AppLocalizations.of(context)!.unknown,
                 );
 
                 Navigator.pop(ctx);
                 if (invited) {
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text("Invite sent")));
+                  ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.inviteSent)));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("User already in a family")),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.userAlreadyInFamily)),
                   );
                 }
               }
             },
-            child: const Text("Invite"),
+            child: Text(AppLocalizations.of(context)!.invite),
           ),
         ],
       ),
@@ -100,19 +102,19 @@ class _InvitePageState extends State<InvitePage> {
               children: [
                 _familyId == null
                     ? Text(
-                        "Participate in an existing family with",
+                        AppLocalizations.of(context)!.participateInExistingFamilyWith,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white60,
+                          color: ResponsiveColors.whiteOpacity(theme, 0.6),
                         ),
                       )
                     : Text(
-                        "Invite new members to your family with",
+                        AppLocalizations.of(context)!.inviteNewMembersToYourFamilyWith,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white60,
+                          color: ResponsiveColors.whiteOpacity(theme, 0.6),
                         ),
                       ),
                 Text(
-                  "Invites",
+                  AppLocalizations.of(context)!.invites,
                   style: theme.textTheme.headlineLarge?.copyWith(
                     color: theme.textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.bold,
@@ -131,7 +133,7 @@ class _InvitePageState extends State<InvitePage> {
                     child: ElevatedButton.icon(
                       onPressed: _showInviteDialog,
                       icon: Icon(Icons.person_add_alt_1),
-                      label: Text("Invite new member"),
+                      label: Text(AppLocalizations.of(context)!.inviteMemberTitle),
                     ),
                   )
                 : SizedBox.shrink(),

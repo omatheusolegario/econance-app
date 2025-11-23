@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:econance/services/family_service.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class FamilyInvitesList extends StatelessWidget {
   final String familyId;
@@ -12,9 +14,8 @@ class FamilyInvitesList extends StatelessWidget {
 
   Widget _buildShimmer(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+    final baseColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 800 : 300);
+    final highlightColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 600 : 100);
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -24,13 +25,13 @@ class FamilyInvitesList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: 5,
         itemBuilder: (context, index) => Card(
-          color: Colors.grey.shade900,
+          color: Theme.of(context).cardColor,
           margin: const EdgeInsets.only(bottom: 4, top: 4, left: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           child: ListTile(
-            leading: CircleAvatar(backgroundColor: baseColor, radius: 20),
+                    leading: CircleAvatar(backgroundColor: baseColor, radius: 20),
             title: Container(height: 16, width: 120, color: baseColor, margin: const EdgeInsets.symmetric(vertical: 4)),
             subtitle: Container(height: 14, width: 180, color: baseColor, margin: const EdgeInsets.symmetric(vertical: 2)),
             trailing: Container(height: 20, width: 20, color: baseColor),
@@ -52,7 +53,7 @@ class FamilyInvitesList extends StatelessWidget {
         if (!snap.hasData || snap.data!.docs.isEmpty) {
           return Center(
             child: Text(
-              "No pending invites",
+              AppLocalizations.of(context)!.noPendingInvites,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           );
@@ -79,7 +80,7 @@ class FamilyInvitesList extends StatelessWidget {
                     userSnap.data?['personalInfo']['fullName'] ?? 'Unknown';
 
                 return Card(
-                  color: Colors.grey.shade900,
+                  color: Theme.of(context).cardColor,
                   margin: const EdgeInsets.only(bottom: 4, top: 4, left: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -87,17 +88,17 @@ class FamilyInvitesList extends StatelessWidget {
                   child: ListTile(
                     title: inviteData['status'] == 'pending'
                         ? Text(
-                      "Waiting response from",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.orange),
+                      AppLocalizations.of(context)!.waitingResponseFrom,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.secondary),
                     )
                         : inviteData['status'] == 'declined'
                         ? Text(
-                      "Declined invite",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                      AppLocalizations.of(context)!.declinedInvite,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: ResponsiveColors.error(Theme.of(context))),
                     )
                         : Text(
-                      "Accepted invite",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.green),
+                      AppLocalizations.of(context)!.acceptedInvite,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: ResponsiveColors.success(Theme.of(context))),
                     ),
                     subtitle: Text(
                       "$invitedName",
@@ -107,7 +108,7 @@ class FamilyInvitesList extends StatelessWidget {
                         ? IconButton(
                       onPressed: () async {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Deleted Invite")),
+                          SnackBar(content: Text(AppLocalizations.of(context)!.deletedInvite)),
                         );
                         await FirebaseFirestore.instance
                             .collection('families')
@@ -116,7 +117,7 @@ class FamilyInvitesList extends StatelessWidget {
                             .doc(invites[index].id)
                             .delete();
                       },
-                      icon: const Icon(Icons.close, color: Colors.grey),
+                      icon: Icon(Icons.close, color: ResponsiveColors.greyShade(Theme.of(context), 400)),
                     )
                         : null,
                   ),

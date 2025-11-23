@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class CategoryBreakdownChart extends StatefulWidget {
   final String type;
@@ -70,7 +72,7 @@ class _CategoryBreakdownChartState extends State<CategoryBreakdownChart> {
 
         final data = snapshot.data!;
         if (data.isEmpty) {
-          return const Center(child: Text("No categories found"));
+          return Center(child: Text(AppLocalizations.of(context)!.noCategoriesFound));
         }
 
         final total = data.values.fold<double>(0, (sum, v) => sum + v);
@@ -90,9 +92,9 @@ class _CategoryBreakdownChartState extends State<CategoryBreakdownChart> {
               title: "${percent.toStringAsFixed(0)}%",
               radius: 55,
               titleStyle: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+                  color: ResponsiveColors.whiteOpacity(theme, 1.0),
+                  fontWeight: FontWeight.bold,
+                ),
             );
           }).toList();
 
@@ -204,11 +206,11 @@ class _CategoryBreakdownChartState extends State<CategoryBreakdownChart> {
               lineBarsData: [
                 LineChartBarData(
                   isCurved: true,
-                  color: Colors.blueAccent,
+                  color: theme.colorScheme.primary,
                   barWidth: 3,
                   belowBarData: BarAreaData(
                     show: true,
-                    color: Colors.blueAccent.withOpacity(0.2),
+                    color: theme.colorScheme.primary.withOpacity(0.2),
                   ),
                   dotData: FlDotData(show: true),
                   spots: List.generate(entries.length, (i) {
@@ -221,7 +223,7 @@ class _CategoryBreakdownChartState extends State<CategoryBreakdownChart> {
         }
 
         return Card(
-          color: Colors.white10.withValues(alpha: .009),
+          color: ResponsiveColors.whiteOpacity(theme, .009),
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
@@ -238,8 +240,8 @@ class _CategoryBreakdownChartState extends State<CategoryBreakdownChart> {
                       children: [
                         Text(
                           widget.type == "expense"
-                              ? "Expenses by Category"
-                              : "Revenues by Category",
+                              ? AppLocalizations.of(context)!.expensesByCategory
+                              : AppLocalizations.of(context)!.revenuesByCategory,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

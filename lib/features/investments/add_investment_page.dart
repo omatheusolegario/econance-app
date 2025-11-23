@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:econance/features/investments_types/investment_type_picker.dart';
+import '../../l10n/app_localizations.dart';
 
 class StepHeader extends StatelessWidget {
   final String title;
@@ -150,20 +151,20 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const StepHeader(
-            title: "Investment Info",
-            description: "Enter the basic information of your investment.",
+          StepHeader(
+            title: AppLocalizations.of(context)!.investmentInfo,
+            description: AppLocalizations.of(context)!.enterInvestmentInfo,
           ),
-          Text("Name", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.nameLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _name,
-            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.required : null,
             style: Theme.of(context).textTheme.bodyMedium,
-            decoration: _textFieldDecoration("e.g. Bitcoin"),
+            decoration: _textFieldDecoration(AppLocalizations.of(context)!.exampleBitcoinHint),
           ),
           const SizedBox(height: 20),
-          Text("Type", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.typeLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _type,
@@ -172,7 +173,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
             validator: (v) => v == null || v.isEmpty ? "Required" : null,
             style: Theme.of(context).textTheme.bodyMedium,
             decoration: _textFieldDecoration(
-              "Select type",
+              AppLocalizations.of(context)!.selectType,
               suffixIcon: const Icon(Icons.arrow_drop_down),
             ),
           ),
@@ -186,21 +187,21 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const StepHeader(
-            title: "Financial Info",
-            description: "Enter investment value, target and rate.",
+          StepHeader(
+            title: AppLocalizations.of(context)!.financialInfo,
+            description: AppLocalizations.of(context)!.enterFinancialInfo,
           ),
-          Text("Invested Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.investedValueLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _value,
             keyboardType: TextInputType.number,
-            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.required : null,
             style: Theme.of(context).textTheme.bodyMedium,
             decoration: _textFieldDecoration("1000"),
           ),
           const SizedBox(height: 20),
-          Text("Target Value (R\$)", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.targetValueLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _targetValue,
@@ -209,7 +210,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
             decoration: _textFieldDecoration("3000"),
           ),
           const SizedBox(height: 20),
-          Text("Rate (%)", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.rateLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _rate,
@@ -227,45 +228,45 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const StepHeader(
-            title: "Status & Notes",
-            description: "Select status, date and add optional notes.",
+          StepHeader(
+            title: AppLocalizations.of(context)!.statusNotes,
+            description: AppLocalizations.of(context)!.selectStatusDateAndNotes,
           ),
-          Text("Status", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.statusLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           DropdownButtonFormField<String>(
             value: _status,
             validator: (v) => v == null ? "Required" : null,
-            items: const [
-              DropdownMenuItem(value: "active", child: Text("Active")),
-              DropdownMenuItem(value: "closed", child: Text("Closed")),
+            items: [
+              DropdownMenuItem(value: "active", child: Text(AppLocalizations.of(context)!.active)),
+              DropdownMenuItem(value: "closed", child: Text(AppLocalizations.of(context)!.closed)),
             ],
             onChanged: (v) => setState(() => _status = v),
-            decoration: _textFieldDecoration("Select status"),
+            decoration: _textFieldDecoration(AppLocalizations.of(context)!.selectStatus),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 20),
-          Text("Date", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.dateLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _date,
             readOnly: true,
             onTap: _pickDate,
-            validator: (v) => v == null || v.isEmpty ? "Required" : null,
+            validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.required : null,
             style: Theme.of(context).textTheme.bodyMedium,
             decoration: _textFieldDecoration(
-              "Select date",
+              AppLocalizations.of(context)!.selectDate,
               suffixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
             ),
           ),
           const SizedBox(height: 20),
-          Text("Notes", style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.notesLabel, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 5),
           TextFormField(
             controller: _notes,
             maxLines: 2,
             style: Theme.of(context).textTheme.bodyMedium,
-            decoration: _textFieldDecoration("Optional observations"),
+            decoration: _textFieldDecoration(AppLocalizations.of(context)!.optionalObservations),
           ),
         ],
       ),
@@ -285,7 +286,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
             ),
             const SizedBox(height: 20),
             Text(
-              "Investment added successfully!",
+              AppLocalizations.of(context)!.investmentAddedSuccessfully,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
@@ -294,7 +295,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _resetForm,
-              child: const Text("Add Another Investment"),
+              child: Text(AppLocalizations.of(context)!.addAnotherInvestment),
             ),
           ],
         ),

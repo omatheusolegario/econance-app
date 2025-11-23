@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../l10n/app_localizations.dart';
 
 class CategoryPickerPage extends StatefulWidget {
   final String type;
@@ -22,9 +23,9 @@ class _CategoryPickerPageState extends State<CategoryPickerPage> {
     return Scaffold(
       appBar: AppBar(
         title: TextField(
-          style:  theme.textTheme.bodyMedium,
-          decoration: const InputDecoration(
-            hintText: "Search categories...",
+          style: theme.textTheme.bodyMedium,
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.searchCategoriesHint,
             border: InputBorder.none,
           ),
           onChanged: (value) {
@@ -36,7 +37,7 @@ class _CategoryPickerPageState extends State<CategoryPickerPage> {
         actions: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
@@ -54,7 +55,7 @@ class _CategoryPickerPageState extends State<CategoryPickerPage> {
           }
           final categories = snapshot.data!.docs.where((doc) {
             final name = (doc['name'] as String).toLowerCase();
-            return name.contains(_search);
+            return _search.isEmpty || name.contains(_search);
           }).toList();
 
           return ListView.builder(
@@ -87,7 +88,7 @@ class _CategoryPickerPageState extends State<CategoryPickerPage> {
               : () {
                   Navigator.pop(context, _selectedCategory);
                 },
-          label: const Text(""),
+          label: Text(AppLocalizations.of(context)!.select),
           icon: const Icon(Icons.arrow_forward),
         ),
       ),

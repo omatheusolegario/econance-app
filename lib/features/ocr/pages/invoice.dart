@@ -1,5 +1,7 @@
 import 'package:econance/features/ocr/pages/invoice_capture.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import 'package:shimmer/shimmer.dart';
 
 class InvoicePage extends StatefulWidget {
@@ -27,9 +29,8 @@ class _InvoicePageState extends State<InvoicePage> {
 
   Widget _buildShimmer(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+    final baseColor = ResponsiveColors.greyShade(theme, 300);
+    final highlightColor = theme.brightness == Brightness.dark ? Colors.grey[600]! : Colors.grey[100]!;
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -86,13 +87,13 @@ class _InvoicePageState extends State<InvoicePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Scan your NF and",
+                  AppLocalizations.of(context)!.scanYourNF,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white60,
+                    color: ResponsiveColors.whiteOpacity(theme, 0.6),
                   ),
                 ),
                 Text(
-                  "Categorize your purchases",
+                  AppLocalizations.of(context)!.categorizeYourPurchases,
                   style: theme.textTheme.headlineLarge?.copyWith(
                     color: theme.textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.bold,
@@ -119,7 +120,7 @@ class _InvoicePageState extends State<InvoicePage> {
                     builder: (context) => const InvoiceCapturePage(),
                   ),
                 ),
-                label: const Text("Add Bill"),
+                label: Text(AppLocalizations.of(context)!.addBill),
                 icon: const Icon(Icons.add),
                 iconAlignment: IconAlignment.start,
                 style: ElevatedButton.styleFrom(

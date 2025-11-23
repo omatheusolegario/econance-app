@@ -3,6 +3,8 @@ import 'package:econance/features/family/family_create.dart';
 import 'package:econance/features/family/family_home.dart';
 import 'package:econance/features/family/invite_page.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -89,29 +91,29 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
+        builder: (ctx) => AlertDialog(
+      backgroundColor: Theme.of(context).cardColor,
         title: Text(
-          "Leave Family?",
+          AppLocalizations.of(context)!.leaveFamilyTitle,
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          "Are you sure you want to leave this family?",
+          AppLocalizations.of(context)!.leaveFamilyContent,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text("No", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)!.no, style: TextStyle(color: ResponsiveColors.hint(Theme.of(context)))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade500,
+              backgroundColor: ResponsiveColors.error(Theme.of(context)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text("Yes", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.yes, style: TextStyle(color: ResponsiveColors.onPrimary(Theme.of(context)))),
           ),
         ],
       ),
@@ -125,25 +127,25 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
       await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: Colors.grey.shade900.withValues(alpha: 1),
+          backgroundColor: Theme.of(context).cardColor,
           title: Text(
-            "Delete Family?",
+            AppLocalizations.of(context)!.deleteFamilyTitle,
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           content: Text(
-            "You are the last one in the family, leaving will delete it.\nAre you sure?",
+            AppLocalizations.of(context)!.deleteFamilyContent,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: ResponsiveColors.hint(Theme.of(context)))),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade500,
+                backgroundColor: ResponsiveColors.error(Theme.of(context)),
               ),
               onPressed: () async {
                 Navigator.pop(ctx, true);
@@ -158,9 +160,9 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
                 });
                 await _loadUserFamily();
               },
-              child: const Text(
-                "   Delete Family   ",
-                style: TextStyle(color: Colors.white),
+              child: Text(
+                AppLocalizations.of(context)!.deleteFamily,
+                style: TextStyle(color: ResponsiveColors.whiteOpacity(Theme.of(context), 1.0)),
               ),
             ),
           ],
@@ -189,9 +191,9 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isSelected
-                ? theme.primaryColor.withValues(alpha: 0.2)
-                : Colors.transparent,
+          color: isSelected
+            ? theme.primaryColor.withOpacity(0.2)
+            : ResponsiveColors.transparent(),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -199,7 +201,7 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
             size: 28,
             color: isSelected
                 ? theme.primaryColor
-                : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                : theme.colorScheme.onSurface.withOpacity(0.5),
           ),
         ),
       );
@@ -219,9 +221,9 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
               itemBuilder: (_) => [
                 PopupMenuItem(
                   child: Text(
-                    "Leave Family",
+                    AppLocalizations.of(context)!.leaveFamily,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.red.shade500,
+                      color: ResponsiveColors.error(theme),
                     ),
                   ),
                   value: "leave",
@@ -243,7 +245,7 @@ class _FamilyMainScreenPageState extends State<FamilyMainScreenPage> {
             curve: Curves.easeInOut,
             height: bottomHeight,
             decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.7),
+              color: theme.scaffoldBackgroundColor.withOpacity(0.7),
               borderRadius: BorderRadius.circular(31),
             ),
 

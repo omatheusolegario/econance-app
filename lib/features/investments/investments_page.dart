@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:econance/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../features/investments/edit_investment_page.dart';
@@ -115,14 +116,14 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
                 ],
               ),
               Text(
-                "Track and manage your investments",
+                AppLocalizations.of(context)!.trackManageInvestments,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.hintColor,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                "Your Investments",
+                AppLocalizations.of(context)!.yourInvestments,
                 style: theme.textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -134,7 +135,7 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
                     : investments!.isEmpty
                     ? Center(
                         child: Text(
-                          "No investments yet",
+                          AppLocalizations.of(context)!.noInvestmentsYet,
                           style: theme.textTheme.bodyMedium,
                         ),
                       )
@@ -184,8 +185,8 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
                                           const SizedBox(width: 6),
                                           Text(
                                             inv['status'] == 'active'
-                                                ? "Active"
-                                                : "Closed",
+                                                ? AppLocalizations.of(context)!.active
+                                                : AppLocalizations.of(context)!.closed,
                                             style: theme.textTheme.bodyMedium,
                                           ),
                                         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -28,40 +29,40 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   double get progress => (_step + 1) / 4;
 
-  String getStepTitle() {
+  String getStepTitle(BuildContext context) {
     switch (_step) {
       case 0:
-        return 'Nome completo';
+        return AppLocalizations.of(context)!.stepFullName;
       case 1:
-        return 'Email';
+        return AppLocalizations.of(context)!.stepEmail;
       case 2:
-        return 'Telefone';
+        return AppLocalizations.of(context)!.stepPhone;
       case 3:
-        return 'Senha e Verificação';
+        return AppLocalizations.of(context)!.stepPasswordVerification;
       default:
         return '';
     }
   }
 
-  void nextStep() {
+  void nextStep(BuildContext context) {
     String error = '';
 
     if (_step == 0 && _fullNameController.text.trim().isEmpty) {
-      error = 'Digite seu nome completo';
+      error = AppLocalizations.of(context)!.enterFullNameError;
     } else if (_step == 1) {
       final email = _emailController.text.trim();
       if (email.isEmpty || !email.contains('@')) {
-        error = 'Digite um email válido';
+        error = AppLocalizations.of(context)!.enterValidEmail;
       }
     } else if (_step == 2) {
       final phone = _phoneController.text.trim();
       if (phone.isEmpty || phone.length < 10) {
-        error = 'Digite um telefone válido';
+        error = AppLocalizations.of(context)!.enterValidPhone;
       }
     } else if (_step == 3) {
       final pass = _passwordController.text.trim();
       if (pass.isEmpty || pass.length < 6) {
-        error = 'A senha deve ter no mínimo 6 caracteres';
+        error = AppLocalizations.of(context)!.passwordMin6;
       }
     }
 
@@ -102,16 +103,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
       await userCredential.user?.sendEmailVerification();
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verificação de email enviada')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.verificationEmailSent)),
       );
     } on FirebaseAuthException catch (e) {
-      String msg = 'Erro ao registrar';
-      if (e.code == 'weak-password') msg = 'Senha muito fraca';
-      if (e.code == 'email-already-in-use') msg = 'Email já cadastrado';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      String msg = AppLocalizations.of(context)!.registrationError;
+      if (e.code == 'weak-password') msg = AppLocalizations.of(context)!.weakPassword;
+      if (e.code == 'email-already-in-use') msg = AppLocalizations.of(context)!.emailAlreadyInUse;
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -122,13 +124,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
     final user = _auth.currentUser!;
     bool emailVerified = user.emailVerified;
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (emailVerified) {
       Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email não verificado.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.emailNotVerified)),
       );
     }
   }
@@ -138,22 +141,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
       case 0:
         return TextField(
           controller: _fullNameController,
-          decoration: const InputDecoration(labelText: 'Digite seu nome completo'),
+          decoration: InputDecoration(labelText: AppLocalizations.of(context)!.enterFullNameLabel),
         );
       case 1:
         return TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(labelText: 'Digite seu email'),
+          decoration: InputDecoration(labelText: AppLocalizations.of(context)!.enterEmailLabel),
         );
       case 2:
         return TextField(
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           inputFormatters: [_phoneFormatter],
-          decoration: const InputDecoration(
-            labelText: 'Digite seu telefone',
-            hintText: '+55 11 99999-9999',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.enterPhoneLabel,
+            hintText: AppLocalizations.of(context)!.phoneHint,
           ),
         );
       case 3:
@@ -178,14 +181,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: register,
-                child: const Text('Registrar'),
+                child: Text(AppLocalizations.of(context)!.register),
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: verifyEmail,
-              child: const Text('Verificar Email'),
-            ),
+              ElevatedButton(
+                onPressed: verifyEmail,
+                child: Text(AppLocalizations.of(context)!.verifyEmail),
+              ),
           ],
         );
       default:
@@ -223,7 +226,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
 
             Text(
-              "Complete seu cadastro",
+              AppLocalizations.of(context)!.completeRegistration,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.white60,
               ),
@@ -231,7 +234,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             const SizedBox(height: 7),
 
             Text(
-              getStepTitle(),
+              getStepTitle(context),
               style: theme.textTheme.headlineLarge?.copyWith(
                 color: theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.bold,
@@ -251,8 +254,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   : SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: nextStep,
-                  child: const Text('Próximo'),
+                  onPressed: () => nextStep(context),
+                  child: Text(AppLocalizations.of(context)!.next),
                 ),
               ),
           ],

@@ -1,5 +1,7 @@
 import 'package:econance/features/graphs/pages/graphs_page.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import '../../services/family_service.dart';
 
 class MemberCard extends StatelessWidget {
@@ -76,7 +78,7 @@ class MemberCard extends StatelessWidget {
 
   void _openAdminActions(BuildContext context) {
     showModalBottomSheet(
-      backgroundColor: Colors.grey.shade900,
+      backgroundColor: Theme.of(context).cardColor,
       context: context,
       builder: (ctx) {
         return SafeArea(
@@ -85,7 +87,7 @@ class MemberCard extends StatelessWidget {
               if (canChangeRole)
                 ListTile(
                   leading: const Icon(Icons.swap_horiz),
-                  title: Text("Change role", style: Theme.of(context).textTheme.bodyMedium),
+                  title: Text(AppLocalizations.of(context)!.changeRole, style: Theme.of(context).textTheme.bodyMedium),
                   onTap: () {
                     Navigator.pop(ctx);
                     _showChangedRoleDialog(context);
@@ -93,7 +95,7 @@ class MemberCard extends StatelessWidget {
                 ),
               ListTile(
                 leading: const Icon(Icons.bar_chart),
-                title: Text("View member graphs", style: Theme.of(context).textTheme.bodyMedium),
+                title: Text(AppLocalizations.of(context)!.viewMemberGraphs, style: Theme.of(context).textTheme.bodyMedium),
                 onTap: () {
                   Navigator.pop(ctx);
                   showModalBottomSheet(
@@ -107,22 +109,22 @@ class MemberCard extends StatelessWidget {
               ),
               if (canRemove)
                 ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
-                  title: Text("Remove from family", style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+                  leading: Icon(Icons.delete, color: ResponsiveColors.error(Theme.of(context))),
+                  title: Text(AppLocalizations.of(context)!.removeFromFamily, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: ResponsiveColors.error(Theme.of(context)))),
                   onTap: () async {
                     Navigator.pop(ctx);
                     final ok = await showDialog(
                       context: context,
                       builder: (dC) => AlertDialog(
-                        backgroundColor: Colors.grey.shade900,
-                        title: Text("Remove member?", style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-                        content: const Text("Are you sure you want to remove this member?"),
+                        backgroundColor: Theme.of(context).cardColor,
+                        title: Text(AppLocalizations.of(context)!.removeMemberTitle, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                        content: Text(AppLocalizations.of(context)!.removeMemberContent),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(dC, false), child: const Text("Cancel", style: TextStyle(color: Colors.white70))),
+                          TextButton(onPressed: () => Navigator.pop(dC, false), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: ResponsiveColors.whiteOpacity(Theme.of(context), 0.7)))),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(dC, true),
-                            child: const Text("Remove", style: TextStyle(color: Colors.white)),
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade500),
+                            child: Text(AppLocalizations.of(context)!.remove, style: TextStyle(color: ResponsiveColors.onPrimary(Theme.of(context)))),
+                            style: ElevatedButton.styleFrom(backgroundColor: ResponsiveColors.error(Theme.of(context))),
                           ),
                         ],
                       ),
@@ -146,27 +148,27 @@ class MemberCard extends StatelessWidget {
       builder: (ctx) {
         String selected = role;
         return AlertDialog(
-          backgroundColor: Colors.grey.shade900,
-          title: Text("Change role", style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+          backgroundColor: Theme.of(context).cardColor,
+          title: Text(AppLocalizations.of(context)!.changeRole, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
           content: DropdownButtonFormField<String>(
             value: selected,
             style: Theme.of(context).textTheme.bodyMedium,
             items: [
               if (currentUserRole == 'creator' || currentUserRole == 'admin')
-                DropdownMenuItem(value: 'admin', child: const Text('Admin')),
+                DropdownMenuItem(value: 'admin', child: Text(AppLocalizations.of(context)!.admin)),
               if (currentUserRole == 'creator' || currentUserRole == 'admin')
-                DropdownMenuItem(value: 'member', child: const Text('Member')),
+                DropdownMenuItem(value: 'member', child: Text(AppLocalizations.of(context)!.member)),
             ],
             onChanged: (v) => selected = v ?? role,
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text("Cancel", style: TextStyle(color: Colors.red.shade500))),
+            actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: ResponsiveColors.error(Theme.of(context))))),
             ElevatedButton(
               onPressed: () async {
                 await FamilyService().changeMemberRole(familyId, memberUid, selected);
                 Navigator.pop(ctx);
               },
-              child: const Text("Save"),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         );

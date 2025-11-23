@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../categories/category_picker.dart';
@@ -194,7 +196,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[400],
+                      color: ResponsiveColors.greyShade(theme, 400),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -212,15 +214,15 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 style: theme.textTheme.bodyMedium,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return "Please enter a value";
+                    return AppLocalizations.of(context)!.pleaseEnterValue;
                   }
                   if (double.tryParse(value.replaceAll(',', '.')) == null) {
-                    return "Enter a valid number";
+                    return AppLocalizations.of(context)!.enterValidNumber;
                   }
                   return null;
                 },
                 decoration: InputDecoration(
-                  hintText: "500,00",
+                  hintText: AppLocalizations.of(context)!.valueHint,
                   prefixIcon: Padding(
                     padding: const EdgeInsets.only(left: 14, top: 14, bottom: 14),
                     child: Text(
@@ -240,12 +242,12 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
               TextField(
                 controller: _note,
                 style: theme.textTheme.bodyMedium,
-                decoration: const InputDecoration(hintText: "Optional note"),
+                decoration: InputDecoration(hintText: AppLocalizations.of(context)!.optionalCommentary),
               ),
               const SizedBox(height: 10),
               ListTile(
                 title: Text(
-                  selectedCategoryName ?? "Select Category",
+                  selectedCategoryName ?? AppLocalizations.of(context)!.selectCategory,
                   style: theme.textTheme.bodyMedium,
                 ),
                 trailing: const Icon(Icons.chevron_right),
@@ -257,9 +259,9 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 readOnly: true,
                 onTap: _pickDate,
                 style: theme.textTheme.bodyMedium,
-                decoration: const InputDecoration(
-                  hintText: "Select Date",
-                  suffixIcon: Icon(Icons.calendar_today),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.selectDate,
+                  suffixIcon: const Icon(Icons.calendar_today),
                 ),
               ),
               const SizedBox(height: 10),
@@ -270,7 +272,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                     onChanged: (val) =>
                         setState(() => _isRecurrent = val ?? false),
                   ),
-                  Text("Is recurrent?", style: theme.textTheme.bodyMedium),
+                  Text(AppLocalizations.of(context)!.isThisRecurrent, style: theme.textTheme.bodyMedium),
                 ],
               ),
               const SizedBox(height: 20),
@@ -278,7 +280,7 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) _updateTransaction();
                 },
-                child: const Text('Save'),
+                child: Text(AppLocalizations.of(context)!.save),
               ),
             ],
           ),

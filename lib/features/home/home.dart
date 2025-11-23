@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../l10n/app_localizations.dart';
 import '../../cards/home_card.dart';
 import '../graphs/widgets/revenue_line_chart.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class HomePage extends StatefulWidget {
   final bool hideSensitive;
@@ -135,10 +137,13 @@ class _HomePageState extends State<HomePage> {
     };
   }
 
-  Color _getChangeColor(double change) {
-    if (change > 0) return Colors.green;
-    if (change < 0) return Colors.red;
-    return Colors.grey;
+  Color _getChangeColor(BuildContext context, double change) {
+    final theme = Theme.of(context);
+    if (change > 0) return ResponsiveColors.success(theme);
+    if (change < 0) return ResponsiveColors.error(theme);
+    // Use hint/secondary text color for neutral changes so it's readable
+    // in light and dark modes (avoid very light grey in light theme).
+    return ResponsiveColors.hint(theme);
   }
 
   String formatNumber(double value) {
@@ -150,10 +155,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildShimmer(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+    final baseColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 800 : 300);
+    final highlightColor = ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 600 : 100);
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -208,7 +211,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Welcome,",
+                AppLocalizations.of(context)!.screenwelcomepage,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 ),
@@ -220,11 +223,10 @@ class _HomePageState extends State<HomePage> {
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    final isDark = theme.brightness == Brightness.dark;
                     return Container(
                       width: 120,
                       height: 20,
-                      color: isDark ? Colors.grey[800] : Colors.grey[300],
+                      color: ResponsiveColors.greyShade(theme, theme.brightness == Brightness.dark ? 800 : 300),
                     );
                   }
                   final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
@@ -247,42 +249,42 @@ class _HomePageState extends State<HomePage> {
                     return _buildShimmer(context);
                   }
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(child: Text('${AppLocalizations.of(context)!.errorOccurred}: ${snapshot.error}'));
                   }
 
                   final data = snapshot.data!;
                   final cards = [
                     {
-                      'title': 'Total Balance',
+                      'title': AppLocalizations.of(context)!.balanceLabel,
                       'value': 'balance',
                       'change': 'balanceChange',
                       'icon': Icons.account_balance_wallet,
-                      'iconColor': theme.primaryColor,
+                      'iconColor': ResponsiveColors.chartBalance(theme),
                     },
                     {
-                      'title': 'Revenue',
+                      'title': AppLocalizations.of(context)!.revenues,
                       'value': 'totalRevenue',
                       'change': 'revenueChange',
                       'icon': Icons.attach_money,
-                      'iconColor': theme.primaryColor,
+                      'iconColor': ResponsiveColors.chartRevenue(theme),
                     },
                     {
-                      'title': 'Expenses',
+                      'title': AppLocalizations.of(context)!.expenses,
                       'value': 'totalExpenses',
                       'change': 'expensesChange',
                       'icon': Icons.remove_circle,
-                      'iconColor': Colors.red,
+                      'iconColor': ResponsiveColors.chartExpense(theme),
                     },
                     {
-                      'title': 'Investments',
+                      'title': AppLocalizations.of(context)!.investmentsLabel,
                       'value': 'investments',
                       'change': 'investmentsChange',
                       'icon': Icons.show_chart,
-                      'iconColor': Colors.purple,
+                      'iconColor': ResponsiveColors.chartInvestment(theme),
                     },
                   ];
 
-                  return Column(
+                    return Column(
                     children: [
                       GridView.builder(
                         itemCount: cards.length,
@@ -308,11 +310,11 @@ class _HomePageState extends State<HomePage> {
                                 ? "•••••"
                                 : formatNumber(realValue),
                             subtitle: widget.hideSensitive
-                                ? "••••• VS Last Month"
-                                : "${changeValue > 0 ? '+' : ''}${changeValue.toStringAsFixed(1)}% VS Last Month",
+                                ? "••••• ${AppLocalizations.of(context)!.vsLastMonth}"
+                                : "${changeValue > 0 ? '+' : ''}${changeValue.toStringAsFixed(1)}% ${AppLocalizations.of(context)!.vsLastMonth}",
                             icon: card['icon'] as IconData?,
                             iconColor: card['iconColor'] as Color?,
-                            subtitleColor: _getChangeColor(changeValue),
+                            subtitleColor: _getChangeColor(context, changeValue),
                             isSelected: selectedIndex == index,
                             onTap: () {
                               setState(() {

@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:econance/l10n/app_localizations.dart';
+import 'package:econance/theme/responsive_colors.dart';
 
 class BalanceChartCard extends StatelessWidget {
   final String uid;
@@ -184,10 +186,10 @@ class BalanceChartCard extends StatelessWidget {
                                   return Padding(
                                     padding: const EdgeInsets.only(left: 25),
                                     child: Icon(
-                                      Icons.circle,
-                                      size: 6,
-                                      color: Colors.grey[400],
-                                    ),
+                                                  Icons.circle,
+                                                  size: 6,
+                                                  color: ResponsiveColors.greyShade(theme, 400),
+                                                ),
                                   );
                                 } else {
                                   return Padding(
@@ -213,21 +215,21 @@ class BalanceChartCard extends StatelessWidget {
                           LineChartBarData(
                             spots: revenuePoints,
                             isCurved: true,
-                            color: hideSensitive ? Colors.grey[400] : Colors.green,
+                            color: hideSensitive ? ResponsiveColors.greyShade(theme, 400) : ResponsiveColors.chartRevenue(theme),
                             barWidth: 3,
                             dotData: FlDotData(show: !hideSensitive),
                           ),
                           LineChartBarData(
                             spots: expensePoints,
                             isCurved: true,
-                            color: hideSensitive ? Colors.grey[400] : Colors.red,
+                            color: hideSensitive ? ResponsiveColors.greyShade(theme, 400) : ResponsiveColors.chartExpense(theme),
                             barWidth: 3,
                             dotData: FlDotData(show: !hideSensitive),
                           ),
                           LineChartBarData(
                             spots: normalizedBalancePoints,
                             isCurved: true,
-                            color: hideSensitive ? Colors.grey[400] : Colors.blueAccent,
+                            color: hideSensitive ? ResponsiveColors.greyShade(theme, 400) : ResponsiveColors.chartBalance(theme),
                             barWidth: 2,
                             isStrokeCapRound: true,
                             dotData: FlDotData(show: !hideSensitive),
@@ -235,7 +237,7 @@ class BalanceChartCard extends StatelessWidget {
                           LineChartBarData(
                             spots: investmentPoints,
                             isCurved: true,
-                            color: hideSensitive ? Colors.grey[400] : Colors.purple,
+                            color: hideSensitive ? ResponsiveColors.greyShade(theme, 400) : ResponsiveColors.chartInvestment(theme),
                             barWidth: 2,
                             dotData: FlDotData(show: !hideSensitive),
                           ),
@@ -250,25 +252,25 @@ class BalanceChartCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.green, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : ResponsiveColors.chartRevenue(theme), size: 10),
                         const SizedBox(width: 4),
-                        Text("Revenues", style: theme.textTheme.bodySmall),
+                        Text(AppLocalizations.of(context)!.revenues, style: theme.textTheme.bodySmall),
                         const SizedBox(width: 12),
-                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.red, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : ResponsiveColors.chartExpense(theme), size: 10),
                         const SizedBox(width: 4),
-                        Text("Expenses", style: theme.textTheme.bodySmall),
+                        Text(AppLocalizations.of(context)!.expenses, style: theme.textTheme.bodySmall),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.blueAccent, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : ResponsiveColors.chartBalance(theme), size: 10),
                         const SizedBox(width: 4),
-                        Text("Balance", style: theme.textTheme.bodySmall),
+                        Text(AppLocalizations.of(context)!.balanceLabel, style: theme.textTheme.bodySmall),
                         const SizedBox(width: 12),
-                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : Colors.purple, size: 10),
+                        Icon(Icons.circle, color: hideSensitive ? Colors.grey[400] : ResponsiveColors.chartInvestment(theme), size: 10),
                         const SizedBox(width: 4),
-                        Text("Investments", style: theme.textTheme.bodySmall),
+                        Text(AppLocalizations.of(context)!.investmentsLabel, style: theme.textTheme.bodySmall),
                       ],
                     ),
                   ],
