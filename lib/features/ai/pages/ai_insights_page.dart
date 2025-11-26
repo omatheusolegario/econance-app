@@ -138,19 +138,25 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       apiKey: dotenv.env['GEMINI_API_KEY']!,
     );
 
+    final locale = Localizations.localeOf(context);
+    final langCode = locale.languageCode;
+    final languageName = langCode == 'pt' ? 'Português' : 'English';
+
     final prompt = """
-You are a financial assistant. Analyze this user's financial data:
-$summaryJson
-Write a concise financial insights report with these sections:
-- Balance Overview (compare revenues vs expenses)
-- Spending by Category
-- Recurrent Expenses
-- Suggestions
-- Investment Overview (analyze user's investments, showing total value, goals, rate, and suggestions)
-Keep it clear, structured and actionable.
-Format it nicely, and put really nice spaces between areas that need(it's a flutter app).
-Currency is R\$ (BRL)
-""";
+  You are a financial assistant. Analyze this user's financial data:
+  $summaryJson
+  Write a concise financial insights report with these sections:
+  - Balance Overview (compare revenues vs expenses)
+  - Spending by Category
+  - Recurrent Expenses
+  - Suggestions
+  - Investment Overview (analyze user's investments, showing total value, goals, rate, and suggestions)
+  Keep it clear, structured and actionable.
+  Format it nicely, and put really nice spaces between areas that need(it's a flutter app).
+  Currency is R\$ (BRL)
+
+  IMPORTANT: Respond ONLY in $languageName. Do not include any other language or translations. The entire report must be written strictly in $languageName.
+  """;
 
     final response = await model.generateContent([Content.text(prompt)]);
     final text = response.text;
@@ -174,11 +180,11 @@ Currency is R\$ (BRL)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _phrases = [
-          AppLocalizations.of(context)!.aiPhrase1,
-          AppLocalizations.of(context)!.aiPhrase2,
-          AppLocalizations.of(context)!.aiPhrase3,
-          AppLocalizations.of(context)!.aiPhrase4,
-          AppLocalizations.of(context)!.aiPhrase5,
+          AppLocalizations.of(context)!.aiPhrase6,
+          AppLocalizations.of(context)!.aiPhrase7,
+          AppLocalizations.of(context)!.aiPhrase8,
+          AppLocalizations.of(context)!.aiPhrase9,
+          AppLocalizations.of(context)!.aiPhrase10,
         ];
       });
     });

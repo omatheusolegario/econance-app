@@ -716,6 +716,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get aiPhrase5 => 'Preparando insights personalizados da família...';
 
   @override
+  String get aiPhrase6 => 'Analisando finanças...';
+
+  @override
+  String get aiPhrase7 => 'Gerando relatório...';
+
+  @override
+  String get aiPhrase8 => 'Comparando rendas e despesas...';
+
+  @override
+  String get aiPhrase9 => 'Avaliando investimentos...';
+
+  @override
+  String get aiPhrase10 => 'Preparando insights personalizados...';
+
+  @override
   String get awaitingAdminInsights => 'Aguarde o administrador gerar os insights.';
 
   @override

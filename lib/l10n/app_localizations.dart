@@ -1505,6 +1505,36 @@ abstract class AppLocalizations {
   /// **'Preparing personalized family insights...'**
   String get aiPhrase5;
 
+  /// No description provided for @aiPhrase6.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing finances...'**
+  String get aiPhrase6;
+
+  /// No description provided for @aiPhrase7.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating report...'**
+  String get aiPhrase7;
+
+  /// No description provided for @aiPhrase8.
+  ///
+  /// In en, this message translates to:
+  /// **'Comparing incomes and expenses...'**
+  String get aiPhrase8;
+
+  /// No description provided for @aiPhrase9.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluating investments...'**
+  String get aiPhrase9;
+
+  /// No description provided for @aiPhrase10.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing personalized insights...'**
+  String get aiPhrase10;
+
   /// No description provided for @awaitingAdminInsights.
   ///
   /// In en, this message translates to:

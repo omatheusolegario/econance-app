@@ -187,19 +187,25 @@ class _FamilyAIInsightsPageState extends State<FamilyAIInsightsPage> {
       };
     }
 
+    final locale = Localizations.localeOf(context);
+    final langCode = locale.languageCode;
+    final languageName = langCode == 'pt' ? 'Português' : 'English';
+
     final prompt = """
-Family financial summary. For each member provide:
-- short balance overview,
-- top 3 categories for spending,
-- any recurring items noticed,
-- short investments overview,
-Then provide a short family-level summary and 3 actionable suggestions
-Data:
-${jsonEncode(summary)}
-Keep it clear, structured and actionable.
-Format it nicely, and put really nice spaces between areas that need (it's a flutter app).
-Currency is R\$ (BRL)
-""";
+  Family financial summary. For each member provide:
+  - short balance overview,
+  - top 3 categories for spending,
+  - any recurring items noticed,
+  - short investments overview,
+  Then provide a short family-level summary and 3 actionable suggestions
+  Data:
+  ${jsonEncode(summary)}
+  Keep it clear, structured and actionable.
+  Format it nicely, and put really nice spaces between areas that need (it's a flutter app).
+  Currency is R\$ (BRL)
+
+  IMPORTANT: Respond ONLY in $languageName. Do not include any other language or translations. The entire report must be written strictly in $languageName.
+  """;
 
     final resp = await _model.generateContent([Content.text(prompt)]);
 
