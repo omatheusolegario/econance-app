@@ -135,7 +135,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
     final model = GenerativeModel(
       model: 'gemini-2.5-flash',
-      apiKey: dotenv.env['GEMINI_API_KEY']!,
+      apiKey: "YOUR_API_KEY_HERE",
     );
 
     final locale = Localizations.localeOf(context);
