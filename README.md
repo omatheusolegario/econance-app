@@ -39,4 +39,5 @@ flutter run
 ## Autor
 
 Desenvolvido e liderado por [Matheus Guimarães Olegario](https://github.com/omatheusolegario).
+
 Desenvolvido também por Luiz Felipe Araújo Rodrigues, Rafael Arão Queiroz e Luana Marques de Nazaré.
